@@ -160,6 +160,35 @@ export class GoogleProvider extends BaseProvider {
   }
 
   async listModels(): Promise<ModelInfo[]> {
+    try {
+      // Try to fetch models from Google API
+      const response = await this.makeRequest(`/v1beta/models?key=${this.config.apiKey}`);
+      const data = await response.json();
+      
+      if (data.models) {
+        return data.models
+          .filter((model: any) => model.name.includes('gemini'))
+          .map((model: any) => ({
+            id: model.name.replace('models/', ''),
+            name: model.displayName || model.name.replace('models/', ''),
+            provider: 'google' as const,
+            capabilities: {
+              supportsVision: model.supportedGenerationMethods?.includes('generateContent') && 
+                             (model.name.includes('vision') || model.name.includes('pro')),
+              supportsTools: model.supportedGenerationMethods?.includes('generateContent'),
+              supportsStreaming: model.supportedGenerationMethods?.includes('streamGenerateContent'),
+              supportsReasoning: false,
+              supportsPromptCache: false,
+              contextWindow: model.inputTokenLimit || 32768,
+              maxOutputTokens: model.outputTokenLimit || 8192,
+            },
+          }));
+      }
+    } catch (error) {
+      console.warn('Failed to fetch Google models:', error);
+    }
+    
+    // Fallback to registry
     return getModelsByProvider('google');
   }
 

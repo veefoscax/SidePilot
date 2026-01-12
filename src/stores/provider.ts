@@ -26,6 +26,7 @@ interface ProviderState {
   
   // Available models for current provider
   availableModels: ModelInfo[];
+  isLoadingModels: boolean;
   
   // Actions
   setProvider: (type: ProviderType) => void;
@@ -35,6 +36,8 @@ interface ProviderState {
   testConnection: () => Promise<boolean>;
   initializeProvider: () => Promise<void>;
   clearError: () => void;
+  loadModelsForProvider: (type: ProviderType) => Promise<void>;
+  refreshModels: () => Promise<void>;
 }
 
 /**
@@ -81,19 +84,83 @@ export const useProviderStore = create<ProviderState>()(
       isLoading: false,
       error: null,
       availableModels: [],
+      isLoadingModels: false,
       
       // Actions
       setProvider: (type: ProviderType) => {
-        const models = getModelsByProvider(type);
-        const defaultModel = models[0]?.id || '';
-        
         set({ 
           selectedProvider: type, 
           isConnected: false,
-          availableModels: models,
-          selectedModel: defaultModel,
+          availableModels: [], // Clear models while loading
+          selectedModel: '',
           error: null
         });
+        
+        // Load models for the new provider
+        get().loadModelsForProvider(type);
+      },
+      
+      loadModelsForProvider: async (type: ProviderType) => {
+        set({ isLoadingModels: true });
+        
+        try {
+          let models: ModelInfo[] = [];
+          
+          // Try to create a temporary provider to fetch models
+          try {
+            const config = {
+              type,
+              apiKey: get().apiKey || 'temp-key', // Some providers need a key to instantiate
+              baseUrl: get().baseUrl,
+            };
+            
+            // For providers that don't require API keys, use empty key
+            if (type === 'ollama') {
+              config.apiKey = '';
+            }
+            
+            const tempProvider = createProvider(config);
+            
+            // If provider supports listModels, use it
+            if (tempProvider.listModels) {
+              models = await tempProvider.listModels();
+              console.log(`✅ Loaded ${models.length} models from ${type} provider`);
+            } else {
+              // Fallback to registry
+              models = getModelsByProvider(type);
+              console.log(`📋 Using registry models for ${type} (${models.length} models)`);
+            }
+          } catch (error) {
+            console.warn(`⚠️ Failed to fetch models from ${type} provider:`, error);
+            // Fallback to registry
+            models = getModelsByProvider(type);
+          }
+          
+          const defaultModel = models[0]?.id || '';
+          
+          set({ 
+            availableModels: models,
+            selectedModel: defaultModel,
+            isLoadingModels: false,
+          });
+        } catch (error) {
+          console.error(`❌ Error loading models for ${type}:`, error);
+          // Final fallback to registry
+          const models = getModelsByProvider(type);
+          const defaultModel = models[0]?.id || '';
+          
+          set({ 
+            availableModels: models,
+            selectedModel: defaultModel,
+            isLoadingModels: false,
+            error: `Failed to load models: ${error instanceof Error ? error.message : 'Unknown error'}`
+          });
+        }
+      },
+      
+      refreshModels: async () => {
+        const { selectedProvider } = get();
+        await get().loadModelsForProvider(selectedProvider);
       },
       
       setApiKey: (key: string) => {

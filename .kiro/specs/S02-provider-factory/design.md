@@ -9,6 +9,7 @@
 export type ProviderType =
   | "anthropic"
   | "openai"
+  | "mock"
   | "google"
   | "openai-compat"
   | "deepseek"
@@ -132,10 +133,12 @@ import { OpenAIProvider } from "./openai";
 import { GoogleProvider } from "./google";
 import { DeepSeekProvider } from "./deepseek";
 import { OllamaProvider } from "./ollama";
+import { MockProvider } from "./mock";
 
 const PROVIDER_CLASSES: Record<ProviderType, new (config: ProviderConfig) => LLMProvider> = {
   anthropic: AnthropicProvider,
   openai: OpenAIProvider,
+  mock: MockProvider,
   "openai-compat": OpenAIProvider,
   google: GoogleProvider,
   deepseek: DeepSeekProvider,
@@ -190,6 +193,33 @@ export abstract class BaseProvider implements LLMProvider {
     }
   }
 }
+
+## Mock Provider Implementation
+```typescript
+// src/providers/mock.ts
+import { BaseProvider } from "./base-provider";
+import { ChatMessage, ChatOptions, LLMResponse, StreamChunk } from "./types";
+
+export class MockProvider extends BaseProvider {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
+    return {
+      content: "This is a mock response from SidePilot. No API key required!",
+      usage: { inputTokens: 10, outputTokens: 20 },
+    };
+  }
+
+  async *stream(messages: ChatMessage[], options?: ChatOptions): AsyncIterable<StreamChunk> {
+    const text = "This is a mock streaming response...";
+    const words = text.split(" ");
+    
+    for (const word of words) {
+      yield { type: "text", text: word + " " };
+      await new Promise(resolve => setTimeout(resolve, 50)); // Simulate latency
+    }
+    yield { type: "done" };
+  }
+}
+```
 ```
 
 ## Model Registry (like Cline)
@@ -268,6 +298,20 @@ export const MODEL_REGISTRY: Record<string, Partial<ModelInfo>> = {
       supportsPromptCache: false,
       contextWindow: 128000,
       maxOutputTokens: 4096,
+    },
+  },
+  // Mock Model for Testing
+  "mock-model": {
+    name: "Mock Provider (Test)",
+    provider: "mock",
+    capabilities: {
+      supportsVision: true,
+      supportsTools: true,
+      supportsStreaming: true,
+      supportsReasoning: true,
+      supportsPromptCache: true,
+      contextWindow: 100000,
+      maxOutputTokens: 1000,
     },
   },
 };

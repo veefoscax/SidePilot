@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowLeft01Icon, Settings02Icon } from '@hugeicons/core-free-icons';
+import { ArrowLeft01Icon, Settings02Icon, Loading03Icon } from '@hugeicons/core-free-icons';
 
 import { useProviderStore } from '@/stores/provider';
 import { ProviderSelector } from '@/components/settings/ProviderSelector';
@@ -32,6 +32,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     availableModels,
     isConnected,
     isLoading,
+    isLoadingModels,
     error,
     setProvider,
     setApiKey,
@@ -40,6 +41,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     testConnection,
     initializeProvider,
     clearError,
+    refreshModels,
   } = useProviderStore();
   
   // Get current model capabilities
@@ -133,12 +135,40 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Model Selector */}
-            <ModelSelector
-              value={selectedModel}
-              onChange={setModel}
-              models={availableModels}
-              disabled={isLoading}
-            />
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <ModelSelector
+                  value={selectedModel}
+                  onChange={setModel}
+                  models={availableModels}
+                  disabled={isLoading}
+                  isLoading={isLoadingModels}
+                />
+              </div>
+              
+              {/* Refresh Models Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshModels}
+                disabled={isLoading || isLoadingModels}
+                className="shrink-0 h-10 w-10 p-0"
+                title="Refresh models from provider"
+              >
+                <HugeiconsIcon 
+                  icon={Loading03Icon} 
+                  className={`h-4 w-4 ${isLoadingModels ? 'animate-spin' : ''}`} 
+                />
+              </Button>
+            </div>
+            
+            {/* Loading indicator */}
+            {isLoadingModels && (
+              <div className="text-xs text-muted-foreground flex items-center justify-between">
+                <span>Loading models from {selectedProvider}...</span>
+                <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
             
             {/* Model Capabilities */}
             {currentModel && (

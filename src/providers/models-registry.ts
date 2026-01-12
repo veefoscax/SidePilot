@@ -80,7 +80,7 @@ export const MODEL_REGISTRY: Record<string, Omit<ModelInfo, 'id'>> = {
       supportsTools: true,
       supportsStreaming: true,
       supportsReasoning: false,
-      supportsPromptCache: true,
+      supportsPromptCache: false, // OpenAI doesn't have prompt caching like Anthropic
       contextWindow: 128000,
       maxOutputTokens: 4096,
     },
@@ -94,7 +94,7 @@ export const MODEL_REGISTRY: Record<string, Omit<ModelInfo, 'id'>> = {
       supportsTools: true,
       supportsStreaming: true,
       supportsReasoning: false,
-      supportsPromptCache: true,
+      supportsPromptCache: false, // OpenAI doesn't have prompt caching like Anthropic
       contextWindow: 128000,
       maxOutputTokens: 16384,
     },
@@ -138,7 +138,7 @@ export const MODEL_REGISTRY: Record<string, Omit<ModelInfo, 'id'>> = {
       supportsTools: true,
       supportsStreaming: true,
       supportsReasoning: false,
-      supportsPromptCache: true,
+      supportsPromptCache: false, // Google doesn't have prompt caching like Anthropic
       contextWindow: 1000000,
       maxOutputTokens: 8192,
     },
@@ -152,7 +152,7 @@ export const MODEL_REGISTRY: Record<string, Omit<ModelInfo, 'id'>> = {
       supportsTools: true,
       supportsStreaming: true,
       supportsReasoning: false,
-      supportsPromptCache: true,
+      supportsPromptCache: false, // Google doesn't have prompt caching like Anthropic
       contextWindow: 2000000,
       maxOutputTokens: 8192,
     },
@@ -168,7 +168,7 @@ export const MODEL_REGISTRY: Record<string, Omit<ModelInfo, 'id'>> = {
       supportsTools: true,
       supportsStreaming: true,
       supportsReasoning: false,
-      supportsPromptCache: true,
+      supportsPromptCache: false,
       contextWindow: 128000,
       maxOutputTokens: 8000,
     },
@@ -179,7 +179,7 @@ export const MODEL_REGISTRY: Record<string, Omit<ModelInfo, 'id'>> = {
     provider: "deepseek",
     capabilities: {
       supportsVision: false,
-      supportsTools: false,
+      supportsTools: false, // R1 doesn't support tools during reasoning
       supportsStreaming: true,
       supportsReasoning: true,
       supportsPromptCache: false,

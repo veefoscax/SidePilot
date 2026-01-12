@@ -138,6 +138,16 @@ export class AnthropicProvider extends BaseProvider {
   }
 
   async listModels(): Promise<ModelInfo[]> {
+    try {
+      // Try to fetch models from Anthropic API (if they provide a models endpoint)
+      // Note: Anthropic doesn't currently provide a public models API endpoint
+      // So we'll use the registry for now but structure it for future API support
+      console.log('Using Anthropic model registry (no public models API available)');
+    } catch (error) {
+      console.warn('Failed to fetch Anthropic models:', error);
+    }
+    
+    // Use registry models for Anthropic
     return getModelsByProvider('anthropic');
   }
 
