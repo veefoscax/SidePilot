@@ -38,14 +38,14 @@ export function ModelSelector({ value, onChange, models, disabled, isLoading }: 
     );
   }
   
-  if (models.length === 0) {
+  if (models.length === 0 && !isLoading) {
     return (
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
           Model
         </label>
         <div className="text-sm text-muted-foreground">
-          No models available for this provider
+          Add an API key to see available models
         </div>
       </div>
     );
@@ -79,10 +79,6 @@ export function ModelSelector({ value, onChange, models, disabled, isLoading }: 
             
             return (
               <div className="space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="shrink-0">Model:</span>
-                  <span className="text-right truncate min-w-0 flex-1">{selectedModel.name}</span>
-                </div>
                 <div className="flex items-center justify-between gap-2">
                   <span className="shrink-0">Context:</span>
                   <span className="text-right">{(selectedModel.capabilities.contextWindow / 1000).toFixed(0)}K tokens</span>

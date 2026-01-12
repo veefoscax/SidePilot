@@ -45,18 +45,6 @@ export function ProviderSelector({ value, onChange, disabled }: ProviderSelector
           ))}
         </SelectContent>
       </Select>
-      
-      {/* Provider info display */}
-      {value && (
-        <div className="text-xs text-muted-foreground">
-          <div className="flex items-center justify-between gap-2">
-            <span className="shrink-0">Provider:</span>
-            <span className="text-right truncate min-w-0 flex-1">
-              {getProviderInfo(value).name}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -106,52 +106,44 @@ export const useProviderStore = create<ProviderState>()(
         try {
           let models: ModelInfo[] = [];
           
-          // Try to create a temporary provider to fetch models
-          try {
-            const config = {
-              type,
-              apiKey: get().apiKey || 'temp-key', // Some providers need a key to instantiate
-              baseUrl: get().baseUrl,
-            };
-            
-            // For providers that don't require API keys, use empty key
-            if (type === 'ollama') {
-              config.apiKey = '';
-            }
-            
-            const tempProvider = createProvider(config);
-            
-            // If provider supports listModels, use it
-            if (tempProvider.listModels) {
-              models = await tempProvider.listModels();
-              console.log(`✅ Loaded ${models.length} models from ${type} provider`);
-            } else {
-              // Fallback to registry
-              models = getModelsByProvider(type);
-              console.log(`📋 Using registry models for ${type} (${models.length} models)`);
-            }
-          } catch (error) {
-            console.warn(`⚠️ Failed to fetch models from ${type} provider:`, error);
-            // Fallback to registry
-            models = getModelsByProvider(type);
-          }
+          // Only load models if we have an API key (except for Ollama which doesn't need one)
+          const { apiKey } = get();
+          const hasApiKey = apiKey && apiKey.trim().length > 0;
           
-          const defaultModel = models[0]?.id || '';
+          if (type === 'ollama' || hasApiKey) {
+            try {
+              const config = {
+                type,
+                apiKey: type === 'ollama' ? '' : apiKey,
+                baseUrl: get().baseUrl,
+              };
+              
+              const tempProvider = createProvider(config);
+              
+              // If provider supports listModels, use it
+              if (tempProvider.listModels) {
+                models = await tempProvider.listModels();
+                console.log(`✅ Loaded ${models.length} models from ${type} provider`);
+              } else {
+                console.log(`⚠️ Provider ${type} doesn't support dynamic model listing`);
+              }
+            } catch (error) {
+              console.warn(`⚠️ Failed to fetch models from ${type} provider:`, error);
+            }
+          } else {
+            console.log(`🔑 No API key provided for ${type}, not loading models`);
+          }
           
           set({ 
             availableModels: models,
-            selectedModel: defaultModel,
+            selectedModel: models.length > 0 ? models[0].id : '',
             isLoadingModels: false,
           });
         } catch (error) {
           console.error(`❌ Error loading models for ${type}:`, error);
-          // Final fallback to registry
-          const models = getModelsByProvider(type);
-          const defaultModel = models[0]?.id || '';
-          
           set({ 
-            availableModels: models,
-            selectedModel: defaultModel,
+            availableModels: [],
+            selectedModel: '',
             isLoadingModels: false,
             error: `Failed to load models: ${error instanceof Error ? error.message : 'Unknown error'}`
           });
@@ -165,6 +157,18 @@ export const useProviderStore = create<ProviderState>()(
       
       setApiKey: (key: string) => {
         set({ apiKey: key, isConnected: false, error: null });
+        
+        // If API key is provided, reload models for current provider
+        if (key && key.trim().length > 0) {
+          const { selectedProvider } = get();
+          get().loadModelsForProvider(selectedProvider);
+        } else {
+          // If API key is cleared, clear models (except for Ollama)
+          const { selectedProvider } = get();
+          if (selectedProvider !== 'ollama') {
+            set({ availableModels: [], selectedModel: '' });
+          }
+        }
       },
       
       setBaseUrl: (url: string) => {
