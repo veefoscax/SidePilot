@@ -79,33 +79,6 @@ export function ModelSelector({ value, onChange, models, disabled, isLoading }: 
           ))}
         </SelectContent>
       </Select>
-      
-      {/* Selected model info */}
-      {value && (
-        <div className="text-xs text-muted-foreground space-y-1">
-          {(() => {
-            const selectedModel = models.find(m => m.id === value);
-            if (!selectedModel) return null;
-            
-            return (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="shrink-0">Context:</span>
-                  <span className="text-right">{(selectedModel.capabilities.contextWindow / 1000).toFixed(0)}K tokens</span>
-                </div>
-                {selectedModel.pricing && (
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="shrink-0">Pricing:</span>
-                    <span className="text-right truncate min-w-0 flex-1">
-                      ${selectedModel.pricing.inputPer1M.toFixed(2)} / ${selectedModel.pricing.outputPer1M.toFixed(2)} per 1M
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-        </div>
-      )}
     </div>
   );
 }
