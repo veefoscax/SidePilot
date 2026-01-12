@@ -66,6 +66,10 @@ Build settings UI for configuring LLM providers, entering API keys, selecting mo
 - [ ] Save selected model
 - [ ] Load on extension start
 
+### AC7: General Settings
+- [ ] Language selection (English, Portuguese)
+- [ ] Language persistence
+
 ## Dependencies
 - S01: Extension scaffold (React, shadcn)
 - S02: Provider factory (types, providers)

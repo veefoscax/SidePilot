@@ -189,7 +189,7 @@ export function getProviderInfo(type: ProviderType): {
   const providerInfo: Record<ProviderType, ReturnType<typeof getProviderInfo>> = {
     anthropic: {
       name: 'Anthropic Claude',
-      description: 'Advanced AI assistant with strong reasoning and safety features',
+      description: 'Advanced reasoning and safety',
       website: 'https://anthropic.com',
       requiresApiKey: true,
       supportsStreaming: true,
@@ -198,7 +198,7 @@ export function getProviderInfo(type: ProviderType): {
     },
     openai: {
       name: 'OpenAI',
-      description: 'GPT models including GPT-4o and reasoning models like o1',
+      description: 'GPT-4o and reasoning models',
       website: 'https://openai.com',
       requiresApiKey: true,
       supportsStreaming: true,
@@ -207,7 +207,7 @@ export function getProviderInfo(type: ProviderType): {
     },
     google: {
       name: 'Google Gemini',
-      description: 'Google\'s multimodal AI with large context windows',
+      description: 'Multimodal with large context',
       website: 'https://ai.google.dev',
       requiresApiKey: true,
       supportsStreaming: true,
@@ -216,7 +216,7 @@ export function getProviderInfo(type: ProviderType): {
     },
     deepseek: {
       name: 'DeepSeek',
-      description: 'High-performance models with competitive pricing',
+      description: 'High-performance, competitive pricing',
       website: 'https://deepseek.com',
       requiresApiKey: true,
       supportsStreaming: true,
@@ -225,7 +225,7 @@ export function getProviderInfo(type: ProviderType): {
     },
     groq: {
       name: 'Groq',
-      description: 'Ultra-fast inference with Llama and Mixtral models',
+      description: 'Ultra-fast Llama and Mixtral',
       website: 'https://groq.com',
       requiresApiKey: true,
       supportsStreaming: true,
@@ -234,7 +234,7 @@ export function getProviderInfo(type: ProviderType): {
     },
     ollama: {
       name: 'Ollama',
-      description: 'Run large language models locally on your machine',
+      description: 'Run models locally',
       website: 'https://ollama.ai',
       requiresApiKey: false,
       supportsStreaming: true,
@@ -243,7 +243,7 @@ export function getProviderInfo(type: ProviderType): {
     },
     mistral: {
       name: 'Mistral AI',
-      description: 'European AI company with efficient and powerful models',
+      description: 'Efficient European models',
       website: 'https://mistral.ai',
       requiresApiKey: true,
       supportsStreaming: true,
@@ -252,7 +252,7 @@ export function getProviderInfo(type: ProviderType): {
     },
     xai: {
       name: 'xAI Grok',
-      description: 'Elon Musk\'s AI company with real-time information access',
+      description: 'Real-time information access',
       website: 'https://x.ai',
       requiresApiKey: true,
       supportsStreaming: true,

@@ -53,9 +53,13 @@ export function ProviderSelector({ value, onChange, disabled }: ProviderSelector
       
       {/* Provider info display */}
       {value && (
-        <div className="text-xs text-muted-foreground flex justify-between items-center">
-          <span>Provider:</span>
-          <span className="text-right truncate ml-2">{getProviderInfo(value).description}</span>
+        <div className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-2">
+            <span className="shrink-0">Provider:</span>
+            <span className="text-right truncate min-w-0 flex-1 max-w-[140px]">
+              {getProviderInfo(value).description}
+            </span>
+          </div>
         </div>
       )}
     </div>

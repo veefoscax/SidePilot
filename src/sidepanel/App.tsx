@@ -20,7 +20,7 @@ function App() {
       if (typeof chrome !== 'undefined' && chrome.runtime) {
         chrome.runtime.sendMessage({
           type: 'THEME_CHANGED',
-          theme: detectedTheme
+          payload: { theme: detectedTheme }
         }).catch(() => {
           // Ignore if service worker is not available
         });

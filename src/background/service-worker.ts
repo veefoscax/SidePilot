@@ -139,7 +139,7 @@ function setupPeriodicThemeCheck() {
         // Notify all extension contexts of theme change
         chrome.runtime.sendMessage({
           type: 'CHROME_THEME_CHANGED',
-          theme: currentTheme
+          payload: { theme: currentTheme }
         }).catch(() => {
           // Ignore if no listeners
         });

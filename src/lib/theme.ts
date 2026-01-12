@@ -214,7 +214,7 @@ export async function initializeTheme(): Promise<'light' | 'dark'> {
       if (typeof chrome !== 'undefined' && chrome.runtime) {
         chrome.runtime.sendMessage({
           type: 'THEME_CHANGED',
-          theme: newTheme
+          payload: { theme: newTheme }
         }).catch(() => {
           // Ignore errors if service worker is not available
         });

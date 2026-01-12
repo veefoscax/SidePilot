@@ -23,9 +23,16 @@ export function ModelSelector({ value, onChange, models, disabled, isLoading }: 
         <label className="text-sm font-medium text-foreground">
           Model
         </label>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          Loading models...
+        {/* Skeleton loading effect */}
+        <div className="relative">
+          <div className="w-full h-10 bg-muted rounded-md border animate-pulse" />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            <div className="w-4 h-4 bg-muted-foreground/30 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <div className="h-3 bg-muted rounded animate-pulse w-3/4" />
+          <div className="h-3 bg-muted rounded animate-pulse w-1/2" />
         </div>
       </div>
     );
@@ -82,14 +89,14 @@ export function ModelSelector({ value, onChange, models, disabled, isLoading }: 
             
             return (
               <div className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <span>Context:</span>
-                  <span>{(selectedModel.capabilities.contextWindow / 1000).toFixed(0)}K tokens</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="shrink-0">Context:</span>
+                  <span className="text-right">{(selectedModel.capabilities.contextWindow / 1000).toFixed(0)}K tokens</span>
                 </div>
                 {selectedModel.pricing && (
-                  <div className="flex justify-between items-center">
-                    <span>Pricing:</span>
-                    <span className="text-right">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="shrink-0">Pricing:</span>
+                    <span className="text-right truncate min-w-0 flex-1">
                       ${selectedModel.pricing.inputPer1M.toFixed(2)} / ${selectedModel.pricing.outputPer1M.toFixed(2)} per 1M
                     </span>
                   </div>
