@@ -67,3 +67,10 @@
 - API key persists after reload
 - Connection test validates keys
 - Capability badges show correctly per model
+
+### 10. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 42 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 43 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 44 -->
+- [ ] Add test script to package.json <!-- id: 45 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 46 -->

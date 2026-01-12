@@ -79,3 +79,10 @@
 - Anthropic schemas generate correctly
 - Permission checks work before execution
 - Tool results display in chat UI
+
+### 11. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 52 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 53 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 54 -->
+- [ ] Add test script to package.json <!-- id: 55 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 56 -->

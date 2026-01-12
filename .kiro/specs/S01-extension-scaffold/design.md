@@ -1,5 +1,11 @@
 # S01: Extension Scaffold - Design
 
+## Time Tracking
+- **Estimated**: 45 minutes
+- **Actual**: 2 hours 15 minutes  
+- **Status**: ✅ Completed
+- **Critical Issue**: Vite path resolution required `base: './'` for Chrome extension compatibility
+
 ## Architecture Overview
 
 **Type**: Self-Contained Chrome Extension (Serverless)
@@ -133,6 +139,63 @@ Use the following configuration when initializing or `components.json`:
 ```
 
 > **IMPORTANT**: Always use the **shadcn MCP server** to pull and install components to ensure consistent styling and implementation. Do not manually copy-paste component code unless absolutely necessary.
+
+## Playwright Testing Setup
+
+**Goal**: Automate verification and capture screenshots for DEVLOG.
+
+**Configuration (`playwright.config.ts`)**:
+Must support Chrome Extension loading:
+```typescript
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  fullyParallel: true,
+  use: {
+    // Exact path to the extension build directory
+    // IMPORTANT: build (npm run build) must run before tests
+    headless: false, // Extensions don't work in headless mode usually
+    viewport: { width: 1280, height: 720 },
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+});
+```
+
+**Test Helper (`tests/fixtures.ts`)**:
+Need a custom fixture to load the extension:
+```typescript
+import { test as base, chromium, type BrowserContext } from '@playwright/test';
+import path from 'path';
+
+export const test = base.extend<{
+  context: BrowserContext;
+  extensionId: string;
+}>({
+  context: async ({ }, use) => {
+    const pathToExtension = path.join(__dirname, '../dist');
+    const context = await chromium.launchPersistentContext('', {
+      headless: false,
+      args: [
+        `--disable-extensions-except=${pathToExtension}`,
+        `--load-extension=${pathToExtension}`,
+      ],
+    });
+    await use(context);
+    await context.close();
+  },
+  extensionId: async ({ context }, use) => {
+    // Logic to find extension ID from service worker or pages
+    // ...
+    await use(extensionId);
+  },
+});
+```
 
 ## shadcn Components to Install
 

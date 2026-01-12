@@ -51,3 +51,10 @@
 - Steps display in preview
 - Workflow saves as shortcut
 - Generated prompt is clear
+
+### 8. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 30 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 31 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 32 -->
+- [ ] Add test script to package.json <!-- id: 33 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 34 -->

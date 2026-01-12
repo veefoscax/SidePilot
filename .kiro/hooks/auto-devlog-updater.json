@@ -1,0 +1,16 @@
+{
+  "name": "Auto DEVLOG & Time Tracker",
+  "description": "Automatically updates DEVLOG.md and spec files with detailed time tracking, struggles, and refactorings after each task session",
+  "trigger": {
+    "type": "agent_execution_complete",
+    "conditions": {
+      "task_completed": true
+    }
+  },
+  "action": {
+    "type": "send_message", 
+    "message": "📝 **AUTO-DEVLOG UPDATE**\n\nTask session completed! Please update documentation with detailed tracking:\n\n**Update DEVLOG.md:**\n- Add current task details to appropriate spec section\n- Include actual time spent vs estimate\n- Document all Kiro commands used with counts and purposes\n- List all files modified/created (highlight NEW and CRITICAL FIX items)\n- Detail any struggles, debugging processes, configuration issues\n- Explain root causes and solutions for problems encountered\n- Update Kiro CLI Usage Statistics table\n- Update Total Time Tracking table with variance analysis\n\n**Update Spec Files:**\n- Add Time Tracking section to tasks.md with variance explanation\n- Add Lessons Learned section documenting critical issues and insights\n- Update requirements.md and design.md with time tracking and key learnings\n\n**Documentation Style:**\n- Use emojis for organization (🚨🔧📊🧪✅❌)\n- Bold important concepts and file names\n- Include specific error messages, file paths, configuration changes\n- Write like an engineering journal showing the debugging journey\n- Focus on helping future developers avoid similar issues\n\n**Make it comprehensive** - capture not just what was built, but HOW it was built, what problems were encountered, and what was learned. Include the struggles and refactorings to reflect the real development process!"
+  },
+  "enabled": true,
+  "scope": "workspace"
+}

@@ -32,3 +32,10 @@
 - [ ] Verify all models have accurate capabilities <!-- id: 16 -->
 - [ ] Add missing models/providers <!-- id: 17 -->
 - [ ] Test with various models <!-- id: 18 -->
+
+### 7. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 19 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 20 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 21 -->
+- [ ] Add test script to package.json <!-- id: 22 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 23 -->

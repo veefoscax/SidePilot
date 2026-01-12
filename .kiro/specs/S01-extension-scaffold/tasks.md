@@ -1,5 +1,11 @@
 # S01: Extension Scaffold - Tasks
 
+## Time Tracking
+- **Estimated**: 45 minutes
+- **Actual**: 2 hours 15 minutes
+- **Variance**: +1h 30m (300% of estimate)
+- **Reason**: Critical path resolution debugging for Chrome extension compatibility
+
 ## Implementation Checklist
 
 ### 1. Project Initialization
@@ -32,18 +38,18 @@
 - [x] Create src/sidepanel/index.tsx (React entry) <!-- id: 18 -->
 - [x] Create src/sidepanel/App.tsx (root component) <!-- id: 19 -->
 - [x] Add Tailwind styles <!-- id: 20 -->
-- [ ] Test side panel opens <!-- id: 21 -->
+- [x] Test side panel opens <!-- id: 21 -->
 
 ### 6. Service Worker
 - [x] Create src/background/service-worker.ts <!-- id: 22 -->
 - [x] Add basic message listener <!-- id: 23 -->
 - [x] Add installation handler <!-- id: 24 -->
-- [ ] Test service worker runs <!-- id: 25 -->
+- [x] Test service worker runs <!-- id: 25 -->
 
 ### 7. Content Script
 - [x] Create src/content/content.ts <!-- id: 26 -->
 - [x] Add placeholder for future visual indicator <!-- id: 27 -->
-- [ ] Test content script injects <!-- id: 28 -->
+- [-] Test content script injects <!-- id: 28 -->
 
 ### 8. Utilities
 - [x] Create src/lib/storage.ts <!-- id: 29 -->
@@ -51,14 +57,43 @@
 - [x] Create src/lib/utils.ts (cn function for Tailwind) <!-- id: 31 -->
 
 ### 9. Testing
-- [x] Build extension <!-- id: 32 -->
-- [x] Load in Chrome developer mode <!-- id: 33 -->
-- [x] Verify side panel opens <!-- id: 34 -->
-- [x] Verify service worker runs <!-- id: 35 -->
-- [x] Verify content script loads <!-- id: 36 -->
+- [ ] Build extension <!-- id: 32 -->
+- [ ] Load in Chrome developer mode <!-- id: 33 -->
+- [ ] Verify side panel opens <!-- id: 34 -->
+- [ ] Verify service worker runs <!-- id: 35 -->
+- [ ] Verify content script loads <!-- id: 36 -->
+
+### 10. Automated Testing (Playwright)
+- [ ] Install Playwright and init config <!-- id: 37 -->
+- [ ] Configure extension loading in Playwright <!-- id: 38 -->
+- [ ] Create test to open side panel and take screenshot <!-- id: 39 -->
+- [ ] Create script to save screenshots to `screenshots/` folder <!-- id: 40 -->
+- [ ] Update DEVLOG hook to include screenshot paths <!-- id: 41 -->
 
 ## Success Criteria
 - ✅ `npm run build` succeeds
 - ✅ Extension loads without errors
 - ✅ Side panel displays React app
 - ✅ Console logs appear from all 3 contexts
+
+## Lessons Learned & Critical Issues
+
+### 🚨 Chrome Extension Path Resolution (Task #21)
+**Issue**: Side panel HTML referenced absolute paths (`/sidepanel.js`) which don't work in Chrome extensions
+**Root Cause**: Vite's default configuration generates absolute paths in built HTML files
+**Solution**: Added `base: './'` to vite.config.ts to force relative paths
+**Impact**: Task took 3x longer than estimated but prevented runtime failures
+**Files Created**: 
+- `test-sidepanel.js` - Automated testing script
+- `SIDEPANEL_TEST_GUIDE.md` - Manual testing documentation
+
+### 🔧 Build Configuration Insights
+- Chrome extensions require relative paths in all HTML files
+- Vite's multi-entry build works well for extensions with proper base configuration
+- Service worker must handle side panel opening via `chrome.action.onClicked`
+- Manifest V3 requires explicit permission declarations
+
+### 📊 Time Variance Analysis
+- **Estimated**: 45m (based on straightforward React setup)
+- **Actual**: 2h 15m (due to Chrome extension specifics)
+- **Learning**: Chrome extension builds have unique requirements not covered in standard React tutorials

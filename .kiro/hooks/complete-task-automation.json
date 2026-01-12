@@ -1,0 +1,17 @@
+{
+  "name": "Complete Task Documentation & Git Automation",
+  "description": "Comprehensive automation that updates DEVLOG.md, spec files with detailed time tracking, struggles, refactorings, lessons learned, and commits everything with proper git messages",
+  "trigger": {
+    "type": "agent_execution_complete",
+    "conditions": {
+      "task_completed": true,
+      "spec_context": true
+    }
+  },
+  "action": {
+    "type": "send_message",
+    "message": "🤖 **COMPLETE TASK AUTOMATION TRIGGERED**\n\nA task has been completed! I will now perform comprehensive documentation and git automation:\n\n## 📝 **STEP 1: Update DEVLOG.md**\n\nI need to add a detailed entry following this format:\n\n```markdown\n### S0X: [Spec Name]\n- **Started**: [timestamp]\n- **Completed**: [current timestamp] \n- **Time**: [actual duration] (originally estimated [estimate])\n- **Kiro Commands Used**:\n  - fsWrite (X times) - [specific purposes]\n  - strReplace (Y times) - [config fixes, debugging]\n  - executePwsh (Z times) - [builds, verification]\n  - readFile (A times) - [debugging, verification]\n  - listDirectory (B times) - [structure verification]\n  - taskStatus (C times) - [progress tracking]\n\n- **Files Modified**:\n  - [file1.ts] ([description])\n  - **NEW**: [new-file.js] ([purpose])\n  - **CRITICAL FIX**: [config-file.ts] ([what was fixed])\n\n#### Major Struggles & Refactorings\n\n**🚨 Critical Issue: [Title]**\n- **Problem**: [detailed description]\n- **Root Cause**: [why it happened]\n- **Discovery Process**: [debugging steps]\n- **Solution**: [how fixed]\n- **Result**: [outcome]\n\n**🔧 Debugging Process**: [step-by-step if applicable]\n**📊 Build/Test Verification**: [what was verified]\n**🧪 Testing Infrastructure Created**: [test files/guides]\n\n- **Summary**: [comprehensive summary with key learnings]\n- **Time Impact**: [why variance occurred]\n```\n\n## 📊 **STEP 2: Update Statistics**\n- Update Kiro CLI Usage Statistics table\n- Update Total Time Tracking table with variance\n- Add new Challenges & Solutions entry if needed\n\n## 📋 **STEP 3: Update Spec Files**\n- **tasks.md**: Add Time Tracking + Lessons Learned sections\n- **requirements.md**: Add Time Tracking with status\n- **design.md**: Add Time Tracking with key learning\n\n## 🔄 **STEP 4: Git Operations**\nAfter documentation updates, I'll:\n1. Stage all changes: `git add .`\n2. Commit with format: `feat(S0X): [task] - [variance note]`\n3. Include detailed commit body with documentation summary\n4. Check if spec complete → push to origin if all tasks done\n\n## 🎯 **Requirements for This Update**\n\nPlease provide me with:\n- **Current task name and ID** from tasks.md\n- **Spec ID** (S01, S02, etc.)\n- **Start time** of this task session\n- **Original time estimate** for comparison\n- **Key struggles/issues** encountered during implementation\n- **Critical fixes or discoveries** made\n- **Files created/modified** during this session\n\nI will then automatically generate the comprehensive documentation following the detailed format above, ensuring we capture:\n✅ Real development struggles and debugging processes\n✅ Detailed time variance analysis\n✅ Specific technical issues and solutions\n✅ Future developer guidance\n✅ Complete tool usage statistics\n✅ Proper git commit with detailed history\n\n**Style**: Engineering journal format with emojis, technical details, and focus on helping future developers understand both the successes and the real challenges of building this extension."
+  },
+  "enabled": true,
+  "scope": "workspace"
+}

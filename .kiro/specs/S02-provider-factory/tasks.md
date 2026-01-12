@@ -78,3 +78,10 @@
 - Tool calls work for Anthropic and OpenAI
 - testConnection() validates API keys
 - Model registry returns correct capabilities
+
+### 11. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 50 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 51 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 52 -->
+- [ ] Add test script to package.json <!-- id: 53 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 54 -->

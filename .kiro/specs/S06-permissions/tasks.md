@@ -54,3 +54,10 @@
 - "Remember" checkbox persists choice
 - Permissions persist after reload
 - Tool-specific overrides work correctly
+
+### 8. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 33 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 34 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 35 -->
+- [ ] Add test script to package.json <!-- id: 36 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 37 -->

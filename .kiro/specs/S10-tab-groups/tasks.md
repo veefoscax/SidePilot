@@ -22,3 +22,10 @@
 - [ ] Test collapse/expand group <!-- id: 12 -->
 - [ ] Test ungroup tabs <!-- id: 13 -->
 - [ ] Test list all groups <!-- id: 14 -->
+
+### 4. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 15 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 16 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 17 -->
+- [ ] Add test script to package.json <!-- id: 18 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 19 -->

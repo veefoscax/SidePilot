@@ -1,5 +1,11 @@
 # S01: Extension Scaffold - Requirements
 
+## Time Tracking
+- **Estimated**: 45 minutes  
+- **Actual**: 2 hours 15 minutes
+- **Status**: ✅ Completed
+- **Key Learning**: Chrome extensions require relative paths in HTML files
+
 ## Feature Description
 Create the foundation Chrome extension with Manifest V3, Vite build system, React 18, TypeScript, and shadcn/ui design system.
 
@@ -46,6 +52,12 @@ Create the foundation Chrome extension with Manifest V3, Vite build system, Reac
 - [ ] Chrome storage wrapper utility
 - [ ] Message passing between components
 - [ ] Basic error handling
+
+### AC5: Automated Visual Testing
+- [ ] Playwright configured for Chrome Extension testing
+- [ ] Automated screenshots of Side Panel
+- [ ] Test results integrated with DEVLOG
+- [ ] Tests running in CI/CD pipeline
 
 ## Dependencies
 None - this is the foundation.

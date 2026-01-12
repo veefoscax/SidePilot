@@ -1,149 +1,148 @@
-# Kiro Hooks for SidePilot
+# Kiro Hooks for SidePilot Development
 
-This directory contains Kiro hooks for automating development workflow tasks.
+This directory contains automated hooks that trigger during development to maintain comprehensive documentation and git history.
 
-## DEVLOG Auto-Updater Hook
+## Available Hooks
 
-Automatically updates `DEVLOG.md` after each task completion with detailed information about what was accomplished.
+### 1. `complete-task-automation.json` ⭐ **RECOMMENDED**
+**Purpose**: Complete automation for task completion documentation
+**Trigger**: After any agent execution that completes a task
+**Features**:
+- ✅ Comprehensive DEVLOG.md updates with detailed time tracking
+- ✅ Documents struggles, debugging processes, and refactorings  
+- ✅ Updates all spec files with time tracking and lessons learned
+- ✅ Updates statistics tables (Kiro CLI usage, time tracking)
+- ✅ Automated git commit with detailed messages
+- ✅ Auto-push when spec is complete
 
-### Files
+### 2. `devlog-updater.json` 
+**Purpose**: Enhanced DEVLOG updater with git integration
+**Trigger**: After task completion in spec context
+**Features**:
+- Detailed DEVLOG.md updates
+- Spec file time tracking
+- Git commit automation
+- Comprehensive documentation format
 
-- `devlog-updater.json` - Hook configuration for Kiro
-- `update-devlog.md` - Documentation and manual instructions
-- `devlog-updater.ps1` - PowerShell script for Windows
-- `devlog-updater.sh` - Bash script for Unix systems
+### 3. `auto-devlog-updater.json`
+**Purpose**: Focused on documentation updates only
+**Trigger**: After task completion
+**Features**:
+- DEVLOG.md updates with engineering journal style
+- Spec file time tracking
+- No git automation
 
-### Setup Instructions
+### 4. `comprehensive-devlog-updater.json`
+**Purpose**: Most detailed documentation template
+**Trigger**: After task completion
+**Features**:
+- Extremely detailed documentation templates
+- Comprehensive analysis requirements
+- Engineering journal style guidelines
 
-#### Option 1: Using Kiro Hook UI (Recommended)
+## Supporting Files
 
-1. Open the command palette in your IDE
-2. Search for "Open Kiro Hook UI" and select it
-3. Click "Create New Hook"
-4. Configure the hook with these settings:
-
-**Basic Settings:**
-- **Name**: `DEVLOG Auto-Updater with Git`
-- **Description**: `Automatically updates DEVLOG.md and commits changes after task completion`
-
-**Trigger:**
-- **Event**: `When an agent execution completes`
-- **Condition**: Task completion detected (look for task status updates)
-
-**Action:**
-- **Type**: `Send a new message to the agent`
-- **Message Template**:
-```
-Task completed! Please:
-
-1. **Update DEVLOG.md** with:
-   - **Task**: [Current task from tasks.md]
-   - **Spec**: [Current spec ID and name]
-   - **Started**: [When task began]
-   - **Completed**: [Current timestamp]
-   - **Time**: [Duration]
-   - **Kiro Commands Used**: [List all tools used: fsWrite, executePwsh, readFile, etc.]
-   - **Files Modified**: [All files created/changed]
-   - **Summary**: [What was accomplished]
-   - **Challenges**: [Any issues and solutions]
-
-2. **Update Kiro CLI Usage Statistics** table with command counts
-
-3. **Git commit** all changes with message format:
-   `feat(specName): task description`
-   
-4. **Check if spec is complete** - if all tasks done, push to origin
-
-Follow the DEVLOG structure from Phase 1 section and update time tracking table.
-```
-
-#### Option 2: Manual Trigger
-
-After completing any task, send this message to Kiro:
-
-```
-Update DEVLOG.md with my completed task. Include timestamp, task details, Kiro commands used, files modified, and a summary. Update the time tracking table.
-```
-
-#### Option 3: PowerShell Script (Windows)
-
+### `auto-commit-devlog.ps1`
+PowerShell script for manual git automation:
 ```powershell
-# Run after completing a task
-.\.kiro\hooks\devlog-updater.ps1 -TaskName "S01.1 Setup Vite config" -SpecName "S01: Extension Scaffold" -CommandsUsed "fsWrite, executePwsh, readFile" -FilesModified "vite.config.ts, package.json" -Summary "Configured Vite for Chrome extension build"
+.\auto-commit-devlog.ps1 "S01" "test side panel opens" "3x estimate due to Vite path resolution"
 ```
 
-### Expected DEVLOG Format
+### `comprehensive-devlog-guide.md`
+Detailed guide for documentation standards, templates, and writing guidelines.
 
-The hook maintains this structure in DEVLOG.md:
+## Hook Installation
 
+1. **Automatic**: Hooks in this directory are automatically available in Kiro
+2. **Manual**: Open Kiro Hook UI (Command Palette → "Open Kiro Hook UI")
+3. **Enable**: Toggle the desired hook to "enabled"
+4. **Test**: Complete a task to see the hook trigger
+
+## Recommended Setup
+
+For comprehensive development documentation, enable:
+1. **`complete-task-automation.json`** - Primary automation
+2. Keep others disabled to avoid duplicate messages
+
+## Documentation Standards
+
+All hooks follow these standards:
+
+### DEVLOG.md Format
 ```markdown
-## Phase X: Phase Name
-**Target Specs**: S0X, S0Y
-
 ### S0X: Spec Name
-- **Started**: 2026-01-12 14:30
-- **Completed**: 2026-01-12 16:45
-- **Time**: 2h 15m
-- **Kiro Commands Used**:
-  - fsWrite (created 5 files)
-  - executePwsh (ran build commands)
-  - readFile (reviewed existing code)
-  - grepSearch (found dependencies)
-- **Files Modified**:
-  - vite.config.ts
-  - package.json
-  - src/sidepanel/App.tsx
-- **Summary**: Successfully set up Vite build system with multi-entry configuration for Chrome extension
-- **Challenges**: Had to resolve TypeScript path alias issues, fixed by updating tsconfig.json
+- **Started**: 2026-01-12 17:30
+- **Completed**: 2026-01-12 19:45  
+- **Time**: 2h 15m (originally estimated 45m)
+- **Kiro Commands Used**: [detailed list with purposes]
+- **Files Modified**: [all files with NEW/CRITICAL FIX highlights]
 
-### S0Y: Next Spec
-- **Started**: 2026-01-12 17:00
-- **In Progress**: Working on provider factory implementation
+#### Major Struggles & Refactorings
+**🚨 Critical Issue**: [detailed problem analysis]
+**🔧 Debugging Process**: [step-by-step debugging]
+**📊 Build Verification**: [what was verified]
+**🧪 Testing Infrastructure**: [test files created]
+
+- **Summary**: [comprehensive with learnings]
+- **Time Impact**: [variance explanation]
 ```
 
-### Kiro CLI Usage Tracking
+### Spec File Updates
+- **tasks.md**: Time tracking + lessons learned
+- **requirements.md**: Time tracking + key learning  
+- **design.md**: Time tracking + critical issue note
 
-The hook also updates this statistics table:
+### Git Commit Format
+```
+feat(S01): test side panel opens - 3x estimate due to Vite path resolution
 
-```markdown
-## Kiro CLI Usage Statistics
+Updated DEVLOG.md with:
+- Detailed time tracking and variance analysis
+- Comprehensive Kiro command usage statistics
+- Major struggles and debugging processes
+- Critical issues with root cause analysis
+- Testing infrastructure and verification steps
+- Lessons learned for future development
 
-| Command | Count | Purpose |
-|---------|-------|---------|
-| fsWrite | 15 | File creation/modification |
-| executePwsh | 8 | Running build/test commands |
-| readFile | 12 | Code review and analysis |
-| grepSearch | 6 | Finding code patterns |
-| getDiagnostics | 4 | Checking for errors |
+Updated spec files (.kiro/specs/S01/) with:
+- Time tracking sections
+- Lessons learned documentation  
+- Critical issue summaries
+
+Timestamp: 2026-01-12 19:45
 ```
 
-### Troubleshooting
+## Writing Style Guidelines
 
-**Hook not triggering automatically?**
-- Check that the hook is enabled in Kiro Hook UI
-- Verify the trigger condition matches your workflow
-- Use manual trigger as fallback
+- **Engineering journal tone** - honest about struggles and successes
+- **Future developer focused** - help others avoid similar issues
+- **Specific and technical** - include file paths, error messages, configs
+- **Emoji organization** - 🚨🔧📊🧪✅❌ for visual structure
+- **Bold formatting** - **CRITICAL FIX**, **NEW**, **Problem**, **Solution**
+- **Process documentation** - show the debugging journey, not just solutions
 
-**Incorrect information captured?**
-- The hook relies on context from your conversation with Kiro
-- Be specific about task names and files when working with Kiro
-- Manually edit DEVLOG.md if needed
+## Manual Trigger
 
-**PowerShell script not running?**
-- Check execution policy: `Get-ExecutionPolicy`
-- If restricted, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+If hooks aren't working, use this prompt:
+```
+Please perform comprehensive task documentation following .kiro/hooks/comprehensive-devlog-guide.md standards. Include detailed time tracking, struggles, refactorings, Kiro command usage, file modifications, and lessons learned. Update DEVLOG.md, spec files, and statistics tables.
+```
 
-### Customization
+## Benefits
 
-You can modify the hook behavior by:
-1. Editing the message template in the hook configuration
-2. Adjusting the PowerShell script parameters
-3. Creating additional hooks for other automation needs
+This automation ensures:
+- ✅ **Complete development history** with real struggles documented
+- ✅ **Accurate time tracking** for future estimation improvement  
+- ✅ **Detailed technical knowledge** for debugging similar issues
+- ✅ **Consistent documentation** across all specs and tasks
+- ✅ **Automated git history** with meaningful commit messages
+- ✅ **Future developer guidance** to avoid repeating mistakes
 
-### Integration with Specs
+## Legacy Files
 
-This hook works best when:
-- Working on tasks from `.kiro/specs/*/tasks.md` files
-- Using Kiro's task status tracking
-- Following the spec-driven development workflow
-- Being explicit about which spec and task you're working on
+The following files are from the original simpler hook system:
+- `devlog-updater.ps1` - Original PowerShell script
+- `devlog-updater.sh` - Original bash script  
+- `update-devlog.md` - Original documentation
+
+These are kept for reference but the new JSON hooks provide much more comprehensive automation.

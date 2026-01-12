@@ -71,3 +71,10 @@
 - Scrolling moves page content
 - Keyboard shortcuts execute
 - Network requests logged accurately
+
+### 10. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 44 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 45 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 46 -->
+- [ ] Add test script to package.json <!-- id: 47 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 48 -->

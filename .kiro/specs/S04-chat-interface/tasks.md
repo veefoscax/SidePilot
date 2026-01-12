@@ -71,3 +71,10 @@
 - Tool uses show expandable cards
 - Errors display with retry option
 - Input area handles Enter/Shift+Enter correctly
+
+### 11. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 43 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 44 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 45 -->
+- [ ] Add test script to package.json <!-- id: 46 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 47 -->

@@ -38,3 +38,10 @@
 - [ ] Test with mock MCP server <!-- id: 22 -->
 - [ ] Test tool discovery <!-- id: 23 -->
 - [ ] Test tool execution <!-- id: 24 -->
+
+### 7. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 25 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 26 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 27 -->
+- [ ] Add test script to package.json <!-- id: 28 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 29 -->

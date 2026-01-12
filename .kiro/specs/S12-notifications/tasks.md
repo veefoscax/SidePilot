@@ -29,3 +29,10 @@
 - [ ] Test notifications appear <!-- id: 15 -->
 - [ ] Test disable toggle works <!-- id: 16 -->
 - [ ] Test notification click opens extension <!-- id: 17 -->
+
+### 6. Automated Testing (Playwright)
+- [ ] Install Playwright dependencies <!-- id: 18 -->
+- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 19 -->
+- [ ] Create integration tests for UI/Logic <!-- id: 20 -->
+- [ ] Add test script to package.json <!-- id: 21 -->
+- [ ] Update DEVLOG with test results and screenshots <!-- id: 22 -->

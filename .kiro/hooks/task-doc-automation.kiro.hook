@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Complete Task Documentation & Git Automation",
+  "description": "Automatically updates DEVLOG.md and spec files with detailed time tracking, struggles, refactorings, and lessons learned after each task completion, then commits changes",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "🤖 **COMPLETE TASK AUTOMATION TRIGGERED**\n\nA task has been completed! I will now perform comprehensive documentation and git automation:\n\n## 📝 **STEP 1: Update DEVLOG.md**\nI need to add a detailed entry following this format:\n```markdown\n### S0X: [Spec Name]\n- **Started**: [timestamp]\n- **Completed**: [current timestamp] \n- **Time**: [actual duration] (originally estimated [estimate])\n- **Kiro Commands Used**:\n  - fsWrite (X times) - [specific purposes]\n  - strReplace (Y times) - [config fixes, debugging]\n  - executePwsh (Z times) - [builds, verification]\n  - readFile (A times) - [debugging, verification]\n  - listDirectory (B times) - [structure verification]\n  - taskStatus (C times) - [progress tracking]\n- **Files Modified**:\n  - [file1.ts] ([description])\n  - **NEW**: [new-file.js] ([purpose])\n  - **CRITICAL FIX**: [config-file.ts] ([what was fixed])\n#### Major Struggles & Refactorings\n**🚨 Critical Issue: [Title]**\n- **Problem**: [detailed description]\n- **Root Cause**: [why it happened]\n- **Discovery Process**: [debugging steps]\n- **Solution**: [how fixed]\n- **Result**: [outcome]\n**🔧 Debugging Process**: [step-by-step if applicable]\n**📊 Build/Test Verification**: [what was verified]\n**🧪 Testing Infrastructure Created**: [test files/guides]\n- **Summary**: [comprehensive summary with key learnings]\n- **Time Impact**: [why variance occurred]\n```\n\n## 📝 **STEP 2: Update Spec Files**\nUpdate any relevant spec files with completion status and lessons learned.\n\n## 🔄 **STEP 3: Git Automation**\nCommit all changes with a descriptive message including the task completed and key outcomes.\n\nPlease perform these steps now to document the completed task comprehensively."
+  }
+}
