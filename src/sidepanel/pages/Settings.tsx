@@ -29,6 +29,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     apiKey,
     baseUrl,
     selectedModel,
+    selectedModels,
     availableModels,
     isConnected,
     isLoading,
@@ -38,12 +39,13 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     setApiKey,
     setBaseUrl,
     setModel,
+    toggleModel,
     testConnection,
     initializeProvider,
     clearError,
   } = useProviderStore();
   
-  // Get current model capabilities
+  // Get current model capabilities (use first selected model for display)
   const currentModel = availableModels.find(m => m.id === selectedModel);
   
   // Initialize provider on mount
@@ -135,8 +137,8 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           <CardContent className="space-y-4">
             {/* Model Selector */}
             <ModelSelector
-              value={selectedModel}
-              onChange={setModel}
+              selectedModels={selectedModels}
+              onToggleModel={toggleModel}
               models={availableModels}
               disabled={isLoading}
               isLoading={isLoadingModels}
@@ -176,52 +178,6 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               isConnected={isConnected}
               error={error}
             />
-          </CardContent>
-        </Card>
-        
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Common provider configurations
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setProvider('anthropic')}
-                disabled={isLoading}
-              >
-                Use Claude
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setProvider('openai')}
-                disabled={isLoading}
-              >
-                Use GPT
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setProvider('google')}
-                disabled={isLoading}
-              >
-                Use Gemini
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setProvider('ollama')}
-                disabled={isLoading}
-              >
-                Use Local (Ollama)
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>

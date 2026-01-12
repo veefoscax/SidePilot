@@ -1,38 +1,35 @@
 /**
  * Model Selector Component
  * 
- * Dropdown for selecting models filtered by the current provider.
- * Shows model names, context windows, and capabilities.
+ * Multi-select interface for choosing models from the current provider.
+ * Shows model names with checkboxes and displays selected models with capabilities.
  */
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ModelInfo } from '@/providers/types';
 
 interface ModelSelectorProps {
-  value: string;
-  onChange: (modelId: string) => void;
+  selectedModels: string[];
+  onToggleModel: (modelId: string) => void;
   models: ModelInfo[];
   disabled?: boolean;
   isLoading?: boolean;
 }
 
-export function ModelSelector({ value, onChange, models, disabled, isLoading }: ModelSelectorProps) {
+export function ModelSelector({ selectedModels, onToggleModel, models, disabled, isLoading }: ModelSelectorProps) {
   if (isLoading) {
     return (
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Model
+          Models
         </label>
         {/* Skeleton loading effect */}
-        <div className="relative">
-          <div className="w-full h-10 bg-muted rounded-md border animate-pulse" />
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-            <div className="w-4 h-4 bg-muted-foreground/30 rounded animate-pulse" />
-          </div>
-        </div>
-        <div className="space-y-1">
-          <div className="h-3 bg-muted rounded animate-pulse w-3/4" />
-          <div className="h-3 bg-muted rounded animate-pulse w-1/2" />
+        <div className="space-y-2">
+          <div className="h-10 bg-muted rounded-md border animate-pulse" />
+          <div className="h-10 bg-muted rounded-md border animate-pulse" />
+          <div className="h-10 bg-muted rounded-md border animate-pulse" />
         </div>
       </div>
     );
@@ -42,7 +39,7 @@ export function ModelSelector({ value, onChange, models, disabled, isLoading }: 
     return (
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Model
+          Models
         </label>
         <div className="text-sm text-muted-foreground">
           Add an API key to see available models
@@ -52,48 +49,57 @@ export function ModelSelector({ value, onChange, models, disabled, isLoading }: 
   }
   
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <label className="text-sm font-medium text-foreground">
-        Model
+        Models ({selectedModels.length} selected)
       </label>
       
-      <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a model" />
-        </SelectTrigger>
-        <SelectContent>
-          {models.map((model) => (
-            <SelectItem key={model.id} value={model.id}>
-              <span className="font-medium">{model.name}</span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      
-      {/* Selected model info */}
-      {value && (
-        <div className="text-xs text-muted-foreground space-y-1">
-          {(() => {
-            const selectedModel = models.find(m => m.id === value);
-            if (!selectedModel) return null;
-            
-            return (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="shrink-0">Context:</span>
-                  <span className="text-right">{(selectedModel.capabilities.contextWindow / 1000).toFixed(0)}K tokens</span>
-                </div>
-                {selectedModel.pricing && (
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="shrink-0">Pricing:</span>
-                    <span className="text-right truncate min-w-0 flex-1">
-                      ${selectedModel.pricing.inputPer1M.toFixed(2)} / ${selectedModel.pricing.outputPer1M.toFixed(2)} per 1M
+      {/* Model list with checkboxes */}
+      <div className="space-y-2 max-h-60 overflow-y-auto">
+        {models.map((model) => (
+          <Card key={model.id} className="p-3">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id={model.id}
+                checked={selectedModels.includes(model.id)}
+                onCheckedChange={() => onToggleModel(model.id)}
+                disabled={disabled}
+              />
+              <div className="flex-1 min-w-0">
+                <label 
+                  htmlFor={model.id}
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  {model.name}
+                </label>
+                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                  <span>{(model.capabilities.contextWindow / 1000).toFixed(0)}K context</span>
+                  {model.pricing && (
+                    <span>
+                      ${model.pricing.inputPer1M.toFixed(2)}/${model.pricing.outputPer1M.toFixed(2)} per 1M
                     </span>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            );
-          })()}
+            </div>
+          </Card>
+        ))}
+      </div>
+      
+      {/* Selected models summary */}
+      {selectedModels.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs font-medium text-muted-foreground">Selected Models:</div>
+          <div className="flex flex-wrap gap-1">
+            {selectedModels.map((modelId) => {
+              const model = models.find(m => m.id === modelId);
+              return model ? (
+                <Badge key={modelId} variant="secondary" className="text-xs">
+                  {model.name}
+                </Badge>
+              ) : null;
+            })}
+          </div>
         </div>
       )}
     </div>

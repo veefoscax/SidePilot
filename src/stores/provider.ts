@@ -17,6 +17,7 @@ interface ProviderState {
   apiKey: string;
   baseUrl?: string;
   selectedModel: string;
+  selectedModels: string[]; // Array of selected model IDs
   
   // Runtime state
   provider: LLMProvider | null;
@@ -77,6 +78,7 @@ export const useProviderStore = create<ProviderState>()(
       apiKey: '',
       baseUrl: undefined,
       selectedModel: 'gpt-4o',
+      selectedModels: [], // Start with empty array
       
       // Runtime state
       provider: null,
@@ -93,6 +95,7 @@ export const useProviderStore = create<ProviderState>()(
           isConnected: false,
           availableModels: [], // Clear models while loading
           selectedModel: '',
+          selectedModels: [], // Clear selected models
           error: null
         });
         
@@ -137,6 +140,7 @@ export const useProviderStore = create<ProviderState>()(
           set({ 
             availableModels: models,
             selectedModel: models.length > 0 ? models[0].id : '',
+            selectedModels: models.length > 0 ? [models[0].id] : [], // Auto-select first model
             isLoadingModels: false,
           });
         } catch (error) {
@@ -144,6 +148,7 @@ export const useProviderStore = create<ProviderState>()(
           set({ 
             availableModels: [],
             selectedModel: '',
+            selectedModels: [], // Clear selected models
             isLoadingModels: false,
             error: `Failed to load models: ${error instanceof Error ? error.message : 'Unknown error'}`
           });
@@ -166,7 +171,7 @@ export const useProviderStore = create<ProviderState>()(
           // If API key is cleared, clear models (except for Ollama)
           const { selectedProvider } = get();
           if (selectedProvider !== 'ollama') {
-            set({ availableModels: [], selectedModel: '' });
+            set({ availableModels: [], selectedModel: '', selectedModels: [] });
           }
         }
       },
@@ -177,6 +182,43 @@ export const useProviderStore = create<ProviderState>()(
       
       setModel: (modelId: string) => {
         set({ selectedModel: modelId, error: null });
+      },
+      
+      addModel: (modelId: string) => {
+        const { selectedModels } = get();
+        if (!selectedModels.includes(modelId)) {
+          const newSelectedModels = [...selectedModels, modelId];
+          set({ 
+            selectedModels: newSelectedModels,
+            selectedModel: modelId, // Set as current model
+            error: null 
+          });
+        }
+      },
+      
+      removeModel: (modelId: string) => {
+        const { selectedModels, selectedModel } = get();
+        const newSelectedModels = selectedModels.filter(id => id !== modelId);
+        
+        // If we're removing the current model, switch to another one
+        const newCurrentModel = modelId === selectedModel 
+          ? (newSelectedModels[0] || '') 
+          : selectedModel;
+          
+        set({ 
+          selectedModels: newSelectedModels,
+          selectedModel: newCurrentModel,
+          error: null 
+        });
+      },
+      
+      toggleModel: (modelId: string) => {
+        const { selectedModels } = get();
+        if (selectedModels.includes(modelId)) {
+          get().removeModel(modelId);
+        } else {
+          get().addModel(modelId);
+        }
       },
       
       testConnection: async () => {
