@@ -50,12 +50,7 @@
 - [x] Success/error feedback with Alert components <!-- id: 32 -->
 - [x] Disable while testing and proper state management <!-- id: 33 -->
 
-### 8. General Settings
-- [ ] Create src/components/settings/LanguageSelector.tsx <!-- id: 53 -->
-- [ ] Implement language state in provider store <!-- id: 54 -->
-- [ ] Add Portuguese/English translations <!-- id: 55 -->
-
-### 9. Settings Page ✅ COMPLETED
+### 8. Settings Page ✅ COMPLETED
 - [x] Create src/sidepanel/pages/Settings.tsx <!-- id: 34 -->
 - [x] Compose all components with proper layout <!-- id: 35 -->
 - [x] Add navigation from main App page <!-- id: 36 -->

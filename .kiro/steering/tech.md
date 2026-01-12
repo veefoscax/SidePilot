@@ -52,6 +52,48 @@ v4 supports multiple component libraries:
 - CLI auto-detects library and applies transformations
 - No need to reinstall existing components when switching styles
 
+### ⚠️ Nova Style Component Installation Workaround
+**Problem**: Some components (like `alert-dialog`) are not yet available in the nova style registry.
+**Error**: `The item at https://ui.shadcn.com/r/styles/nova/alert-dialog.json was not found`
+
+**Solution**: Download directly from the default registry using curl:
+```bash
+# Get the component JSON from default registry
+curl -s https://ui.shadcn.com/r/styles/default/COMPONENT-NAME.json
+
+# Extract the content field and fix import paths
+# Change: "@/registry/default/ui/button" 
+# To: "@/components/ui/button"
+
+# Install required dependencies (check dependencies field in JSON)
+npm install @radix-ui/react-alert-dialog
+```
+
+**Components Known to Have This Issue**:
+- alert-dialog ✅ (Fixed using curl method)
+- (Add others as discovered)
+
+**Root Cause**: Nova style registry URLs return 404 for some components.
+**Proper Fix**: The CLI should fall back to default registry when nova is unavailable, but currently doesn't.
+
+### Component Installation Issues & Solutions
+**Problem**: Nova style components may not be available in registry yet
+**Solution**: 
+1. Manually create component using Radix UI pattern (copy from default style)
+2. Install required Radix UI dependency: `npm install @radix-ui/react-[component-name]`
+3. Component will automatically use Nova styling via CSS variables
+
+**Example**: For alert-dialog component:
+```bash
+# This may fail for nova style
+npx shadcn@latest add alert-dialog
+
+# Solution: Create component manually and install dependency
+npm install @radix-ui/react-alert-dialog
+```
+
+**Root Cause**: New visual styles (nova, maia, lyra, mira) are recent additions and some components may not have registry entries yet. The underlying Radix UI components work the same way, just need manual creation.
+
 ## Architecture Decisions
 
 ### Provider Factory Pattern
