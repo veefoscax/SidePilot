@@ -1,7 +1,7 @@
 # Product Vision: SidePilot
 
 ## Overview
-**SidePilot** is a Chrome extension that enables AI-powered browser automation using **any LLM provider** the user chooses—not just Claude.
+**SidePilot** is a Chrome extension that enables AI-powered browser automation using **any LLM provider** the user chooses.
 
 ## Tagline
 > "Your AI Co-Pilot in the Browser"
@@ -13,7 +13,7 @@
 - Power users wanting fine-grained control over AI models
 
 ## Core Value Proposition
-**"Bring Your Own LLM"** - Use any of 40+ LLM providers (Anthropic, OpenAI, Google, DeepSeek, Ollama, etc.) for browser automation. Unlike Claude's extension which only works with Claude, SidePilot is provider-agnostic.
+**"Bring Your Own LLM"** - Use any of 40+ LLM providers (Anthropic, OpenAI, Google, DeepSeek, Ollama, etc.) for browser automation. SidePilot is completely provider-agnostic.
 
 ## Key Features
 

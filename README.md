@@ -2,7 +2,7 @@
 
 > 🚀 Your AI Co-Pilot in the Browser
 
-**SidePilot** is a Chrome extension that brings AI-powered browser automation to any LLM provider—not just Claude.
+**SidePilot** is a Chrome extension that brings AI-powered browser automation to any LLM provider you choose.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Chrome-green.svg)
@@ -14,9 +14,7 @@
 
 ### 🔌 Multi-Provider Support
 Use **40+ LLM providers** with a single extension:
-- Anthropic (Claude)
-- OpenAI (GPT-4o, o1, o3)
-- Google (Gemini)
+- Anthropic, OpenAI, Google
 - DeepSeek, Groq, Mistral
 - Z.AI, Moonshot, Together
 - **Local**: Ollama, LM Studio
@@ -34,7 +32,7 @@ Visual indicators show what each model supports:
 - ⚡ Streaming (real-time responses)
 - 🧠 Reasoning (thinking mode)
 
-### 🔗 MCP Connector (Innovation!)
+### 🔗 MCP Connector
 Expose browser tools to external LLMs like Cline or Aider.
 
 ---
@@ -114,11 +112,10 @@ sidepilot/
 │   ├── tools/          # Browser tools (13+)
 │   ├── lib/            # Utilities
 │   └── components/     # Shared components
-├── .kiro/
-│   ├── steering/       # Project context
-│   ├── specs/          # Feature specifications
-│   └── prompts/        # Kiro prompts
-└── extension-analysis/ # Claude extension research
+└── .kiro/
+    ├── steering/       # Project context
+    ├── specs/          # Feature specifications
+    └── prompts/        # Kiro prompts
 ```
 
 ---
@@ -160,6 +157,5 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- Inspired by Claude for Chrome extension
-- Multi-provider architecture based on [Cline](https://github.com/cline/cline)
+- Multi-provider architecture inspired by [Cline](https://github.com/cline/cline)
 - Built with [Kiro](https://kiro.dev) for the Dynamous Hackathon
