@@ -1,4 +1,36 @@
+import { useEffect, useState } from 'react';
+import { initializeTheme } from '@/lib/theme';
+
 function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Initialize theme detection
+    initializeTheme().then((detectedTheme) => {
+      setTheme(detectedTheme);
+      setIsLoading(false);
+      
+      // Notify service worker of the detected theme to update icons
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        chrome.runtime.sendMessage({
+          type: 'THEME_CHANGED',
+          theme: detectedTheme
+        }).catch(() => {
+          // Ignore if service worker is not available
+        });
+      }
+    });
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-muted-foreground">Loading SidePilot...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-md mx-auto p-6">
@@ -43,12 +75,16 @@ function App() {
 
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-primary">✨</span>
-              <h3 className="font-medium text-primary">Nova Theme Active</h3>
+              <span className="text-primary">🎨</span>
+              <h3 className="font-medium text-primary">Chrome Theme Adaptive</h3>
             </div>
-            <p className="text-xs text-primary/80">
-              Using shadcn/ui Nova style with Cyan theme and Figtree font
+            <p className="text-xs text-primary/80 mb-2">
+              Current theme: <span className="font-mono">{theme}</span> • Nova style with Chrome-matched colors
             </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className={`w-3 h-3 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'} border`}></div>
+              <span>Follows Chrome's {theme} theme</span>
+            </div>
           </div>
         </main>
       </div>

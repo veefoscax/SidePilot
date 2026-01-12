@@ -33,25 +33,26 @@
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    /* Chrome Dark Theme Colors - matches Chrome's actual dark theme palette */
+    --background: 218 11% 12%;        /* #1f1f23 - Chrome's dark background */
+    --foreground: 210 20% 98%;        /* #f9f9fb - Chrome's dark text */
+    --card: 218 11% 15%;              /* #26262a - Chrome's dark card background */
+    --card-foreground: 210 20% 98%;   /* #f9f9fb - Chrome's dark card text */
+    --popover: 218 11% 15%;           /* #26262a - Chrome's dark popover */
+    --popover-foreground: 210 20% 98%; /* #f9f9fb - Chrome's dark popover text */
+    --primary: 210 20% 98%;           /* #f9f9fb - Chrome's dark primary */
+    --primary-foreground: 218 11% 12%; /* #1f1f23 - Chrome's dark primary text */
+    --secondary: 217 10% 20%;         /* #323236 - Chrome's dark secondary */
+    --secondary-foreground: 210 20% 98%; /* #f9f9fb - Chrome's dark secondary text */
+    --muted: 217 10% 20%;             /* #323236 - Chrome's dark muted */
+    --muted-foreground: 215 16% 65%;  /* #9ca3af - Chrome's dark muted text */
+    --accent: 217 10% 20%;            /* #323236 - Chrome's dark accent */
+    --accent-foreground: 210 20% 98%; /* #f9f9fb - Chrome's dark accent text */
+    --destructive: 0 62.8% 30.6%;     /* Keep destructive red */
+    --destructive-foreground: 0 0% 98%; /* White text on red */
+    --border: 217 10% 25%;            /* #3f3f46 - Chrome's dark border */
+    --input: 217 10% 25%;             /* #3f3f46 - Chrome's dark input */
+    --ring: 212 12% 87%;              /* #d1d5db - Chrome's dark focus ring */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
