@@ -4,20 +4,58 @@
 
 ---
 
-## Phase 0: Preparation (Pre-Kiro)
+## Phase 0: Research & Spec Generation (With Kiro)
 **Date**: 2026-01-11 to 2026-01-12
 **Time Spent**: ~4 hours
 
 ### Completed
 - ✅ Researched browser automation extension patterns
 - ✅ Analyzed multi-provider architectures (like Cline)
-- ✅ Created 15 detailed specs (S01-S15)
+- ✅ **Used Kiro to generate all 15 specs** via 3-phase workflow
 - ✅ Set up .kiro/steering/ and .kiro/specs/ structure
+
+### Kiro Spec Generation Workflow
+
+Following Cole's recommendation from the [Dynamous Hackathon template](https://github.com/coleam00/dynamous-kiro-hackathon), we used Kiro's spec-driven development:
+
+```
+# Example prompts used in Kiro:
+"Generate spec for multi-provider LLM factory with 40+ providers"
+"Generate spec for browser automation using Chrome DevTools Protocol"
+"Generate spec for chat interface with streaming and tool use"
+"#spec:S01 refine the manifest to use SidePilot branding"
+"#spec:S02 add capability detection for vision, tools, streaming"
+```
+
+Each spec followed Kiro's 3-phase workflow:
+1. **Requirements** → EARS notation acceptance criteria
+2. **Design** → Technical architecture with mermaid diagrams  
+3. **Tasks** → Discrete implementation checklist
 
 ### Key Decisions
 - **Name**: "SidePilot" - AI co-pilot in side panel
 - **Stack**: Vite + React 18 + TypeScript + shadcn/ui + Zustand
 - **Innovation**: MCP Connector to expose tools to external LLMs
+
+### References & Pattern Studies
+
+We studied the following projects to understand best practices for browser automation and multi-LLM architectures:
+
+| Project | What We Learned |
+|---------|-----------------|
+| [Cline](https://github.com/cline/cline) | Multi-provider factory pattern with 40+ LLMs, model capability detection, OpenAI-compatible API pattern |
+| [Claude for Chrome](https://chromewebstore.google.com/detail/claude-for-chrome) | CDP wrapper patterns, browser tool implementations, permission system, workflow recording |
+| [browser-use](https://github.com/browser-use/browser-use) | Python browser automation patterns, accessibility tree parsing |
+| [Playwright](https://github.com/microsoft/playwright) | Input event simulation, screenshot capture, element targeting |
+| [Puppeteer](https://github.com/puppeteer/puppeteer) | Chrome DevTools Protocol usage, debugger attachment |
+| [MCP Specification](https://modelcontextprotocol.io/) | Tool schema format, server/client architecture |
+
+#### Key Patterns Extracted
+- **Provider Factory**: Single interface for all LLMs with capability detection
+- **CDP Wrapper**: Encapsulated debugger.attach/sendCommand for mouse/keyboard/screenshot
+- **Permission System**: Domain-based rules with per-tool overrides
+- **Tool Registry**: Centralized tool definitions with Anthropic schema generation
+- **Workflow Recording**: Step capture with screenshots for teaching AI
 
 ---
 
