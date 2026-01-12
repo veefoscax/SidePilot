@@ -3,47 +3,47 @@
 ## Implementation Checklist
 
 ### 1. Type Definitions
-- [ ] Create src/providers/types.ts <!-- id: 0 -->
-- [ ] Define ProviderType union (20+ types) <!-- id: 1 -->
-- [ ] Define ModelCapabilities interface <!-- id: 2 -->
-- [ ] Define ModelInfo interface <!-- id: 3 -->
-- [ ] Define ProviderConfig interface <!-- id: 4 -->
-- [ ] Define ChatMessage, ContentPart interfaces <!-- id: 5 -->
-- [ ] Define ChatOptions interface <!-- id: 6 -->
-- [ ] Define LLMResponse interface <!-- id: 7 -->
-- [ ] Define StreamChunk interface <!-- id: 8 -->
-- [ ] Define ToolDefinition, ToolCall interfaces <!-- id: 9 -->
-- [ ] Define LLMProvider interface <!-- id: 10 -->
+- [x] Create src/providers/types.ts <!-- id: 0 -->
+- [x] Define ProviderType union (20+ types) <!-- id: 1 -->
+- [x] Define ModelCapabilities interface <!-- id: 2 -->
+- [x] Define ModelInfo interface <!-- id: 3 -->
+- [x] Define ProviderConfig interface <!-- id: 4 -->
+- [x] Define ChatMessage, ContentPart interfaces <!-- id: 5 -->
+- [x] Define ChatOptions interface <!-- id: 6 -->
+- [x] Define LLMResponse interface <!-- id: 7 -->
+- [x] Define StreamChunk interface <!-- id: 8 -->
+- [x] Define ToolDefinition, ToolCall interfaces <!-- id: 9 -->
+- [x] Define LLMProvider interface <!-- id: 10 -->
 
 ### 2. Model Registry
-- [ ] Create src/providers/models-registry.ts <!-- id: 11 -->
-- [ ] Add Claude models (sonnet, haiku, opus) <!-- id: 12 -->
-- [ ] Add OpenAI models (gpt-4o, o1, o3) <!-- id: 13 -->
-- [ ] Add Google models (gemini-2.0) <!-- id: 14 -->
-- [ ] Add DeepSeek models <!-- id: 15 -->
-- [ ] Add Groq models <!-- id: 16 -->
-- [ ] Add local model defaults (ollama) <!-- id: 17 -->
-- [ ] Add getModelInfo() helper <!-- id: 18 -->
+- [x] Create src/providers/models-registry.ts <!-- id: 11 -->
+- [x] Add Claude models (sonnet, haiku, opus) <!-- id: 12 -->
+- [x] Add OpenAI models (gpt-4o, o1, o3) <!-- id: 13 -->
+- [x] Add Google models (gemini-2.0) <!-- id: 14 -->
+- [x] Add DeepSeek models <!-- id: 15 -->
+- [x] Add Groq models <!-- id: 16 -->
+- [x] Add local model defaults (ollama) <!-- id: 17 -->
+- [x] Add getModelInfo() helper <!-- id: 18 -->
 
 ### 3. Base Provider
-- [ ] Create src/providers/base-provider.ts <!-- id: 19 -->
-- [ ] Implement abstract BaseProvider class <!-- id: 20 -->
-- [ ] Add testConnection() default implementation <!-- id: 21 -->
+- [x] Create src/providers/base-provider.ts <!-- id: 19 -->
+- [x] Implement abstract BaseProvider class <!-- id: 20 -->
+- [x] Add testConnection() default implementation <!-- id: 21 -->
 
 ### 4. Anthropic Provider
-- [ ] Create src/providers/anthropic.ts <!-- id: 22 -->
-- [ ] Implement chat() with Anthropic API format <!-- id: 23 -->
-- [ ] Implement stream() with SSE parsing <!-- id: 24 -->
-- [ ] Handle tool_use blocks <!-- id: 25 -->
-- [ ] Handle vision (base64 images) <!-- id: 26 -->
+- [x] Create src/providers/anthropic.ts <!-- id: 22 -->
+- [x] Implement chat() with Anthropic API format <!-- id: 23 -->
+- [x] Implement stream() with SSE parsing <!-- id: 24 -->
+- [x] Handle tool_use blocks <!-- id: 25 -->
+- [x] Handle vision (base64 images) <!-- id: 26 -->
 
 ### 5. OpenAI Provider
-- [ ] Create src/providers/openai.ts <!-- id: 27 -->
-- [ ] Implement chat() with OpenAI format <!-- id: 28 -->
-- [ ] Implement stream() with SSE <!-- id: 29 -->
-- [ ] Support OpenAI-compatible APIs (groq, mistral, etc.) <!-- id: 30 -->
-- [ ] Handle tool calls <!-- id: 31 -->
-- [ ] Handle vision <!-- id: 32 -->
+- [x] Create src/providers/openai.ts <!-- id: 27 -->
+- [x] Implement chat() with OpenAI format <!-- id: 28 -->
+- [x] Implement stream() with SSE <!-- id: 29 -->
+- [x] Support OpenAI-compatible APIs (groq, mistral, etc.) <!-- id: 30 -->
+- [x] Handle tool calls <!-- id: 31 -->
+- [x] Handle vision <!-- id: 32 -->
 
 ### 6. Google Provider
 - [ ] Create src/providers/google.ts <!-- id: 33 -->
@@ -61,9 +61,9 @@
 - [ ] Add listModels() to fetch local models <!-- id: 41 -->
 
 ### 9. Factory Function
-- [ ] Create src/providers/factory.ts <!-- id: 42 -->
-- [ ] Map provider types to classes <!-- id: 43 -->
-- [ ] Implement createProvider() <!-- id: 44 -->
+- [x] Create src/providers/factory.ts <!-- id: 42 -->
+- [x] Map provider types to classes <!-- id: 43 -->
+- [x] Implement createProvider() <!-- id: 44 -->
 
 ### 10. Testing
 - [ ] Test Anthropic provider with API key <!-- id: 45 -->
