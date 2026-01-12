@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 
-import { MultiProviderSettings } from '@/components/settings/MultiProviderSettings';
+import { MultiProviderManager } from '@/components/settings/MultiProviderManager';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -36,7 +36,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
       </div>
       
       <div className="p-4">
-        <MultiProviderSettings />
+        <MultiProviderManager />
       </div>
     </div>
   );

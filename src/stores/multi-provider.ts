@@ -7,7 +7,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ProviderType, ModelInfo, LLMProvider } from '@/providers/types';
+import { ProviderType, ModelInfo } from '@/providers/types';
 import { createProvider } from '@/providers/factory';
 
 interface ProviderConfig {
