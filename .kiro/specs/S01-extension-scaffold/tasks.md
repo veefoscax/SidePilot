@@ -3,59 +3,59 @@
 ## Implementation Checklist
 
 ### 1. Project Initialization
-- [ ] Create package.json with dependencies
-- [ ] Install Vite, React, TypeScript
-- [ ] Install Tailwind CSS
-- [ ] Configure tsconfig.json
+- [ ] Create package.json with dependencies <!-- id: 0 -->
+- [ ] Install Vite, React, TypeScript <!-- id: 1 -->
+- [ ] Install Tailwind CSS <!-- id: 2 -->
+- [ ] Configure tsconfig.json <!-- id: 3 -->
 
 ### 2. Vite Configuration
-- [ ] Create vite.config.ts
-- [ ] Configure multi-entry build (sidepanel, service-worker, content)
-- [ ] Add path aliases (@/)
-- [ ] Test build output
+- [ ] Create vite.config.ts <!-- id: 4 -->
+- [ ] Configure multi-entry build (sidepanel, service-worker, content) <!-- id: 5 -->
+- [ ] Add path aliases (@/) <!-- id: 6 -->
+- [ ] Test build output <!-- id: 7 -->
 
 ### 3. Tailwind & shadcn Setup
-- [ ] Create tailwind.config.js with dark mode
-- [ ] Create globals.css with CSS variables
-- [ ] Create components.json for shadcn
-- [ ] Install base shadcn components (button, input, card)
+- [ ] Create tailwind.config.js with dark mode <!-- id: 8 -->
+- [ ] Create globals.css with CSS variables <!-- id: 9 -->
+- [ ] Create components.json for shadcn <!-- id: 10 -->
+- [ ] Install base shadcn components (button, input, card) <!-- id: 11 -->
 
 ### 4. Manifest V3
-- [ ] Create manifest.json
-- [ ] Configure permissions
-- [ ] Register side panel
-- [ ] Register service worker
-- [ ] Register content script
+- [ ] Create manifest.json <!-- id: 12 -->
+- [ ] Configure permissions <!-- id: 13 -->
+- [ ] Register side panel <!-- id: 14 -->
+- [ ] Register service worker <!-- id: 15 -->
+- [ ] Register content script <!-- id: 16 -->
 
 ### 5. Side Panel App
-- [ ] Create src/sidepanel/index.html
-- [ ] Create src/sidepanel/index.tsx (React entry)
-- [ ] Create src/sidepanel/App.tsx (root component)
-- [ ] Add Tailwind styles
-- [ ] Test side panel opens
+- [ ] Create src/sidepanel/index.html <!-- id: 17 -->
+- [ ] Create src/sidepanel/index.tsx (React entry) <!-- id: 18 -->
+- [ ] Create src/sidepanel/App.tsx (root component) <!-- id: 19 -->
+- [ ] Add Tailwind styles <!-- id: 20 -->
+- [ ] Test side panel opens <!-- id: 21 -->
 
 ### 6. Service Worker
-- [ ] Create src/background/service-worker.ts
-- [ ] Add basic message listener
-- [ ] Add installation handler
-- [ ] Test service worker runs
+- [ ] Create src/background/service-worker.ts <!-- id: 22 -->
+- [ ] Add basic message listener <!-- id: 23 -->
+- [ ] Add installation handler <!-- id: 24 -->
+- [ ] Test service worker runs <!-- id: 25 -->
 
 ### 7. Content Script
-- [ ] Create src/content/content.ts
-- [ ] Add placeholder for future visual indicator
-- [ ] Test content script injects
+- [ ] Create src/content/content.ts <!-- id: 26 -->
+- [ ] Add placeholder for future visual indicator <!-- id: 27 -->
+- [ ] Test content script injects <!-- id: 28 -->
 
 ### 8. Utilities
-- [ ] Create src/lib/storage.ts
-- [ ] Create src/lib/messaging.ts
-- [ ] Create src/lib/utils.ts (cn function for Tailwind)
+- [ ] Create src/lib/storage.ts <!-- id: 29 -->
+- [ ] Create src/lib/messaging.ts <!-- id: 30 -->
+- [ ] Create src/lib/utils.ts (cn function for Tailwind) <!-- id: 31 -->
 
 ### 9. Testing
-- [ ] Build extension
-- [ ] Load in Chrome developer mode
-- [ ] Verify side panel opens
-- [ ] Verify service worker runs
-- [ ] Verify content script loads
+- [ ] Build extension <!-- id: 32 -->
+- [ ] Load in Chrome developer mode <!-- id: 33 -->
+- [ ] Verify side panel opens <!-- id: 34 -->
+- [ ] Verify service worker runs <!-- id: 35 -->
+- [ ] Verify content script loads <!-- id: 36 -->
 
 ## Success Criteria
 - `npm run build` succeeds

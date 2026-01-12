@@ -145,11 +145,12 @@ _(To be filled during development)_
 
 | Command | Count | Purpose |
 |---------|-------|---------|
-| kiro-cli | - | Start session |
-| /spec | - | Generate specs |
-| /implement-spec | - | Implement specs |
-| /devlog | - | Update log |
-| Chat queries | - | Implementation help |
+| fsWrite | 15 | File creation (package.json, configs, React components) |
+| strReplace | 8 | Configuration updates and fixes |
+| executePwsh | 6 | npm install, build, type-check commands |
+| listDirectory | 4 | Verify build output and directory structure |
+| readMultipleFiles | 2 | Read spec files and prompts |
+| readFile | 1 | Check task format |
 
 ---
 
