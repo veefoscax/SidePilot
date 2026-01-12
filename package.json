@@ -10,26 +10,27 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zustand": "^4.4.7",
-    "clsx": "^2.0.0",
-    "class-variance-authority": "^0.7.0",
-    "lucide-react": "^0.294.0"
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.10",
+    "@types/chrome": "^0.0.251",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
-    "@types/chrome": "^0.0.251",
     "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.0.8",
-    "typescript": "^5.2.2",
-    "tailwindcss": "^3.3.6",
-    "tailwindcss-animate": "^1.0.7",
-    "tailwind-merge": "^2.0.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
-    "@tailwindcss/typography": "^0.5.10"
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss": "^3.3.6",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
   },
   "keywords": [
     "chrome-extension",

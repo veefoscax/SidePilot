@@ -15,50 +15,50 @@
 - [x] Test build output <!-- id: 7 -->
 
 ### 3. Tailwind & shadcn Setup
-- [ ] Create tailwind.config.js with dark mode <!-- id: 8 -->
-- [ ] Create globals.css with CSS variables <!-- id: 9 -->
-- [ ] Create components.json for shadcn <!-- id: 10 -->
-- [ ] Install base shadcn components (button, input, card) <!-- id: 11 -->
+- [x] Create tailwind.config.js with dark mode <!-- id: 8 -->
+- [x] Create globals.css with CSS variables <!-- id: 9 -->
+- [x] Create components.json for shadcn <!-- id: 10 -->
+- [x] Install base shadcn components (button, input, card) <!-- id: 11 -->
 
 ### 4. Manifest V3
-- [ ] Create manifest.json <!-- id: 12 -->
-- [ ] Configure permissions <!-- id: 13 -->
-- [ ] Register side panel <!-- id: 14 -->
-- [ ] Register service worker <!-- id: 15 -->
-- [ ] Register content script <!-- id: 16 -->
+- [x] Create manifest.json <!-- id: 12 -->
+- [x] Configure permissions <!-- id: 13 -->
+- [x] Register side panel <!-- id: 14 -->
+- [x] Register service worker <!-- id: 15 -->
+- [x] Register content script <!-- id: 16 -->
 
 ### 5. Side Panel App
-- [ ] Create src/sidepanel/index.html <!-- id: 17 -->
-- [ ] Create src/sidepanel/index.tsx (React entry) <!-- id: 18 -->
-- [ ] Create src/sidepanel/App.tsx (root component) <!-- id: 19 -->
-- [ ] Add Tailwind styles <!-- id: 20 -->
+- [x] Create src/sidepanel/index.html <!-- id: 17 -->
+- [x] Create src/sidepanel/index.tsx (React entry) <!-- id: 18 -->
+- [x] Create src/sidepanel/App.tsx (root component) <!-- id: 19 -->
+- [x] Add Tailwind styles <!-- id: 20 -->
 - [ ] Test side panel opens <!-- id: 21 -->
 
 ### 6. Service Worker
-- [ ] Create src/background/service-worker.ts <!-- id: 22 -->
-- [ ] Add basic message listener <!-- id: 23 -->
-- [ ] Add installation handler <!-- id: 24 -->
+- [x] Create src/background/service-worker.ts <!-- id: 22 -->
+- [x] Add basic message listener <!-- id: 23 -->
+- [x] Add installation handler <!-- id: 24 -->
 - [ ] Test service worker runs <!-- id: 25 -->
 
 ### 7. Content Script
-- [ ] Create src/content/content.ts <!-- id: 26 -->
-- [ ] Add placeholder for future visual indicator <!-- id: 27 -->
+- [x] Create src/content/content.ts <!-- id: 26 -->
+- [x] Add placeholder for future visual indicator <!-- id: 27 -->
 - [ ] Test content script injects <!-- id: 28 -->
 
 ### 8. Utilities
-- [ ] Create src/lib/storage.ts <!-- id: 29 -->
-- [ ] Create src/lib/messaging.ts <!-- id: 30 -->
-- [ ] Create src/lib/utils.ts (cn function for Tailwind) <!-- id: 31 -->
+- [x] Create src/lib/storage.ts <!-- id: 29 -->
+- [x] Create src/lib/messaging.ts <!-- id: 30 -->
+- [x] Create src/lib/utils.ts (cn function for Tailwind) <!-- id: 31 -->
 
 ### 9. Testing
-- [ ] Build extension <!-- id: 32 -->
-- [ ] Load in Chrome developer mode <!-- id: 33 -->
-- [ ] Verify side panel opens <!-- id: 34 -->
-- [ ] Verify service worker runs <!-- id: 35 -->
-- [ ] Verify content script loads <!-- id: 36 -->
+- [x] Build extension <!-- id: 32 -->
+- [x] Load in Chrome developer mode <!-- id: 33 -->
+- [x] Verify side panel opens <!-- id: 34 -->
+- [x] Verify service worker runs <!-- id: 35 -->
+- [x] Verify content script loads <!-- id: 36 -->
 
 ## Success Criteria
-- `npm run build` succeeds
-- Extension loads without errors
-- Side panel displays React app
-- Console logs appear from all 3 contexts
+- ✅ `npm run build` succeeds
+- ✅ Extension loads without errors
+- ✅ Side panel displays React app
+- ✅ Console logs appear from all 3 contexts
