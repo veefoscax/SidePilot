@@ -37,12 +37,7 @@ export function ProviderSelector({ value, onChange, disabled }: ProviderSelector
                 const info = getProviderInfo(providerType);
                 return (
                   <SelectItem key={providerType} value={providerType}>
-                    <div className="flex flex-col w-full min-w-0">
-                      <span className="font-medium truncate">{info.name}</span>
-                      <span className="text-xs text-muted-foreground truncate">
-                        {info.description}
-                      </span>
-                    </div>
+                    <span className="font-medium">{info.name}</span>
                   </SelectItem>
                 );
               })}
@@ -50,6 +45,18 @@ export function ProviderSelector({ value, onChange, disabled }: ProviderSelector
           ))}
         </SelectContent>
       </Select>
+      
+      {/* Provider info display */}
+      {value && (
+        <div className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-2">
+            <span className="shrink-0">Provider:</span>
+            <span className="text-right truncate min-w-0 flex-1">
+              {getProviderInfo(value).name}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
