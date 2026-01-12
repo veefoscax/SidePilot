@@ -60,6 +60,26 @@ async function testProviderFactory() {
     console.log(`   ⚠️ OpenAI provider creation failed (expected): ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
+  try {
+    const googleProvider = createProvider({
+      type: 'google',
+      apiKey: 'test-key'
+    });
+    console.log(`   ✅ Google provider created: ${googleProvider.type}`);
+  } catch (error) {
+    console.log(`   ⚠️ Google provider creation failed (expected): ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+
+  try {
+    const ollamaProvider = createProvider({
+      type: 'ollama',
+      apiKey: '' // Ollama doesn't need API key
+    });
+    console.log(`   ✅ Ollama provider created: ${ollamaProvider.type}`);
+  } catch (error) {
+    console.log(`   ⚠️ Ollama provider creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+
   // Test 5: Default models
   console.log('\n🎯 Default Models:');
   const testProviders: ProviderType[] = ['anthropic', 'openai', 'deepseek', 'groq'];

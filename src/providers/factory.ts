@@ -8,6 +8,8 @@
 import { ProviderType, ProviderConfig, LLMProvider, ProviderError } from './types';
 import { AnthropicProvider } from './anthropic';
 import { OpenAIProvider } from './openai';
+import { GoogleProvider } from './google';
+import { OllamaProvider } from './ollama';
 
 /**
  * Provider class registry
@@ -17,15 +19,15 @@ const PROVIDER_CLASSES: Record<ProviderType, new (config: ProviderConfig) => LLM
   // Tier 1: Core providers
   anthropic: AnthropicProvider,
   openai: OpenAIProvider,
-  google: OpenAIProvider, // TODO: Implement GoogleProvider
+  google: GoogleProvider,
   "openai-compat": OpenAIProvider,
 
   // Tier 2: Popular providers (OpenAI-compatible)
   deepseek: OpenAIProvider,
   groq: OpenAIProvider,
   mistral: OpenAIProvider,
-  ollama: OpenAIProvider, // TODO: Implement OllamaProvider
-  lmstudio: OpenAIProvider,
+  ollama: OllamaProvider,
+  lmstudio: OllamaProvider, // Same API as Ollama
 
   // Tier 3: Extended providers (OpenAI-compatible)
   openrouter: OpenAIProvider,
@@ -59,7 +61,7 @@ const PROVIDER_CLASSES: Record<ProviderType, new (config: ProviderConfig) => LLM
 
   // Cloud providers (special implementations)
   bedrock: AnthropicProvider, // AWS Bedrock uses Anthropic format
-  vertex: OpenAIProvider, // Google Vertex AI (TODO: Implement proper GoogleProvider)
+  vertex: GoogleProvider, // Google Vertex AI
 };
 
 /**
