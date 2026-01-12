@@ -1,0 +1,17 @@
+{
+  "name": "DEVLOG Auto-Updater with Git",
+  "description": "Automatically updates DEVLOG.md and commits changes after each task completion",
+  "trigger": {
+    "type": "agent_execution_complete",
+    "conditions": {
+      "task_completed": true,
+      "spec_context": true
+    }
+  },
+  "action": {
+    "type": "send_message",
+    "message": "Task completed! Please:\n\n1. **Update DEVLOG.md** with:\n   - **Task**: [Current task from tasks.md]\n   - **Spec**: [Current spec ID and name]\n   - **Started**: [When task began]\n   - **Completed**: [Current timestamp]\n   - **Time**: [Duration]\n   - **Kiro Commands Used**: [List all tools used: fsWrite, executePwsh, readFile, etc.]\n   - **Files Modified**: [All files created/changed]\n   - **Summary**: [What was accomplished]\n   - **Challenges**: [Any issues and solutions]\n\n2. **Update Kiro CLI Usage Statistics** table with command counts\n\n3. **Git commit** all changes with message format:\n   `feat(specName): task description`\n   \n4. **Check if spec is complete** - if all tasks done, push to origin\n\nFollow the DEVLOG structure from Phase 1 section and update time tracking table."
+  },
+  "enabled": true,
+  "scope": "workspace"
+}

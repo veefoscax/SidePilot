@@ -37,7 +37,9 @@ Create the foundation Chrome extension with Manifest V3, Vite build system, Reac
 ### AC3: UI Framework
 - [ ] React 18 rendering in side panel
 - [ ] Tailwind CSS configured
-- [ ] shadcn/ui components available
+- [ ] shadcn/ui configured with **Nova** style, **Cyan** theme, **Neutral** base color
+- [ ] Fonts set to **Figtree**, Icons to **Hugeicons**
+- [ ] Radius set to **Small**
 - [ ] Dark mode as default theme
 
 ### AC4: Infrastructure

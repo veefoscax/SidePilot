@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "SidePilot",
+  "version": "1.0.0",
+  "description": "Your AI Co-Pilot in the Browser - Browser automation with any LLM",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting",
+    "debugger",
+    "notifications"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"]
+  }],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Open SidePilot"
+  }
+}

@@ -89,75 +89,49 @@ export default defineConfig({
 
 ## shadcn/ui Setup
 
+**Style Configuration:**
+- **Style**: Nova
+- **Base Color**: Neutral
+- **Theme**: Cyan
+- **Icon Library**: Hugeicons
+- **Font**: Figtree
+- **Radius**: Small
+- **Menu Accent**: Subtle
+- **Menu Color**: Default
+
+**Initialization:**
+Use the following configuration when initializing or `components.json`:
+
 ```json
-// components.json
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "new-york",
+  "style": "nova",
   "rsc": false,
   "tsx": true,
   "tailwind": {
     "config": "tailwind.config.js",
     "css": "src/globals.css",
     "baseColor": "neutral",
-    "cssVariables": true
+    "cssVariables": true,
+    "prefix": ""
   },
   "aliases": {
     "components": "@/components",
-    "utils": "@/lib/utils"
-  }
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "iconLibrary": "hugeicons"
 }
 ```
 
-## Storage Wrapper
-
-```typescript
-// src/lib/storage.ts
-class Storage {
-  async get<T>(key: string): Promise<T | null> {
-    const result = await chrome.storage.local.get(key);
-    return result[key] ?? null;
-  }
-
-  async set<T>(key: string, value: T): Promise<void> {
-    await chrome.storage.local.set({ [key]: value });
-  }
-
-  async remove(key: string): Promise<void> {
-    await chrome.storage.local.remove(key);
-  }
-}
-
-export const storage = new Storage();
-```
-
-## Messaging Infrastructure
-
-```typescript
-// src/lib/messaging.ts
-type MessageHandler = (message: any, sender: chrome.runtime.MessageSender) => Promise<any>;
-
-const handlers = new Map<string, MessageHandler>();
-
-export function registerHandler(type: string, handler: MessageHandler) {
-  handlers.set(type, handler);
-}
-
-export function sendMessage<T>(type: string, payload?: any): Promise<T> {
-  return chrome.runtime.sendMessage({ type, payload });
-}
-
-// In service worker
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  const handler = handlers.get(message.type);
-  if (handler) {
-    handler(message.payload, sender).then(sendResponse);
-    return true; // Keep channel open for async response
-  }
-});
-```
+> **IMPORTANT**: Always use the **shadcn MCP server** to pull and install components to ensure consistent styling and implementation. Do not manually copy-paste component code unless absolutely necessary.
 
 ## shadcn Components to Install
+
+Using shadcn MCP:
+
 ```bash
-npx shadcn@latest add button input textarea card alert dialog sheet tabs select
+npx shadcn@latest add button input textarea card alert dialog sheet tabs select scroll-area avatar badge dropdown-menu tooltip
 ```
