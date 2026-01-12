@@ -1,14 +1,22 @@
 # SidePilot
 
-> 🚀 Your AI Co-Pilot in the Browser
+<p align="center">
+  <img src="assets/Sidepilot.png" alt="SidePilot Logo" width="200">
+</p>
 
-**SidePilot** is a Chrome extension that brings AI-powered browser automation to any LLM provider you choose.
+<p align="center">
+  <strong>🚀 Your AI Co-Pilot in the Browser</strong>
+</p>
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Platform](https://img.shields.io/badge/platform-Chrome-green.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/platform-Chrome-green.svg" alt="Platform">
+  <img src="https://img.shields.io/badge/TypeScript-5.0-blue.svg" alt="TypeScript">
+</p>
 
 ---
+
+**SidePilot** is a Chrome extension that brings AI-powered browser automation to any LLM provider you choose.
 
 ## ✨ Features
 
@@ -62,7 +70,7 @@ Expose browser tools to external LLMs like Cline or Aider.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/sidepilot.git
+git clone https://github.com/viniciusfoscaches/sidepilot.git
 cd sidepilot
 
 # Install dependencies
@@ -112,6 +120,7 @@ sidepilot/
 │   ├── tools/          # Browser tools (13+)
 │   ├── lib/            # Utilities
 │   └── components/     # Shared components
+├── assets/             # Logo and icons
 └── .kiro/
     ├── steering/       # Project context
     ├── specs/          # Feature specifications

@@ -18,12 +18,15 @@
 
 ## Manifest V3 Configuration
 
+> **Icons**: Generate icons from `assets/Sidepilot.svg` at 16x16, 48x48, and 128x128 PNG sizes.
+> Place in `public/icons/` folder.
+
 ```json
 {
   "manifest_version": 3,
-  "name": "BYO-LLM Browser Agent",
+  "name": "SidePilot",
   "version": "1.0.0",
-  "description": "AI browser automation with any LLM",
+  "description": "Your AI Co-Pilot in the Browser - Browser automation with any LLM",
   "permissions": [
     "sidePanel",
     "storage",
