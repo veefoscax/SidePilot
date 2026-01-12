@@ -14,7 +14,7 @@
   ],
   "host_permissions": ["<all_urls>"],
   "side_panel": {
-    "default_path": "sidepanel.html"
+    "default_path": "src/sidepanel/index.html"
   },
   "background": {
     "service_worker": "service-worker.js",

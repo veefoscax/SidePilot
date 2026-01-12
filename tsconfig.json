@@ -27,7 +27,7 @@
     },
 
     /* Chrome extension types */
-    "types": ["chrome", "node"]
+    "types": ["chrome"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]

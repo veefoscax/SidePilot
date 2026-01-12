@@ -2,16 +2,22 @@
 
 ## Architecture Overview
 
+**Type**: Self-Contained Chrome Extension (Serverless)
+**Runtime**: Client-side execution in Browser Context + Service Worker
+**Build**: Static asset generation via Vite
+
+> **NOTE**: No external backend server (Node/Python) is required for runtime. Vite is used ONLY for development (HMR) and building static assets.
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Chrome Extension                          │
+│                    Chrome Extension (Client Side)            │
 ├─────────────────────────────────────────────────────────────┤
 │  Side Panel (React)     │  Service Worker    │  Content     │
 │  ├── Chat UI            │  ├── Messaging     │  ├── DOM     │
 │  ├── Settings           │  ├── Tools Exec    │  └── Visual  │
 │  └── Components         │  └── CDP Control   │              │
 ├─────────────────────────────────────────────────────────────┤
-│                    Chrome APIs                               │
+│                    Chrome APIs (Storage/Runtime)             │
 │  sidePanel, storage, debugger, tabs, scripting               │
 └─────────────────────────────────────────────────────────────┘
 ```
