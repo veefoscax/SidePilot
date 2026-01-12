@@ -8,10 +8,49 @@
 | UI Framework | React | 18.x |
 | Language | TypeScript | 5.x |
 | Styling | Tailwind CSS | 3.x |
-| UI Components | shadcn/ui | latest |
+| UI Components | shadcn/ui v4 | latest |
 | State Management | Zustand | 4.x |
 | Extension API | Manifest V3 | - |
 | Browser Control | Chrome DevTools Protocol | 1.3 |
+
+## shadcn/ui v4 Configuration
+
+### New Visual Styles (December 2025)
+shadcn/ui v4 introduced 5 new visual styles beyond the classic "default" and "new-york":
+
+- **Vega** – The classic shadcn/ui look
+- **Nova** – Reduced padding and margins for compact layouts ✅ (USING THIS)
+- **Maia** – Soft and rounded, with generous spacing  
+- **Lyra** – Boxy and sharp. Pairs well with mono fonts
+- **Mira** – (Additional style)
+
+### Icon Libraries
+- **lucide-react** – Default for most styles
+- **hugeicons** – Alternative icon library ✅ (USING THIS)
+- **radix-icons** – Used with new-york style
+
+### Component Library Support
+v4 supports multiple component libraries:
+- **Radix UI** – Default (what we've been using)
+- **Base UI** – New alternative, fully compatible
+
+### Critical Configuration Notes
+```json
+{
+  "style": "nova",           // ✅ Use nova for compact layouts
+  "iconLibrary": "hugeicons", // ✅ Use hugeicons instead of lucide
+  "tailwind": {
+    "baseColor": "neutral",   // Works with nova style
+    "cssVariables": true      // Recommended approach
+  }
+}
+```
+
+### Installation Approach
+- For existing projects: Keep current components.json with nova/hugeicons
+- Components are backwards compatible
+- CLI auto-detects library and applies transformations
+- No need to reinstall existing components when switching styles
 
 ## Architecture Decisions
 

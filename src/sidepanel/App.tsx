@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Settings02Icon, MessageMultiple01Icon } from '@hugeicons/core-free-icons';
 import { initializeTheme } from '@/lib/theme';
+import { SettingsPage } from './pages/Settings';
 
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<'home' | 'settings'>('home');
 
   useEffect(() => {
     // Initialize theme detection
@@ -31,6 +36,11 @@ function App() {
     );
   }
 
+  // Show Settings page
+  if (currentPage === 'settings') {
+    return <SettingsPage onBack={() => setCurrentPage('home')} />;
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-md mx-auto p-6">
@@ -41,6 +51,28 @@ function App() {
             </div>
             <h1 className="text-2xl font-bold text-primary mb-2">SidePilot</h1>
             <p className="text-muted-foreground text-sm">Your AI Co-Pilot in the Browser</p>
+          </div>
+          
+          {/* Navigation */}
+          <div className="flex gap-2 justify-center">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setCurrentPage('settings')}
+              className="flex items-center gap-2"
+            >
+              <HugeiconsIcon icon={Settings02Icon} className="h-4 w-4" />
+              Settings
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              className="flex items-center gap-2"
+            >
+              <HugeiconsIcon icon={MessageMultiple01Icon} className="h-4 w-4" />
+              Chat (Soon)
+            </Button>
           </div>
         </header>
         
@@ -59,8 +91,16 @@ function App() {
             <h3 className="font-medium mb-3 text-primary">Next Steps</h3>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
-                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                <span className="text-muted-foreground">Configure LLM provider</span>
+                <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                <span className="text-foreground">Configure LLM provider</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setCurrentPage('settings')}
+                  className="ml-auto text-xs h-6"
+                >
+                  Open Settings
+                </Button>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
