@@ -3,16 +3,16 @@
 ## Implementation Checklist
 
 ### 1. Project Initialization
-- [ ] Create package.json with dependencies <!-- id: 0 -->
-- [ ] Install Vite, React, TypeScript <!-- id: 1 -->
-- [ ] Install Tailwind CSS <!-- id: 2 -->
-- [ ] Configure tsconfig.json <!-- id: 3 -->
+- [x] Create package.json with dependencies <!-- id: 0 -->
+- [x] Install Vite, React, TypeScript <!-- id: 1 -->
+- [x] Install Tailwind CSS <!-- id: 2 -->
+- [x] Configure tsconfig.json <!-- id: 3 -->
 
 ### 2. Vite Configuration
-- [ ] Create vite.config.ts <!-- id: 4 -->
-- [ ] Configure multi-entry build (sidepanel, service-worker, content) <!-- id: 5 -->
-- [ ] Add path aliases (@/) <!-- id: 6 -->
-- [ ] Test build output <!-- id: 7 -->
+- [x] Create vite.config.ts <!-- id: 4 -->
+- [x] Configure multi-entry build (sidepanel, service-worker, content) <!-- id: 5 -->
+- [x] Add path aliases (@/) <!-- id: 6 -->
+- [x] Test build output <!-- id: 7 -->
 
 ### 3. Tailwind & shadcn Setup
 - [ ] Create tailwind.config.js with dark mode <!-- id: 8 -->

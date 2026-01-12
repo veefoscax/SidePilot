@@ -3,22 +3,22 @@
 ## Implementation Checklist
 
 ### 1. Core Implementation
-- [ ] Create `src/lib/tab-groups.ts`
-- [ ] Implement `TabGroupManager` class
-- [ ] Implement `createGroup()` method
-- [ ] Implement `updateGroup()` method
-- [ ] Implement `ungroupTabs()` method
-- [ ] Implement `listGroups()` method
+- [ ] Create `src/lib/tab-groups.ts` <!-- id: 0 -->
+- [ ] Implement `TabGroupManager` class <!-- id: 1 -->
+- [ ] Implement `createGroup()` method <!-- id: 2 -->
+- [ ] Implement `updateGroup()` method <!-- id: 3 -->
+- [ ] Implement `ungroupTabs()` method <!-- id: 4 -->
+- [ ] Implement `listGroups()` method <!-- id: 5 -->
 
 ### 2. Tool Integration
-- [ ] Create `src/tools/tab-groups.ts`
-- [ ] Define tool parameters and schema
-- [ ] Implement execute function for all actions
-- [ ] Add to tool registry
+- [ ] Create `src/tools/tab-groups.ts` <!-- id: 6 -->
+- [ ] Define tool parameters and schema <!-- id: 7 -->
+- [ ] Implement execute function for all actions <!-- id: 8 -->
+- [ ] Add to tool registry <!-- id: 9 -->
 
 ### 3. Testing
-- [ ] Test create group with multiple tabs
-- [ ] Test update group color and title
-- [ ] Test collapse/expand group
-- [ ] Test ungroup tabs
-- [ ] Test list all groups
+- [ ] Test create group with multiple tabs <!-- id: 10 -->
+- [ ] Test update group color and title <!-- id: 11 -->
+- [ ] Test collapse/expand group <!-- id: 12 -->
+- [ ] Test ungroup tabs <!-- id: 13 -->
+- [ ] Test list all groups <!-- id: 14 -->

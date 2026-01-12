@@ -3,51 +3,51 @@
 ## Implementation Checklist
 
 ### 1. Types & Constants
-- [ ] Create src/lib/shortcuts.ts
-- [ ] Define SavedPrompt interface
-- [ ] Define SHORTCUT_CHIP_REGEX
+- [ ] Create src/lib/shortcuts.ts <!-- id: 0 -->
+- [ ] Define SavedPrompt interface <!-- id: 1 -->
+- [ ] Define SHORTCUT_CHIP_REGEX <!-- id: 2 -->
 
 ### 2. Shortcuts Store
-- [ ] Create src/stores/shortcuts.ts
-- [ ] Implement loadShortcuts
-- [ ] Implement createShortcut
-- [ ] Implement updateShortcut
-- [ ] Implement deleteShortcut
-- [ ] Implement recordUsage
-- [ ] Persist to chrome.storage
+- [ ] Create src/stores/shortcuts.ts <!-- id: 3 -->
+- [ ] Implement loadShortcuts <!-- id: 4 -->
+- [ ] Implement createShortcut <!-- id: 5 -->
+- [ ] Implement updateShortcut <!-- id: 6 -->
+- [ ] Implement deleteShortcut <!-- id: 7 -->
+- [ ] Implement recordUsage <!-- id: 8 -->
+- [ ] Persist to chrome.storage <!-- id: 9 -->
 
 ### 3. Slash Menu
-- [ ] Create src/components/SlashMenu.tsx
-- [ ] Define SlashMenuItem interface
-- [ ] Build system items
-- [ ] Build user shortcuts items
-- [ ] Build actions items
-- [ ] Implement filtering
-- [ ] Add keyboard navigation
+- [ ] Create src/components/SlashMenu.tsx <!-- id: 10 -->
+- [ ] Define SlashMenuItem interface <!-- id: 11 -->
+- [ ] Build system items <!-- id: 12 -->
+- [ ] Build user shortcuts items <!-- id: 13 -->
+- [ ] Build actions items <!-- id: 14 -->
+- [ ] Implement filtering <!-- id: 15 -->
+- [ ] Add keyboard navigation <!-- id: 16 -->
 
 ### 4. Shortcut Chip
-- [ ] Create src/components/ShortcutChip.tsx
-- [ ] Render chip UI
-- [ ] Expand on click
-- [ ] Implement parseShortcutChips
+- [ ] Create src/components/ShortcutChip.tsx <!-- id: 17 -->
+- [ ] Render chip UI <!-- id: 18 -->
+- [ ] Expand on click <!-- id: 19 -->
+- [ ] Implement parseShortcutChips <!-- id: 20 -->
 
 ### 5. Shortcut Editor
-- [ ] Create src/components/ShortcutEditor.tsx
-- [ ] Command input
-- [ ] Prompt textarea
-- [ ] URL input (optional)
-- [ ] Save/Cancel buttons
+- [ ] Create src/components/ShortcutEditor.tsx <!-- id: 21 -->
+- [ ] Command input <!-- id: 22 -->
+- [ ] Prompt textarea <!-- id: 23 -->
+- [ ] URL input (optional) <!-- id: 24 -->
+- [ ] Save/Cancel buttons <!-- id: 25 -->
 
 ### 6. Input Integration
-- [ ] Detect / in input
-- [ ] Show SlashMenu
-- [ ] Insert chip on select
-- [ ] Close menu on outside click
+- [ ] Detect / in input <!-- id: 26 -->
+- [ ] Show SlashMenu <!-- id: 27 -->
+- [ ] Insert chip on select <!-- id: 28 -->
+- [ ] Close menu on outside click <!-- id: 29 -->
 
 ### 7. Tools Integration
-- [ ] Create shortcuts_list tool
-- [ ] Create shortcuts_execute tool
-- [ ] Register in tool registry
+- [ ] Create shortcuts_list tool <!-- id: 30 -->
+- [ ] Create shortcuts_execute tool <!-- id: 31 -->
+- [ ] Register in tool registry <!-- id: 32 -->
 
 ## Success Criteria
 - Shortcuts persist after reload

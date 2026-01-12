@@ -3,29 +3,29 @@
 ## Implementation Checklist
 
 ### 1. Connector Core
-- [ ] Create `src/lib/mcp-connector.ts`
-- [ ] Define MCPConnectorConfig
-- [ ] Implement handleToolsList
-- [ ] Implement handleToolCall
-- [ ] Implement getActiveTabContext
+- [ ] Create `src/lib/mcp-connector.ts` <!-- id: 0 -->
+- [ ] Define MCPConnectorConfig <!-- id: 1 -->
+- [ ] Implement handleToolsList <!-- id: 2 -->
+- [ ] Implement handleToolCall <!-- id: 3 -->
+- [ ] Implement getActiveTabContext <!-- id: 4 -->
 
 ### 2. Communication Layer
-- [ ] Choose approach (native messaging vs HTTP)
-- [ ] Implement message receiving
-- [ ] Implement response sending
+- [ ] Choose approach (native messaging vs HTTP) <!-- id: 5 -->
+- [ ] Implement message receiving <!-- id: 6 -->
+- [ ] Implement response sending <!-- id: 7 -->
 
 ### 3. Settings UI
-- [ ] Add MCP Connector section to Settings
-- [ ] Add enable/disable toggle
-- [ ] Add tool selection checkboxes
-- [ ] Add auth token display/regenerate
+- [ ] Add MCP Connector section to Settings <!-- id: 8 -->
+- [ ] Add enable/disable toggle <!-- id: 9 -->
+- [ ] Add tool selection checkboxes <!-- id: 10 -->
+- [ ] Add auth token display/regenerate <!-- id: 11 -->
 
 ### 4. Documentation
-- [ ] Document how to connect from Cline
-- [ ] Document how to connect from Aider
-- [ ] Create companion proxy if needed
+- [ ] Document how to connect from Cline <!-- id: 12 -->
+- [ ] Document how to connect from Aider <!-- id: 13 -->
+- [ ] Create companion proxy if needed <!-- id: 14 -->
 
 ### 5. Testing
-- [ ] Test tool list response
-- [ ] Test tool call execution
-- [ ] Test with real Cline/Aider
+- [ ] Test tool list response <!-- id: 15 -->
+- [ ] Test tool call execution <!-- id: 16 -->
+- [ ] Test with real Cline/Aider <!-- id: 17 -->

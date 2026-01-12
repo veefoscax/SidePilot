@@ -3,76 +3,76 @@
 ## Implementation Checklist
 
 ### 1. Tool Types
-- [ ] Create src/tools/types.ts
-- [ ] Define ToolDefinition interface
-- [ ] Define ToolParameters interface
-- [ ] Define ToolContext interface
-- [ ] Define ToolResult interface
-- [ ] Define AnthropicToolSchema interface
+- [ ] Create src/tools/types.ts <!-- id: 0 -->
+- [ ] Define ToolDefinition interface <!-- id: 1 -->
+- [ ] Define ToolParameters interface <!-- id: 2 -->
+- [ ] Define ToolContext interface <!-- id: 3 -->
+- [ ] Define ToolResult interface <!-- id: 4 -->
+- [ ] Define AnthropicToolSchema interface <!-- id: 5 -->
 
 ### 2. Tool Registry
-- [ ] Create src/tools/registry.ts
-- [ ] Implement getAllTools()
-- [ ] Implement getTool()
-- [ ] Implement getAnthropicSchemas()
-- [ ] Implement executeTool() with permission check
+- [ ] Create src/tools/registry.ts <!-- id: 6 -->
+- [ ] Implement getAllTools() <!-- id: 7 -->
+- [ ] Implement getTool() <!-- id: 8 -->
+- [ ] Implement getAnthropicSchemas() <!-- id: 9 -->
+- [ ] Implement executeTool() with permission check <!-- id: 10 -->
 
 ### 3. Computer Tool
-- [ ] Create src/tools/computer.ts
-- [ ] Implement screenshot action
-- [ ] Implement left_click action
-- [ ] Implement right_click action
-- [ ] Implement double_click action
-- [ ] Implement triple_click action
-- [ ] Implement type action
-- [ ] Implement key action
-- [ ] Implement scroll action
-- [ ] Implement wait action
-- [ ] Implement left_click_drag action
-- [ ] Implement zoom action
+- [ ] Create src/tools/computer.ts <!-- id: 11 -->
+- [ ] Implement screenshot action <!-- id: 12 -->
+- [ ] Implement left_click action <!-- id: 13 -->
+- [ ] Implement right_click action <!-- id: 14 -->
+- [ ] Implement double_click action <!-- id: 15 -->
+- [ ] Implement triple_click action <!-- id: 16 -->
+- [ ] Implement type action <!-- id: 17 -->
+- [ ] Implement key action <!-- id: 18 -->
+- [ ] Implement scroll action <!-- id: 19 -->
+- [ ] Implement wait action <!-- id: 20 -->
+- [ ] Implement left_click_drag action <!-- id: 21 -->
+- [ ] Implement zoom action <!-- id: 22 -->
 
 ### 4. Navigation Tool
-- [ ] Create src/tools/navigation.ts
-- [ ] Implement navigate action
-- [ ] Implement go_back action
-- [ ] Implement go_forward action
-- [ ] Implement reload action
+- [ ] Create src/tools/navigation.ts <!-- id: 23 -->
+- [ ] Implement navigate action <!-- id: 24 -->
+- [ ] Implement go_back action <!-- id: 25 -->
+- [ ] Implement go_forward action <!-- id: 26 -->
+- [ ] Implement reload action <!-- id: 27 -->
 
 ### 5. Tab Tools
-- [ ] Create src/tools/tabs.ts
-- [ ] Implement create_tab
-- [ ] Implement close_tab
-- [ ] Implement switch_tab
-- [ ] Implement list_tabs
+- [ ] Create src/tools/tabs.ts <!-- id: 28 -->
+- [ ] Implement create_tab <!-- id: 29 -->
+- [ ] Implement close_tab <!-- id: 30 -->
+- [ ] Implement switch_tab <!-- id: 31 -->
+- [ ] Implement list_tabs <!-- id: 32 -->
 
 ### 6. Tab Groups Tool
-- [ ] Create src/tools/tab-groups.ts
-- [ ] Implement create_group
-- [ ] Implement update_group
-- [ ] Implement ungroup
+- [ ] Create src/tools/tab-groups.ts <!-- id: 33 -->
+- [ ] Implement create_group <!-- id: 34 -->
+- [ ] Implement update_group <!-- id: 35 -->
+- [ ] Implement ungroup <!-- id: 36 -->
 
 ### 7. Content Tools
-- [ ] Create src/tools/page-content.ts
-- [ ] Implement get_text
-- [ ] Implement screen_summary
-- [ ] Create src/tools/execute-script.ts
-- [ ] Create src/tools/page-styling.ts
+- [ ] Create src/tools/page-content.ts <!-- id: 37 -->
+- [ ] Implement get_text <!-- id: 38 -->
+- [ ] Implement screen_summary <!-- id: 39 -->
+- [ ] Create src/tools/execute-script.ts <!-- id: 40 -->
+- [ ] Create src/tools/page-styling.ts <!-- id: 41 -->
 
 ### 8. Monitoring Tools
-- [ ] Create src/tools/network.ts
-- [ ] Create src/tools/console.ts
-- [ ] Create src/tools/accessibility.ts
-- [ ] Create src/tools/element-snapshot.ts
+- [ ] Create src/tools/network.ts <!-- id: 42 -->
+- [ ] Create src/tools/console.ts <!-- id: 43 -->
+- [ ] Create src/tools/accessibility.ts <!-- id: 44 -->
+- [ ] Create src/tools/element-snapshot.ts <!-- id: 45 -->
 
 ### 9. Utility Tools
-- [ ] Create src/tools/web-search.ts
-- [ ] Create src/tools/shortcuts.ts
+- [ ] Create src/tools/web-search.ts <!-- id: 46 -->
+- [ ] Create src/tools/shortcuts.ts <!-- id: 47 -->
 
 ### 10. Integration
-- [ ] Connect tools to chat flow
-- [ ] Parse tool_use from response
-- [ ] Execute tool and return result
-- [ ] Handle tool errors gracefully
+- [ ] Connect tools to chat flow <!-- id: 48 -->
+- [ ] Parse tool_use from response <!-- id: 49 -->
+- [ ] Execute tool and return result <!-- id: 50 -->
+- [ ] Handle tool errors gracefully <!-- id: 51 -->
 
 ## Success Criteria
 - All 13+ tools registered
