@@ -1,16 +1,54 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Card } from '@/components/ui/card';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Settings02Icon, MessageMultiple01Icon } from '@hugeicons/core-free-icons';
+import { 
+  Settings01Icon, 
+  Add01Icon, 
+  ArrowUp02Icon,
+  StopIcon 
+} from '@hugeicons/core-free-icons';
 import { initializeTheme } from '@/lib/theme';
-import { SettingsPage } from './pages/Settings';
-import { ChatPage } from './pages/Chat';
+import { useChatStore } from '@/stores/chat';
+import { useMultiProviderStore } from '@/stores/multi-provider';
+import { MessageList } from '@/components/chat/MessageList';
+import { UserMessage } from '@/components/chat/UserMessage';
+import { AssistantMessage } from '@/components/chat/AssistantMessage';
+import { ThinkingIndicator } from '@/components/chat/ThinkingIndicator';
+import { ErrorCard } from '@/components/chat/ErrorCard';
+import { MultiProviderManager } from '@/components/settings/MultiProviderManager';
+import { Textarea } from '@/components/ui/textarea';
 import { Toaster } from 'sonner';
+import { cn } from '@/lib/utils';
 
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState<'home' | 'settings' | 'chat'>('home');
+  const [input, setInput] = useState('');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const { 
+    messages, 
+    isStreaming, 
+    streamingContent, 
+    error,
+    addUserMessage, 
+    startStreaming, 
+    appendStreamContent, 
+    endStreaming, 
+    setError,
+    clearMessages 
+  } = useChatStore();
+
+  const { 
+    getCurrentProvider,
+    getCurrentProviderInstance,
+    selectedModels
+  } = useMultiProviderStore();
 
   useEffect(() => {
     // Initialize theme detection
@@ -30,119 +68,304 @@ function App() {
     });
   }, []);
 
+  // Handle sending a message
+  const handleSendMessage = async (content: string) => {
+    const currentProvider = getCurrentProvider();
+    const activeProviderInstance = getCurrentProviderInstance();
+    
+    if (!currentProvider || !activeProviderInstance) {
+      setError('No active model selected. Please configure a provider in Settings.');
+      return;
+    }
+
+    try {
+      // Add user message to store
+      addUserMessage(content);
+
+      // Start streaming
+      startStreaming();
+
+      // Prepare messages for the provider
+      const allMessages = [
+        ...messages,
+        { role: 'user' as const, content }
+      ];
+
+      // Stream response from provider using the current model
+      const stream = activeProviderInstance.stream(allMessages, {
+        model: currentProvider.model.id,
+      });
+      let fullContent = '';
+
+      for await (const chunk of stream) {
+        if (chunk.type === 'text') {
+          const chunkContent = chunk.text || '';
+          fullContent += chunkContent;
+          appendStreamContent(chunkContent);
+        } else if (chunk.type === 'tool_call') {
+          console.log('Tool call received:', chunk);
+        }
+      }
+
+      endStreaming(fullContent || 'No response received');
+
+    } catch (err) {
+      console.error('Chat error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send message');
+    }
+  };
+
+  const handleSend = () => {
+    const trimmedInput = input.trim();
+    if (trimmedInput && !isStreaming) {
+      handleSendMessage(trimmedInput);
+      setInput('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+  };
+
+  const currentProvider = getCurrentProvider();
+  const hasModelsAvailable = selectedModels.length > 0;
+  const canSend = input.trim().length > 0 && !isStreaming;
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+      <div className="h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-muted-foreground">Loading SidePilot...</div>
       </div>
     );
   }
 
-  // Show Settings page
-  if (currentPage === 'settings') {
-    return <SettingsPage onBack={() => setCurrentPage('home')} />;
-  }
-
-  // Show Chat page
-  if (currentPage === 'chat') {
-    return (
-      <ChatPage 
-        onBack={() => setCurrentPage('home')} 
-        onSettings={() => setCurrentPage('settings')}
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="h-screen bg-background text-foreground flex flex-col">
       <Toaster position="top-center" richColors />
-      <div className="max-w-md mx-auto p-6">
-        <header className="text-center mb-8">
-          <div className="mb-4">
-            <div className="w-16 h-16 mx-auto bg-primary/10 rounded-lg flex items-center justify-center mb-3">
-              <span className="text-2xl">🚀</span>
-            </div>
-            <h1 className="text-2xl font-bold text-primary mb-2">SidePilot</h1>
-            <p className="text-muted-foreground text-sm">Your AI Co-Pilot in the Browser</p>
-          </div>
-          
-          {/* Navigation */}
-          <div className="flex gap-2 justify-center">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => setCurrentPage('settings')}
-              className="flex items-center gap-2"
-            >
-              <HugeiconsIcon icon={Settings02Icon} className="h-4 w-4" />
-              Settings
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage('chat')}
-              className="flex items-center gap-2"
-            >
-              <HugeiconsIcon icon={MessageMultiple01Icon} className="h-4 w-4" />
-              Chat
-            </Button>
-          </div>
-        </header>
-        
-        <main className="space-y-4">
-          <div className="bg-card border rounded-lg p-4 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-2 h-2 bg-primary rounded-full"></div>
-              <h2 className="font-semibold">Extension Active</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              SidePilot scaffold is running successfully. Ready for LLM provider integration.
-            </p>
-          </div>
-          
-          <div className="bg-card border rounded-lg p-4 shadow-sm">
-            <h3 className="font-medium mb-3 text-primary">Next Steps</h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                <span className="text-foreground">Configure LLM provider</span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setCurrentPage('settings')}
-                  className="ml-auto text-xs h-6"
-                >
-                  Open Settings
-                </Button>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                <span className="text-muted-foreground">Set up browser tools</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                <span className="text-muted-foreground">Start automating!</span>
-              </div>
-            </div>
-          </div>
+      
+      {/* Header */}
+      <div className="h-12 flex items-center justify-between px-4 shrink-0">
+        {/* Left: Model info */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {currentProvider ? (
+            <>
+              <span className="text-sm font-medium truncate">
+                {currentProvider.model.name}
+              </span>
+              <Badge variant="secondary" className="text-xs">
+                {currentProvider.provider}
+              </Badge>
+            </>
+          ) : (
+            <span className="text-sm text-muted-foreground">No model selected</span>
+          )}
+        </div>
 
-          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-primary">🎨</span>
-              <h3 className="font-medium text-primary">Chrome Theme Adaptive</h3>
-            </div>
-            <p className="text-xs text-primary/80 mb-2">
-              Current theme: <span className="font-mono">{theme}</span> • Nova style with Chrome-matched colors
-            </p>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className={`w-3 h-3 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'} border`}></div>
-              <span>Follows Chrome's {theme} theme</span>
-            </div>
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={clearMessages}
+            disabled={messages.length === 0}
+            className="h-8 w-8"
+          >
+            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" />
+          </Button>
+          
+          <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[400px] sm:w-[540px]">
+              <SheetHeader>
+                <SheetTitle>Settings</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6">
+                <MultiProviderManager />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Message Area */}
+      <div className="flex-1 relative">
+        <ScrollArea className="h-full">
+          <div className="px-4 py-6">
+            {/* Empty state */}
+            {messages.length === 0 && !isStreaming && (
+              <div className="flex items-center justify-center h-full min-h-[400px]">
+                <div className="max-w-md text-center space-y-6">
+                  <div className="w-10 h-10 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center">
+                    <span className="text-xl">🚀</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">How can I help you today?</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Choose a suggestion below or type your own message
+                    </p>
+                  </div>
+                  
+                  {/* Suggestion chips */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      "Summarize this page",
+                      "Find information", 
+                      "Extract data",
+                      "Automate task"
+                    ].map((suggestion) => (
+                      <Card 
+                        key={suggestion}
+                        className="p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                      >
+                        <Button 
+                          variant="outline" 
+                          className="w-full h-auto p-0 border-none bg-transparent hover:bg-transparent text-sm"
+                        >
+                          {suggestion}
+                        </Button>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {!hasModelsAvailable && (
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        No models configured. 
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => setIsSettingsOpen(true)}
+                          className="h-auto p-0 ml-1 text-yellow-800 dark:text-yellow-200 underline"
+                        >
+                          Configure providers
+                        </Button>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Messages */}
+            {messages.map((message, index) => {
+              const previousMessage = messages[index - 1];
+              const nextMessage = messages[index + 1];
+              
+              // Simple grouping logic
+              const isGrouped = previousMessage && 
+                previousMessage.role === message.role && 
+                (message.timestamp - previousMessage.timestamp) < 2 * 60 * 1000;
+              
+              const showTimestamp = !previousMessage || 
+                previousMessage.role !== message.role ||
+                (message.timestamp - previousMessage.timestamp) > 5 * 60 * 1000 ||
+                (!nextMessage || nextMessage.role !== message.role);
+
+              return (
+                <div key={message.id} className="mb-4">
+                  {message.role === 'user' ? (
+                    <UserMessage 
+                      message={message} 
+                      isGrouped={isGrouped}
+                      showTimestamp={showTimestamp}
+                    />
+                  ) : (
+                    <AssistantMessage 
+                      message={message}
+                      isGrouped={isGrouped}
+                      showTimestamp={showTimestamp}
+                    />
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Streaming message */}
+            {isStreaming && streamingContent && (
+              <div className="mb-4">
+                <AssistantMessage 
+                  message={{
+                    id: 'streaming',
+                    role: 'assistant',
+                    content: streamingContent,
+                    timestamp: Date.now(),
+                  }}
+                  isStreaming={true}
+                  isGrouped={false}
+                  showTimestamp={false}
+                />
+              </div>
+            )}
+
+            {/* Thinking indicator */}
+            {isStreaming && !streamingContent && (
+              <div className="mb-4">
+                <ThinkingIndicator />
+              </div>
+            )}
+
+            {/* Error display */}
+            {error && (
+              <div className="mb-4">
+                <ErrorCard error={error} />
+              </div>
+            )}
           </div>
-        </main>
+        </ScrollArea>
+      </div>
+
+      <Separator />
+
+      {/* Input Area */}
+      <div className="p-4 shrink-0">
+        <div className="flex gap-2 items-end">
+          <div className="flex-1">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                !hasModelsAvailable 
+                  ? "Configure a provider to start chatting..." 
+                  : isStreaming 
+                    ? "AI is responding..." 
+                    : "Message SidePilot..."
+              }
+              disabled={isStreaming || !hasModelsAvailable}
+              className="min-h-[44px] max-h-32 resize-none"
+              rows={1}
+            />
+          </div>
+          
+          <Button
+            size="icon"
+            onClick={isStreaming ? () => {} : handleSend}
+            disabled={!canSend && !isStreaming}
+            className="h-11 w-11 shrink-0"
+          >
+            <HugeiconsIcon 
+              icon={isStreaming ? StopIcon : ArrowUp02Icon} 
+              className="h-4 w-4" 
+            />
+          </Button>
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
