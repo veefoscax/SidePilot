@@ -698,14 +698,14 @@ function ProviderConfigCard({
                 onValueChange={handlePlanTypeChange}
               >
                 <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Choose plan type..." />
+                  <SelectValue placeholder="Choose plan type..." className="truncate" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(getProviderPlanTypes(config.provider) || {}).map(([planKey, planConfig]) => (
                     <SelectItem key={planKey} value={planKey}>
-                      <div className="flex flex-col items-start w-full">
-                        <span className="font-medium capitalize">{planKey} Plan</span>
-                        <span className="text-xs text-muted-foreground truncate w-full">{planConfig.description}</span>
+                      <div className="flex flex-col items-start w-full min-w-0">
+                        <span className="font-medium capitalize truncate w-full">{planKey} Plan</span>
+                        <span className="text-xs text-muted-foreground truncate w-full max-w-[200px]">{planConfig.description}</span>
                       </div>
                     </SelectItem>
                   ))}

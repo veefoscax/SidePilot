@@ -88,9 +88,21 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
       ];
 
       // Stream response from provider using the current model
+      const tools = activeProviderInstance.type === 'anthropic' 
+        ? toolRegistry.getAnthropicTools().map(tool => ({
+            name: tool.name,
+            description: tool.description,
+            inputSchema: tool.input_schema
+          }))
+        : toolRegistry.getOpenAITools().map(tool => ({
+            name: tool.function.name,
+            description: tool.function.description,
+            inputSchema: tool.function.parameters
+          }));
+
       const stream = activeProviderInstance.stream(allMessages, {
         model: currentProvider.model.id, // Use the selected model ID
-        tools: toolRegistry.getAnthropicTools(), // Add browser automation tools
+        tools, // Use correct tool format
       });
       let fullContent = '';
       const toolCalls: any[] = [];
@@ -134,6 +146,15 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
 
       // End streaming and add assistant message
       const finalReasoning = useChatStore.getState().streamingReasoning;
+      
+      // Debug logging
+      console.log('Stream ended:', { 
+        fullContent, 
+        contentLength: fullContent.length, 
+        toolCallsCount: toolCalls.length,
+        finalReasoning: finalReasoning?.substring(0, 100) + '...'
+      });
+      
       endStreaming(
         fullContent || 'No response received', 
         toolCalls.length > 0 ? toolCalls : undefined,

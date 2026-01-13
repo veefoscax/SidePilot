@@ -132,10 +132,22 @@ export class OpenAIProvider extends BaseProvider {
   async *stream(messages: ChatMessage[], options: ChatOptions = {}): AsyncIterable<StreamChunk> {
     const request = this.buildRequest(messages, { ...options, stream: true });
     
+    console.log('ZAI Stream request:', { 
+      url: this.config.baseUrl + '/chat/completions',
+      model: request.model,
+      messagesCount: request.messages.length 
+    });
+    
     const response = await this.makeRequest('/chat/completions', {
       method: 'POST',
       body: JSON.stringify(request),
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('ZAI Stream error:', { status: response.status, error: errorText });
+      throw new Error(`ZAI API error: ${response.status} ${errorText}`);
+    }
 
     const reader = response.body?.getReader();
     if (!reader) {
@@ -144,6 +156,7 @@ export class OpenAIProvider extends BaseProvider {
 
     const decoder = new TextDecoder();
     let buffer = '';
+    let hasContent = false;
 
     try {
       while (true) {
@@ -156,23 +169,37 @@ export class OpenAIProvider extends BaseProvider {
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const data = line.slice(6);
+            const data = line.slice(6).trim();
             if (data === '[DONE]') {
+              console.log('ZAI Stream completed, hasContent:', hasContent);
               yield { type: 'done' };
               return;
             }
 
+            if (data === '') continue; // Skip empty data lines
+
             try {
               const chunk: OpenAIStreamChunk = JSON.parse(data);
+              console.log('ZAI Stream chunk:', chunk);
+              
               const streamChunk = this.parseStreamChunk(chunk);
               if (streamChunk) {
+                if (streamChunk.type === 'text' && streamChunk.text) {
+                  hasContent = true;
+                }
                 yield streamChunk;
               }
             } catch (error) {
-              console.warn('Failed to parse stream chunk:', error);
+              console.warn('Failed to parse ZAI stream chunk:', { data, error });
             }
           }
         }
+      }
+      
+      // If we reach here without content, yield an error
+      if (!hasContent) {
+        console.warn('ZAI stream ended without content');
+        yield { type: 'text', text: 'No response received from ZAI API. Please check your API key and plan configuration.' };
       }
     } finally {
       reader.releaseLock();
