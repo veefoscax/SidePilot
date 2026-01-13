@@ -229,6 +229,7 @@ export function MultiProviderManager() {
                 onSaveAndCollapse={() => {
                   // Save current configuration to store before collapsing
                   if (config.provider) {
+                    const providerInfo = getProviderInfo(config.provider);
                     if (providerInfo?.requiresApiKey) {
                       store.setProviderConfig(config.provider, { 
                         apiKey: config.apiKey,
@@ -394,7 +395,12 @@ function ProviderConfigCard({
     setIsTesting(true);
     
     try {
-      const success = await store.testProviderConnection(config.provider);
+      // Add minimum delay to show loading state
+      const [success] = await Promise.all([
+        store.testProviderConnection(config.provider),
+        new Promise(resolve => setTimeout(resolve, 500)) // Minimum 500ms delay
+      ]);
+      
       console.log('✅ Connection test result:', success);
       setIsTesting(false);
       

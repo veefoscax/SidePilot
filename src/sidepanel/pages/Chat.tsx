@@ -98,7 +98,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
 
       for await (const chunk of stream) {
         if (chunk.type === 'text') {
-          const chunkContent = chunk.content || '';
+          const chunkContent = chunk.text || '';
           fullContent += chunkContent;
           appendStreamContent(chunkContent);
         } else if (chunk.type === 'tool_call') {
