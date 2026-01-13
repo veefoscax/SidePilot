@@ -65,7 +65,7 @@ export function MultiProviderManager() {
   // Show toast when provider has error
   useEffect(() => {
     providerConfigs.forEach(config => {
-      if (config.provider) {
+      if (config.provider && store.providers) {
         const storeConfig = store.providers[config.provider];
         if (storeConfig?.error && !storeConfig.isConnected) {
           // Only show toast if we haven't shown it recently
@@ -277,7 +277,7 @@ function ProviderConfigCard({
   const supportedProviders = getSupportedProviders(); // All 40+ providers
   
   const providerInfo = config.provider ? getProviderInfo(config.provider) : null;
-  const storeConfig = config.provider ? store.providers[config.provider] : null;
+  const storeConfig = config.provider ? (store.providers[config.provider] || null) : null;
   const availableModels = config.provider ? (store.availableModelsByProvider?.[config.provider] || []) : [];
   const isLoadingModels = config.provider ? store.loadingProviders?.includes(config.provider) : false;
   

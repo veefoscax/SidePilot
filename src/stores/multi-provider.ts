@@ -156,6 +156,12 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         const { providers } = get();
         const providerConfig = providers[type];
         
+        // Ensure provider config exists
+        if (!providerConfig) {
+          console.error(`Provider config not found for ${type}`);
+          return false;
+        }
+        
         const providerInfo = getProviderInfo(type);
         if (!providerConfig.isConfigured && providerInfo.requiresApiKey) {
           set(state => ({
@@ -212,6 +218,12 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         
         // Don't load if already loading
         if (loadingProviders.includes(type)) return;
+        
+        // Ensure provider config exists
+        if (!providerConfig) {
+          console.error(`Provider config not found for ${type}`);
+          return;
+        }
         
         // Only load if provider is configured
         const providerInfo = getProviderInfo(type);
