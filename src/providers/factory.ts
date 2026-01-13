@@ -1,16 +1,18 @@
 /**
  * SidePilot Provider Factory
  * 
- * Factory function to create LLM providers with unified interface.
- * Supports 40+ providers including Anthropic, OpenAI, Google, DeepSeek, Ollama, and more.
+ * Enhanced factory function to create LLM providers with unified interface.
+ * Supports 40+ providers with automatic configuration application.
  */
 
-import { ProviderType, ProviderConfig, LLMProvider, ProviderError } from './types';
+import { ProviderType, ProviderConfig, UserProviderConfig, LLMProvider, ProviderError } from './types';
 import { AnthropicProvider } from './anthropic';
 import { OpenAIProvider } from './openai';
 import { GoogleProvider } from './google';
 import { OllamaProvider } from './ollama';
 import { LMStudioProvider } from './lmstudio';
+import { ZAIProvider } from './zai';
+import { getProviderConfig, requiresApiKey, requiresGroupId } from './provider-configs';
 
 /**
  * Provider class registry
@@ -35,7 +37,7 @@ const PROVIDER_CLASSES: Record<ProviderType, new (config: ProviderConfig) => LLM
   together: OpenAIProvider,
   fireworks: OpenAIProvider,
   moonshot: OpenAIProvider,
-  zai: OpenAIProvider,
+  zai: ZAIProvider, // Use dedicated ZAI provider
   huggingface: OpenAIProvider,
   xai: OpenAIProvider,
   cerebras: OpenAIProvider,
@@ -66,22 +68,50 @@ const PROVIDER_CLASSES: Record<ProviderType, new (config: ProviderConfig) => LLM
 };
 
 /**
- * Create a provider instance
+ * Create a provider instance with enhanced configuration
  * 
- * @param config Provider configuration including type, API key, and options
+ * @param type Provider type
+ * @param userConfig User-provided configuration
  * @returns Configured LLM provider instance
  * @throws ProviderError if provider type is unknown or configuration is invalid
  */
-export function createProvider(config: ProviderConfig): LLMProvider {
-  const ProviderClass = PROVIDER_CLASSES[config.type];
-  
+export function createProvider(type: ProviderType, userConfig: UserProviderConfig = {}): LLMProvider {
+  // Validate provider type
+  const ProviderClass = PROVIDER_CLASSES[type];
   if (!ProviderClass) {
     throw new ProviderError(
-      `Unknown provider type: ${config.type}. Supported providers: ${Object.keys(PROVIDER_CLASSES).join(', ')}`,
-      config.type,
+      `Unknown provider type: ${type}. Supported providers: ${Object.keys(PROVIDER_CLASSES).join(', ')}`,
+      type,
       'UNKNOWN_PROVIDER'
     );
   }
+
+  // Get provider template configuration
+  const template = getProviderConfig(type);
+  if (!template) {
+    throw new ProviderError(
+      `No configuration template found for provider: ${type}`,
+      type,
+      'MISSING_CONFIG_TEMPLATE'
+    );
+  }
+
+  // Validate required configuration
+  validateProviderConfig(type, userConfig);
+
+  // Build complete provider configuration
+  const config: ProviderConfig = {
+    type,
+    apiKey: userConfig.apiKey,
+    baseUrl: userConfig.baseUrl || template.baseUrl,
+    extraHeaders: { ...template.extraHeaders, ...userConfig.extraHeaders },
+    groupId: userConfig.groupId,
+    // Provider-specific fields
+    authMethod: template.authMethod,
+    authHeader: template.authHeader,
+    authParam: template.authParam,
+    requiresGroupId: template.requiresGroupId,
+  };
 
   try {
     return new ProviderClass(config);
@@ -91,10 +121,46 @@ export function createProvider(config: ProviderConfig): LLMProvider {
     }
     
     throw new ProviderError(
-      `Failed to create provider ${config.type}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      config.type,
+      `Failed to create provider ${type}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      type,
       'PROVIDER_CREATION_FAILED'
     );
+  }
+}
+
+/**
+ * Validate provider configuration
+ */
+function validateProviderConfig(type: ProviderType, userConfig: UserProviderConfig): void {
+  // Check API key requirement
+  if (requiresApiKey(type) && !userConfig.apiKey) {
+    throw new ProviderError(
+      `API key is required for ${type} provider`,
+      type,
+      'MISSING_API_KEY'
+    );
+  }
+
+  // Check Group ID requirement (e.g., MiniMax)
+  if (requiresGroupId(type) && !userConfig.groupId) {
+    throw new ProviderError(
+      `Group ID is required for ${type} provider`,
+      type,
+      'MISSING_GROUP_ID'
+    );
+  }
+
+  // Validate base URL format if provided
+  if (userConfig.baseUrl) {
+    try {
+      new URL(userConfig.baseUrl);
+    } catch {
+      throw new ProviderError(
+        `Invalid base URL format: ${userConfig.baseUrl}`,
+        type,
+        'INVALID_BASE_URL'
+      );
+    }
   }
 }
 

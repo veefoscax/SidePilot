@@ -16,11 +16,10 @@ import {
   LLMResponse, 
   StreamChunk, 
   ContentPart,
-  ToolDefinition,
   ToolCall,
   ModelInfo
 } from './types';
-import { getModelsByProvider } from './models-registry';
+import { getProviderConfig } from './provider-configs';
 
 interface OpenAIMessage {
   role: 'system' | 'user' | 'assistant' | 'tool';
@@ -181,37 +180,88 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   async listModels(): Promise<ModelInfo[]> {
-    // For OpenAI, we can fetch available models directly from the API
-    if (this.type === 'openai') {
-      try {
-        const response = await this.makeRequest('/models');
-        const data = await response.json();
-        
-        return data.data
-          .filter((model: any) => model.id.includes('gpt'))
-          .map((model: any) => ({
-            id: model.id,
-            name: model.id,
-            provider: this.type,
-            capabilities: {
-              supportsVision: model.id.includes('gpt-4') && !model.id.includes('gpt-4-turbo-preview'),
-              supportsTools: true,
-              supportsStreaming: true,
-              supportsReasoning: model.id.includes('o1'),
-              supportsPromptCache: false,
-              contextWindow: this.getContextWindow(model.id),
-              maxOutputTokens: this.getMaxOutputTokens(model.id),
-            },
-          }));
-      } catch (error) {
-        console.warn('Failed to fetch OpenAI models:', error);
-        return [];
+    try {
+      // Try to fetch models from the /models endpoint
+      const response = await this.makeRequest('/models');
+      const data = await response.json();
+      
+      if (data.data && Array.isArray(data.data)) {
+        return data.data.map((model: any) => ({
+          id: model.id,
+          name: model.id,
+          provider: this.type,
+          capabilities: {
+            supportsVision: this.supportsVision(model.id),
+            supportsTools: this.supportsTools(model.id),
+            supportsStreaming: true,
+            supportsReasoning: model.id.includes('o1'),
+            supportsPromptCache: false,
+            contextWindow: this.getContextWindow(model.id),
+            maxOutputTokens: this.getMaxOutputTokens(model.id),
+          },
+        }));
       }
+    } catch (error) {
+      console.warn(`Failed to fetch models for ${this.type}:`, error);
     }
 
-    // For other OpenAI-compatible providers, return empty array
-    // Let the UI show "No models available" - they should configure their own models
-    return [];
+    // If API doesn't support /models endpoint, return common models for the provider
+    return this.getDefaultModels();
+  }
+
+  protected getDefaultModels(): ModelInfo[] {
+    const providerConfig = getProviderConfig(this.type);
+    const defaultModelIds = providerConfig?.defaultModels || [];
+    
+    return defaultModelIds.map(modelId => ({
+      id: modelId,
+      name: this.getModelDisplayName(modelId),
+      provider: this.type,
+      capabilities: {
+        supportsVision: this.supportsVision(modelId),
+        supportsTools: this.supportsTools(modelId),
+        supportsStreaming: true,
+        supportsReasoning: this.supportsReasoning(modelId),
+        supportsPromptCache: false,
+        contextWindow: this.getContextWindow(modelId),
+        maxOutputTokens: this.getMaxOutputTokens(modelId),
+      },
+    }));
+  }
+
+  private getModelDisplayName(modelId: string): string {
+    const displayNames: Record<string, string> = {
+      'gpt-4o': 'GPT-4o',
+      'gpt-4o-mini': 'GPT-4o Mini',
+      'o1': 'O1',
+      'o1-mini': 'O1 Mini',
+      'o3-mini': 'O3 Mini',
+      'glm-4.7': 'GLM-4.7',
+      'glm-4.6': 'GLM-4.6',
+      'glm-4.5': 'GLM-4.5',
+      'glm-4-plus': 'GLM-4 Plus',
+      'glm-4-flash': 'GLM-4 Flash',
+      'glm-4v-plus': 'GLM-4V Plus',
+      'glm-4-long': 'GLM-4 Long',
+      'llama-3.3-70b-versatile': 'Llama 3.3 70B',
+      'deepseek-chat': 'DeepSeek Chat',
+      'deepseek-reasoner': 'DeepSeek Reasoner',
+    };
+    
+    return displayNames[modelId] || modelId;
+  }
+
+  private supportsReasoning(modelId: string): boolean {
+    return modelId.includes('o1') || modelId.includes('o3') || modelId.includes('reasoner') || modelId.includes('glm-4.7');
+  }
+
+  private supportsVision(modelId: string): boolean {
+    return modelId.includes('gpt-4') || modelId.includes('claude') || modelId.includes('gemini');
+  }
+
+  private supportsTools(modelId: string): boolean {
+    // Most modern models support tools
+    return !modelId.includes('gpt-3.5-turbo-instruct');
   }
 
   private buildRequest(messages: ChatMessage[], options: ChatOptions): OpenAIRequest {
@@ -316,7 +366,7 @@ export class OpenAIProvider extends BaseProvider {
           toolCalls.push({
             id: toolCall.id,
             name: toolCall.function.name,
-            input: JSON.parse(toolCall.function.arguments),
+            input: JSON.parse(toolCall.function.arguments) as Record<string, unknown>,
           });
         } catch (error) {
           console.warn('Failed to parse tool call arguments:', error);
@@ -397,7 +447,7 @@ export class OpenAIProvider extends BaseProvider {
     }
   }
 
-  private getDefaultModel(): string {
+  protected getDefaultModel(): string {
     switch (this.type) {
       case 'openai':
         return 'gpt-4o';
@@ -409,6 +459,8 @@ export class OpenAIProvider extends BaseProvider {
         return 'deepseek-chat';
       case 'xai':
         return 'grok-2-1212';
+      case 'zai':
+        return 'glm-4.7';
       default:
         return 'gpt-3.5-turbo';
     }

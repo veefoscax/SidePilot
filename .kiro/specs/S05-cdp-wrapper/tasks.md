@@ -1,257 +1,206 @@
-# S05: CDP Wrapper - Tasks (ULTRATHINK Maximum Features)
+# S05: CDP Wrapper - Implementation Plan
 
-## Implementation Checklist
+## Overview
 
-### 1. Core CDP Wrapper Class
-- [x] Create src/lib/cdp-wrapper.ts <!-- id: 0 -->
-- [x] Define all TypeScript interfaces <!-- id: 1 -->
-- [x] Create CDPWrapper class singleton <!-- id: 2 -->
-- [x] Export cdpWrapper instance <!-- id: 3 -->
+This implementation plan provides comprehensive Chrome DevTools Protocol wrapper functionality with maximum browser-use feature parity. The solution implements direct CDP access for browser automation without external dependencies.
 
-### 2. Debugger Management
-- [x] attachDebugger(tabId) with CDP 1.3 <!-- id: 4 -->
-- [x] detachDebugger(tabId) <!-- id: 5 -->
-- [x] sendCommand(tabId, method, params) with auto-attach <!-- id: 6 -->
-- [x] Track attached tabs in Set <!-- id: 7 -->
-- [x] Handle chrome.runtime.lastError <!-- id: 8 -->
-- [x] Auto-reconnect on disconnect <!-- id: 9 -->
-- [x] Global CDP event handler registration <!-- id: 10 -->
+## Tasks
 
-### 3. DOM & Accessibility Tree (browser-use DomService parity)
-- [x] Implement DOMSnapshot.captureSnapshot call <!-- id: 11 -->
-- [x] Implement Accessibility.getFullAXTree call <!-- id: 12 -->
-- [x] Implement DOM.getDocument with pierce iframes <!-- id: 13 -->
-- [x] Parse computed styles (display, visibility, opacity) <!-- id: 14 -->
-- [x] Implement paint order filtering for z-index <!-- id: 15 -->
-- [x] Handle iframe content extraction <!-- id: 16 -->
-- [x] Create WeakRef element map (__claudeElementMap) <!-- id: 17 -->
-- [x] Generate stable ref IDs (__claudeRefCounter) <!-- id: 18 -->
-- [x] Track element states (visible, enabled, focused, checked, expanded) <!-- id: 19 -->
-- [x] Calculate bounding boxes with centerX/centerY <!-- id: 20 -->
-- [x] Generate natural language descriptions <!-- id: 21 -->
-- [x] Create text representation for LLM context <!-- id: 22 -->
-- [x] Filter options: interactiveOnly, visibleOnly, maxDepth <!-- id: 23 -->
+- [ ] 1. Core CDP Wrapper Implementation
+  - Create src/lib/cdp-wrapper.ts with CDPWrapper singleton class
+  - Define all TypeScript interfaces (ClickOptions, ScreenshotOptions, etc.)
+  - Implement debugger attachment/detachment with auto-reconnect
+  - Track attached tabs and handle chrome.runtime.lastError
+  - _Requirements: AC1.1, AC1.2, AC1.3_
 
-### 4. Element Reference System
-- [x] getElementByRef(refId) - retrieve element info <!-- id: 24 -->
-- [x] getElementByIndex(index) - browser-use style indexing <!-- id: 25 -->
-- [x] findElementByDescription(description) - fuzzy matching <!-- id: 26 -->
-- [x] highlightElement(ref, color) - visual overlay <!-- id: 27 -->
-- [x] clearHighlights() - remove all overlays <!-- id: 28 -->
-- [x] Handle WeakRef garbage collection gracefully <!-- id: 29 -->
+- [ ] 1.1 Write unit tests for debugger management
+  - Test attach/detach functionality
+  - Test auto-reconnect behavior
+  - Test error handling
+  - _Requirements: AC1.1_
 
-### 5. Mouse Events (Complete Implementation)
-- [x] dispatchMouseEvent(tabId, params) - base method <!-- id: 30 -->
-- [x] click(tabId, options) - unified click method <!-- id: 31 -->
-- [x] Support coordinates: { x, y } <!-- id: 32 -->
-- [x] Support ref targeting: { ref: "ref_42" } <!-- id: 33 -->
-- [x] Support index targeting: { index: 15 } <!-- id: 34 -->
-- [x] Support description: { description: "..." } <!-- id: 35 -->
-- [x] Support selector: { selector: ".btn" } <!-- id: 36 -->
-- [x] rightClick(target) - context menu <!-- id: 37 -->
-- [x] doubleClick(target) <!-- id: 38 -->
-- [x] tripleClick(target) - select line <!-- id: 39 -->
-- [x] hover(target) - mouse position without click <!-- id: 40 -->
-- [x] drag(from, to) - drag and drop <!-- id: 41 -->
-- [x] scroll(direction, amount) - directional scroll <!-- id: 42 -->
-- [x] scrollToElement(ref) - scroll into view <!-- id: 43 -->
-- [x] scrollToTop() / scrollToBottom() <!-- id: 44 -->
+- [ ] 2. DOM & Accessibility Tree Implementation
+  - Implement DOMSnapshot.captureSnapshot for full DOM with bounding boxes
+  - Implement Accessibility.getFullAXTree for accessibility tree
+  - Parse computed styles (display, visibility, opacity)
+  - Handle iframe content extraction
+  - Create WeakRef element map with stable ref IDs
+  - Generate natural language descriptions for elements
+  - _Requirements: AC1.4, AC1.5, AC1.6, AC1.7, AC1.8, AC1.9, AC1.10_
 
-### 6. Human-Like Mouse Movement
-- [x] moveMouseHumanlike(targetX, targetY) <!-- id: 45 -->
-- [x] generateBezierPath() - cubic bezier with random control points <!-- id: 46 -->
-- [x] Step-by-step movement with delays <!-- id: 47 -->
-- [x] Random click position within element bounds <!-- id: 48 -->
+- [ ] 2.1 Write tests for accessibility tree generation
+  - Test element reference system
+  - Test description generation
+  - Test bounding box calculation
+  - _Requirements: AC1.7, AC1.9_
 
-### 7. Human-Like Delays Generator
-- [x] Create HumanDelayGenerator class <!-- id: 49 -->
-- [x] typeChar() - 50ms ± 30ms variance <!-- id: 50 -->
-- [x] afterClick() - 100ms ± 25ms <!-- id: 51 -->
-- [x] afterScroll() - 150ms ± 25ms <!-- id: 52 -->
-- [x] mouseMoveStep() - per-step delay <!-- id: 53 -->
-- [x] HumanDelayConfig interface <!-- id: 54 -->
-- [x] Toggle human delays on/off from settings <!-- id: 55 -->
+- [ ] 3. Mouse Events Implementation
+  - Implement dispatchMouseEvent base method
+  - Add click methods (single, double, triple, right)
+  - Support targeting: coordinates, ref, index, description, selector
+  - Implement hover, drag & drop, scroll methods
+  - Add human-like mouse movement with Bezier curves
+  - _Requirements: AC2.1, AC2.2, AC2.3, AC2.4, AC2.5, AC2.6, AC2.7, AC2.8, AC2.9, AC2.10, AC2.11, AC2.12, AC2.13_
 
-### 8. Keyboard Events (Complete Implementation)
-- [x] type(text, options) - character by character <!-- id: 56 -->
-- [x] Support delay modes: 'human' | 'fast' | number <!-- id: 57 -->
-- [x] insertText(text) - instant paste via Input.insertText <!-- id: 58 -->
-- [x] sendKeys(keys) - special keys array <!-- id: 59 -->
-- [x] pressKey(key, modifiers) - single key <!-- id: 60 -->
-- [x] pressKeyChord(chord) - parse "Ctrl+Shift+A" <!-- id: 61 -->
-- [x] Complete key definitions map (Enter, Tab, Escape, arrows, etc.) <!-- id: 62 -->
-- [x] Random typing delay variance <!-- id: 63 -->
+- [ ] 3.1 Write tests for mouse interactions
+  - Test click targeting methods
+  - Test human-like movement generation
+  - Test scroll behavior
+  - _Requirements: AC2.1, AC2.5_
 
-### 9. Screenshots (Complete Implementation)
-- [x] screenshot(options) - main method <!-- id: 64 -->
-- [x] Get viewport dimensions via Page.getLayoutMetrics <!-- id: 65 -->
-- [x] Page.captureScreenshot with format/quality <!-- id: 66 -->
-- [x] Handle device pixel ratio scaling <!-- id: 67 -->
-- [x] Capture full page option <!-- id: 68 -->
-- [x] Capture specific element (clip option) <!-- id: 69 -->
-- [x] Annotate with element bounding boxes <!-- id: 70 -->
-- [x] Annotate with element index numbers <!-- id: 71 -->
-- [x] highlightRefs option to emphasize elements <!-- id: 72 -->
-- [x] Resize for token limits (maxWidth/maxHeight) <!-- id: 73 -->
-- [x] Format options: PNG, JPEG, WebP <!-- id: 74 -->
+- [ ] 4. Keyboard Events Implementation
+  - Implement type() with character-by-character delays
+  - Implement insertText() for instant paste
+  - Implement sendKeys() for special keys
+  - Implement pressKeyChord() for key combinations
+  - Add random typing delay variance (20-100ms)
+  - _Requirements: AC3.1, AC3.2, AC3.3, AC3.4, AC3.5, AC3.6, AC3.7_
 
-### 10. Navigation & Browser Control
-- [x] navigate(url) - Page.navigate <!-- id: 75 -->
-- [x] search(query, engine) - construct search URL + navigate <!-- id: 76 -->
-- [x] goBack() - Page.navigateHistory <!-- id: 77 -->
-- [x] goForward() - Page.navigateHistory <!-- id: 78 -->
-- [x] reload() - Page.reload <!-- id: 79 -->
-- [x] wait(seconds) - explicit delay <!-- id: 80 -->
+- [ ] 4.1 Write tests for keyboard interactions
+  - Test typing with delays
+  - Test key chord parsing
+  - Test special key handling
+  - _Requirements: AC3.1, AC3.4_
 
-### 11. Smart Wait System
-- [x] waitForElement(options) - poll for element <!-- id: 81 -->
-- [x] Support ref, description, selector, index <!-- id: 82 -->
-- [x] State conditions: visible/hidden/enabled/disabled <!-- id: 83 -->
-- [x] waitForNavigation(timeout) - listen for load complete <!-- id: 84 -->
-- [x] waitForNetworkIdle(idleTime, timeout) <!-- id: 85 -->
-- [x] waitForSelector(css, timeout) <!-- id: 86 -->
-- [x] waitForText(text, timeout) <!-- id: 87 -->
-- [x] waitForUrl(pattern, timeout) <!-- id: 88 -->
-- [x] Configurable timeout and poll interval <!-- id: 89 -->
+- [ ] 5. Screenshot System Implementation
+  - Implement Page.captureScreenshot for viewport
+  - Add full page and element capture
+  - Handle device pixel ratio scaling
+  - Add element annotation with bounding boxes
+  - Implement resize for token limits
+  - _Requirements: AC4.1, AC4.2, AC4.3, AC4.4, AC4.5, AC4.6, AC4.7, AC4.8, AC4.9, AC4.10_
 
-### 12. Form Controls
-- [x] input(ref, text) - fill text input <!-- id: 90 -->
-- [x] input(ref, text, { clear: true }) - clear first <!-- id: 91 -->
-- [x] getDropdownOptions(ref) - get select options <!-- id: 92 -->
-- [x] selectDropdown(ref, value) - select by value <!-- id: 93 -->
-- [x] selectDropdown(ref, { text }) - select by text <!-- id: 94 -->
-- [x] setCheckbox(ref, checked) - check/uncheck <!-- id: 95 -->
-- [x] setRadio(ref) - select radio <!-- id: 96 -->
-- [x] uploadFile(ref, filePath) - DOM.setFileInputFiles <!-- id: 97 -->
+- [ ] 5.1 Write tests for screenshot capture
+  - Test annotation rendering
+  - Test resizing behavior
+  - _Requirements: AC4.5, AC4.8_
 
-### 13. Tab Management
-- [x] getTabs() - chrome.tabs.query <!-- id: 98 -->
-- [x] switchTab(tabId) - chrome.tabs.update active <!-- id: 99 -->
-- [x] createTab(url) - chrome.tabs.create <!-- id: 100 -->
-- [x] closeTab(tabId) - chrome.tabs.remove <!-- id: 101 -->
-- [x] getActiveTab() - current active tab info <!-- id: 102 -->
+- [ ] 6. Navigation & Browser Control
+  - Implement navigate(url) with Page.navigate
+  - Implement search(query, engine) with engine URL construction
+  - Implement history navigation (back, forward)
+  - Implement page reload
+  - Add waitForNavigation and waitForNetworkIdle
+  - _Requirements: AC5.1, AC5.2, AC5.3, AC5.4, AC5.5, AC5.6, AC5.7, AC5.8_
 
-### 14. JavaScript Execution
-- [x] evaluate(code) - Runtime.evaluate <!-- id: 103 -->
-- [x] evaluate(code, { returnByValue }) - get JSON result <!-- id: 104 -->
-- [x] callFunction(func, args) - Runtime.callFunctionOn <!-- id: 105 -->
-- [x] Handle async functions and promises <!-- id: 106 -->
+- [ ] 7. Smart Wait System Implementation
+  - Implement waitForElement with ref/description/selector/index support
+  - Add state conditions: visible/hidden/enabled/disabled
+  - Implement waitForSelector, waitForText, waitForUrl
+  - Add configurable timeout and poll interval
+  - Implement auto-retry with exponential backoff
+  - _Requirements: AC6.1, AC6.2, AC6.3, AC6.4, AC6.5, AC6.6, AC6.7, AC6.8, AC6.9, AC6.10_
 
-### 15. Content Extraction
-- [x] getText() - get body textContent <!-- id: 107 -->
-- [x] getHtml() - get outerHTML <!-- id: 108 -->
-- [x] extract(schema) - LLM-based structured extraction <!-- id: 109 -->
-- [x] findText(query) - search and scroll to text <!-- id: 110 -->
-- [x] getLinks() - extract all links <!-- id: 111 -->
-- [x] getImages() - extract all images <!-- id: 112 -->
+- [ ] 8. Checkpoint - Test Core CDP Functionality
+  - Ensure all tests pass, ask the user if questions arise.
 
-### 16. Network Monitoring
-- [x] enableNetworkTracking() - Network.enable <!-- id: 113 -->
-- [x] Handle Network.requestWillBeSent events <!-- id: 114 -->
-- [x] Handle Network.responseReceived events <!-- id: 115 -->
-- [x] getNetworkRequests() - get recent requests <!-- id: 116 -->
-- [x] Limit to MAX_REQUESTS (100) <!-- id: 117 -->
-- [x] setExtraHeaders(headers) - Network.setExtraHTTPHeaders <!-- id: 118 -->
-- [x] setCookie(cookie) - Network.setCookie <!-- id: 119 -->
-- [x] getCookies() - Network.getCookies <!-- id: 120 -->
+- [ ] 9. Form Controls Implementation
+  - Implement input() for text fields with clear option
+  - Implement getDropdownOptions() and selectDropdown()
+  - Implement setCheckbox() and setRadio()
+  - Implement uploadFile() with DOM.setFileInputFiles
+  - _Requirements: AC7.1, AC7.2, AC7.3, AC7.4, AC7.5, AC7.6, AC7.7, AC7.8_
 
-### 17. Console Tracking
-- [x] enableConsoleTracking() - Runtime.enable <!-- id: 121 -->
-- [x] Handle Runtime.consoleAPICalled events <!-- id: 122 -->
-- [x] Handle Runtime.exceptionThrown events <!-- id: 123 -->
-- [x] getConsoleLogs() - get recent logs <!-- id: 124 -->
-- [x] Limit to MAX_LOGS (100) <!-- id: 125 -->
-- [x] Capture stack traces <!-- id: 126 -->
+- [ ] 10. Tab Management Implementation
+  - Implement getTabs(), switchTab(), createTab(), closeTab()
+  - Implement getActiveTab() with tab info
+  - Add tab groups support
+  - _Requirements: AC8.1, AC8.2, AC8.3, AC8.4, AC8.5, AC8.6_
 
-### 18. Emulation
-- [x] setViewport(width, height, deviceScaleFactor) <!-- id: 127 -->
-- [x] setUserAgent(userAgent) - Emulation.setUserAgentOverride <!-- id: 128 -->
-- [x] setGeolocation(lat, lon) - Emulation.setGeolocationOverride <!-- id: 129 -->
-- [x] setTimezone(id) - Emulation.setTimezoneOverride <!-- id: 130 -->
-- [x] setLocale(locale) - Emulation.setLocaleOverride <!-- id: 131 -->
+- [ ] 11. JavaScript Execution Implementation
+  - Implement evaluate() with Runtime.evaluate
+  - Support returnByValue option for JSON results
+  - Implement callFunction() with arguments
+  - Handle async functions and promises
+  - _Requirements: AC9.1, AC9.2, AC9.3, AC9.4_
 
-### 19. Visual Indicators
-- [x] showClickIndicator(x, y) - visual dot on click <!-- id: 132 -->
-- [x] showAgentIndicator() - pulsing border around page <!-- id: 133 -->
-- [x] hideAgentIndicator() <!-- id: 134 -->
-- [x] hideIndicatorsDuringScreenshot() <!-- id: 135 -->
+- [ ] 12. Content Extraction Implementation
+  - Implement getText(), getHtml()
+  - Implement extract() for LLM-based structured extraction
+  - Implement findText() with scroll-to functionality
+  - Implement getLinks(), getImages()
+  - _Requirements: AC10.1, AC10.2, AC10.3, AC10.4, AC10.5, AC10.6_
 
-### 20. Browser-Use Cloud SDK Integration
-- [x] Create src/lib/browser-use-client.ts <!-- id: 136 -->
-- [x] BrowserUseClient class wrapping SDK <!-- id: 137 -->
-- [x] createTask(task) method <!-- id: 138 -->
-- [x] task.complete() with streaming <!-- id: 139 -->
-- [x] Error handling and retries <!-- id: 140 -->
-- [x] API key validation <!-- id: 141 -->
+- [ ] 13. Network Monitoring Implementation
+  - Implement enableNetworkTracking()
+  - Handle Network.requestWillBeSent and responseReceived events
+  - Implement getNetworkRequests() with MAX_REQUESTS limit
+  - Add setExtraHeaders(), setCookie(), getCookies(), clearCookies()
+  - _Requirements: AC11.1, AC11.2, AC11.3, AC11.4, AC11.5, AC11.6, AC11.7, AC11.8_
 
-### 21. Browser-Use Native Backend Integration
-- [x] Create src/lib/native-host-client.ts <!-- id: 142 -->
-- [x] NativeHostClient class using chrome.runtime.connectNative <!-- id: 143 -->
-- [x] Python environment detection <!-- id: 144 -->
-- [x] Auto-install browser-use via pip <!-- id: 145 -->
-- [x] Native Messaging Host manifest generation <!-- id: 146 -->
-- [x] Message protocol between extension and Python <!-- id: 147 -->
-- [x] Connection health checks <!-- id: 148 -->
+- [ ] 14. Console Tracking Implementation
+  - Implement enableConsoleTracking()
+  - Handle Runtime.consoleAPICalled and exceptionThrown events
+  - Implement getConsoleLogs() with MAX_LOGS limit
+  - Capture exception stack traces
+  - _Requirements: AC12.1, AC12.2, AC12.3, AC12.4, AC12.5, AC12.6_
 
-### 22. Settings UI
-- [x] Create src/components/settings/BrowserAutomationSettings.tsx <!-- id: 149 -->
-- [x] Backend selector (builtin/cloud/native) <!-- id: 150 -->
-- [x] API key input for cloud backend <!-- id: 151 -->
-- [x] Python path configuration for native <!-- id: 152 -->
-- [x] Auto-install button for native <!-- id: 153 -->
-- [x] Connection test buttons <!-- id: 154 -->
-- [x] Human-like delays toggle <!-- id: 155 -->
-- [x] Screenshot annotation toggle <!-- id: 156 -->
-- [x] Max screenshot dimensions <!-- id: 157 -->
-- [x] Integrate into provider settings page <!-- id: 158 -->
+- [ ] 15. Emulation Implementation
+  - Implement setViewport() with device scale factor
+  - Implement setUserAgent(), setGeolocation(), setTimezone(), setLocale()
+  - Add mobile device emulation support
+  - _Requirements: AC13.1, AC13.2, AC13.3, AC13.4, AC13.5, AC13.6_
 
-### 23. Testing
-- [x] Test screenshot on various pages <!-- id: 159 -->
-- [x] Test smart click by ref/index/description <!-- id: 160 -->
-- [x] Test accessibility tree generation <!-- id: 161 -->
-- [x] Test human-like mouse movement <!-- id: 162 -->
-- [x] Test smart waits with timeouts <!-- id: 163 -->
-- [x] Test form controls (input, dropdown, checkbox) <!-- id: 164 -->
-- [x] Test file upload <!-- id: 165 -->
-- [x] Test keyboard shortcuts <!-- id: 166 -->
-- [x] Test network monitoring <!-- id: 167 -->
-- [x] Test cloud SDK integration (if API key available) <!-- id: 168 -->
-- [x] Test native backend (if Python available) <!-- id: 169 -->
+- [ ] 16. Visual Indicators Implementation
+  - Implement showClickIndicator() with visual dot
+  - Implement showAgentIndicator() with pulsing border
+  - Implement hideIndicatorsDuringScreenshot()
+  - _Requirements: AC14.1, AC14.2, AC14.3, AC14.4_
 
-### 24. Automated Testing (Playwright)
-- [x] Install Playwright dependencies <!-- id: 170 -->
-- [x] Create build verification tests <!-- id: 171 -->
-- [x] Create integration tests for CDP commands <!-- id: 172 -->
-- [x] Add test script to package.json <!-- id: 173 -->
-- [x] Update DEVLOG with results <!-- id: 174 -->
+- [ ] 17. Human Delays System Implementation
+  - Create src/lib/human-delays.ts with HumanDelayGenerator class
+  - Implement randomized typing speed (20-100ms variance)
+  - Implement natural mouse curves with Bezier paths
+  - Add random click position jitter within elements
+  - Add scroll speed variation
+  - _Requirements: AC15.1, AC15.2, AC15.3, AC15.4, AC15.5, AC15.6_
 
----
+- [ ] 18. Checkpoint - Test Advanced Features
+  - Ensure all tests pass, ask the user if questions arise.
 
-## Success Criteria
-- ✅ Accessibility tree generates complete semantic structure
-- ✅ Smart click works by ref, index, description, or coordinates
-- ✅ Human-like interactions with Bezier curves and random delays
-- ✅ All form controls work (input, dropdown, checkbox, file upload)
-- ✅ Smart waits properly poll for element states
-- ✅ Screenshots support annotations and resizing
-- ✅ Network and console monitoring functional
-- ✅ Settings UI allows backend selection
-- ✅ Cloud SDK integration (optional)
-- ✅ Native backend integration (optional)
+- [ ] 19. Browser-Use Cloud SDK Integration
+  - Create src/lib/browser-use-client.ts
+  - Implement BrowserUseClient class with API key auth
+  - Add task creation and streaming methods
+  - Implement session management
+  - _Requirements: Settings UI Option 2_
 
-## Browser-Use Feature Parity
+- [ ] 20. Native Backend Integration
+  - Create src/lib/native-host-client.ts
+  - Implement NativeHostClient with chrome.runtime.connectNative
+  - Add Python environment detection
+  - Implement connection testing and health monitoring
+  - _Requirements: Settings UI Option 3_
 
-| Browser-Use Feature | Built-in CDP | Cloud SDK | Native |
-|---------------------|--------------|-----------|--------|
-| click/input/scroll | ✅ | ✅ | ✅ |
-| Accessibility Tree | ✅ | ✅ | ✅ |
-| Human-like delays | ✅ | ✅ | ✅ |
-| Screenshot | ✅ | ✅ | ✅ |
-| Form automation | ✅ | ✅ | ✅ |
-| File upload | ✅ | ✅ | ✅ |
-| Search engines | ✅ | ✅ | ✅ |
-| Tab management | ✅ | ✅ | ✅ |
-| JavaScript eval | ✅ | ✅ | ✅ |
-| Network headers | ✅ | ✅ | ✅ |
-| Stealth mode | ⚠️ Basic | ✅ Full | ✅ Full |
-| File system access | ❌ | ✅ | ✅ |
+- [ ] 21. Settings UI Component
+  - Create src/components/settings/BrowserAutomationSettings.tsx
+  - Implement backend selection (builtin/cloud/native)
+  - Add API key input for cloud SDK
+  - Add Python path configuration for native
+  - Add human delays and screenshot settings
+  - Implement connection test buttons
+  - _Requirements: Settings UI Requirements_
+
+- [ ] 22. Integration Testing
+  - Test CDP wrapper with real browser interactions
+  - Test cloud SDK connection and task execution
+  - Test native backend setup flow
+  - Test settings persistence
+  - _Requirements: All_
+
+- [ ] 23. Documentation and Examples
+  - Update PROVIDER_LIST.md with CDP wrapper info
+  - Add troubleshooting guide for common issues
+  - Create usage examples for each feature category
+  - _Requirements: Supporting documentation_
+
+- [ ] 24. Final Checkpoint - Complete System Verification
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- All tasks are required for comprehensive CDP wrapper implementation
+- Each task references specific acceptance criteria for traceability
+- Checkpoints (8, 18, 24) ensure system stability before proceeding
+- ZAI-style endpoint configuration should be verified against actual API docs
+- Human delays are critical for stealth mode anti-detection

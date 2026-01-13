@@ -48,7 +48,8 @@ export type ProviderType =
   | "aimlapi"
   | "shuttleai"
   | "cloudflare"
-  | "workers-ai";
+  | "workers-ai"
+  | "minimax";
 
 export interface ModelCapabilities {
   supportsVision: boolean;
@@ -75,7 +76,7 @@ export interface ModelInfo {
 
 export interface ProviderConfig {
   type: ProviderType;
-  apiKey: string;
+  apiKey?: string;
   baseUrl?: string;
   extraHeaders?: Record<string, string>;
   defaultModel?: string;
@@ -83,7 +84,29 @@ export interface ProviderConfig {
   organizationId?: string; // OpenAI
   projectId?: string; // Google
   region?: string; // AWS Bedrock
+  groupId?: string; // MiniMax
+  authMethod?: 'bearer' | 'header' | 'query' | 'none';
+  authHeader?: string;
+  authParam?: string;
+  requiresGroupId?: boolean;
+  specialConfig?: string;
 }
+
+export interface UserProviderConfig {
+  apiKey?: string;
+  baseUrl?: string;
+  groupId?: string; // For MiniMax
+  extraHeaders?: Record<string, string>;
+}
+
+export interface ConnectionResult {
+  success: boolean;
+  models?: ModelInfo[];
+  error?: ProviderError;
+  timestamp: Date;
+}
+
+export type ConnectionStatus = 'untested' | 'healthy' | 'degraded' | 'unhealthy';
 
 export interface ContentPart {
   type: "text" | "image";
@@ -166,12 +189,17 @@ export interface LLMProvider {
   /**
    * Test if the provider configuration is valid
    */
-  testConnection(): Promise<boolean>;
+  testConnection(): Promise<ConnectionResult>;
 
   /**
    * List available models (optional - not all providers support this)
    */
   listModels?(): Promise<ModelInfo[]>;
+
+  /**
+   * Get connection status
+   */
+  getConnectionStatus(): ConnectionStatus;
 }
 
 /**
@@ -199,6 +227,13 @@ export class RateLimitError extends ProviderError {
   constructor(provider: ProviderType, message = 'Rate limit exceeded') {
     super(message, provider, 'RATE_LIMIT');
     this.name = 'RateLimitError';
+  }
+}
+
+export class NetworkError extends ProviderError {
+  constructor(provider: ProviderType, message = 'Network error occurred') {
+    super(message, provider, 'NETWORK_ERROR');
+    this.name = 'NetworkError';
   }
 }
 

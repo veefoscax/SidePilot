@@ -9,7 +9,6 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ProviderType, ModelInfo, LLMProvider } from '@/providers/types';
 import { createProvider, getProviderInfo } from '@/providers/factory';
-import { getModelsByProvider } from '@/providers/models-registry';
 
 interface ProviderState {
   // Configuration
@@ -34,6 +33,9 @@ interface ProviderState {
   setApiKey: (key: string) => void;
   setBaseUrl: (url: string) => void;
   setModel: (modelId: string) => void;
+  addModel: (modelId: string) => void;
+  removeModel: (modelId: string) => void;
+  toggleModel: (modelId: string) => void;
   testConnection: () => Promise<boolean>;
   initializeProvider: () => Promise<void>;
   clearError: () => void;
@@ -116,13 +118,10 @@ export const useProviderStore = create<ProviderState>()(
           
           if (!providerInfo.requiresApiKey || hasApiKey) {
             try {
-              const config = {
-                type,
-                apiKey: providerInfo.requiresApiKey ? apiKey : '',
+              const tempProvider = createProvider(type, {
+                apiKey: providerInfo.requiresApiKey ? apiKey : undefined,
                 baseUrl: get().baseUrl,
-              };
-              
-              const tempProvider = createProvider(config);
+              });
               
               // If provider supports listModels, use it
               if (tempProvider.listModels) {
@@ -224,7 +223,7 @@ export const useProviderStore = create<ProviderState>()(
       },
       
       testConnection: async () => {
-        const { selectedProvider, apiKey, selectedModel, baseUrl } = get();
+        const { selectedProvider, apiKey, baseUrl } = get();
         
         const providerInfo = getProviderInfo(selectedProvider);
         if (providerInfo.requiresApiKey && !apiKey) {
@@ -235,22 +234,20 @@ export const useProviderStore = create<ProviderState>()(
         set({ isLoading: true, error: null });
         
         try {
-          const provider = createProvider({
-            type: selectedProvider,
+          const provider = createProvider(selectedProvider, {
             apiKey,
             baseUrl,
-            defaultModel: selectedModel,
           });
           
-          const success = await provider.testConnection();
+          const result = await provider.testConnection();
           
           set({ 
-            isConnected: success, 
-            provider: success ? provider : null,
-            error: success ? null : 'Connection test failed'
+            isConnected: result.success, 
+            provider: result.success ? provider : null,
+            error: result.success ? null : result.error?.message || 'Connection test failed'
           });
           
-          return success;
+          return result.success;
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
           set({ 
@@ -265,7 +262,7 @@ export const useProviderStore = create<ProviderState>()(
       },
       
       initializeProvider: async () => {
-        const { selectedProvider, apiKey, selectedModel, baseUrl } = get();
+        const { selectedProvider, apiKey, baseUrl } = get();
         
         const providerInfo = getProviderInfo(selectedProvider);
         if (providerInfo.requiresApiKey && !apiKey) {
@@ -273,11 +270,9 @@ export const useProviderStore = create<ProviderState>()(
         }
         
         try {
-          const provider = createProvider({
-            type: selectedProvider,
+          const provider = createProvider(selectedProvider, {
             apiKey,
             baseUrl,
-            defaultModel: selectedModel,
           });
           
           set({ provider, error: null });
