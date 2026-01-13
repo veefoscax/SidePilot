@@ -1306,9 +1306,9 @@ export class CDPWrapper {
   }
 
   /**
-   * Wait for CSS selector to appear
+   * Wait for text to appear on page
    */
-  async waitForSelector(tabId: number, selector: string, options: WaitOptions = {}): Promise<void> {
+  async waitForText(tabId: number, text: string, options: WaitOptions = {}): Promise<void> {
     const {
       timeout = 10000,
       interval = 500
@@ -1318,25 +1318,9 @@ export class CDPWrapper {
 
     while (Date.now() - startTime < timeout) {
       try {
-        const [selectorResult] = await chrome.scripting.executeScript({
-          target: { tabId },
-          func: (cssSelector) => {
-            const element = document.querySelector(cssSelector);
-            if (!element) return false;
-
-            const rect = element.getBoundingClientRect();
-            const style = window.getComputedStyle(element);
-            
-            return rect.width > 0 && 
-                   rect.height > 0 && 
-                   style.visibility !== 'hidden' && 
-                   style.display !== 'none';
-          },
-          args: [selector]
-        });
-
-        if (selectorResult.result) {
-          return; // Element found
+        const found = await this.findText(tabId, text);
+        if (found) {
+          return; // Text found
         }
 
         await this.humanDelays.wait(interval);
@@ -1346,54 +1330,112 @@ export class CDPWrapper {
       }
     }
 
-    throw new Error(`Selector "${selector}" not found within ${timeout}ms`);
+    throw new Error(`Text "${text}" not found within ${timeout}ms`);
   }
 
   /**
-   * Wait for network to be idle
+   * Wait for URL to match pattern
    */
-  async waitForNetworkIdle(tabId: number, idleTime: number = 2000, options: WaitOptions = {}): Promise<void> {
+  async waitForUrl(tabId: number, pattern: string | RegExp, options: WaitOptions = {}): Promise<void> {
     const {
-      timeout = 30000
+      timeout = 10000,
+      interval = 500
     } = options;
 
     const startTime = Date.now();
-    let lastNetworkActivity = Date.now();
+    const regex = typeof pattern === 'string' ? new RegExp(pattern) : pattern;
 
-    return new Promise((resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        reject(new Error(`Network idle timeout after ${timeout}ms`));
-      }, timeout);
+    while (Date.now() - startTime < timeout) {
+      try {
+        const [urlResult] = await chrome.scripting.executeScript({
+          target: { tabId },
+          func: () => window.location.href
+        });
 
-      // Listen for network events
-      const handleNetworkEvent = (source: any, method: string, params: any) => {
-        if (source.tabId === tabId && (
-          method === 'Network.requestWillBeSent' || 
-          method === 'Network.responseReceived'
-        )) {
-          lastNetworkActivity = Date.now();
+        const currentUrl = urlResult.result;
+        if (regex.test(currentUrl)) {
+          return; // URL matches
         }
-      };
 
-      chrome.debugger.onEvent.addListener(handleNetworkEvent);
+        await this.humanDelays.wait(interval);
 
-      // Check for idle state periodically
-      const checkIdle = () => {
-        const now = Date.now();
-        const timeSinceLastActivity = now - lastNetworkActivity;
+      } catch (error) {
+        await this.humanDelays.wait(interval);
+      }
+    }
 
-        if (timeSinceLastActivity >= idleTime) {
-          clearTimeout(timeoutId);
-          chrome.debugger.onEvent.removeListener(handleNetworkEvent);
-          resolve();
-        } else if (now - startTime < timeout) {
-          setTimeout(checkIdle, 100);
-        }
-      };
+    throw new Error(`URL pattern "${pattern}" not matched within ${timeout}ms`);
+  }
 
-      // Start checking after initial delay
-      setTimeout(checkIdle, idleTime);
-    });
+  /**
+   * Set extra HTTP headers
+   */
+  async setExtraHeaders(tabId: number, headers: Record<string, string>): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      await this.sendCommand(tabId, 'Network.setExtraHTTPHeaders', {
+        headers
+      });
+
+    } catch (error) {
+      console.error(`Failed to set extra headers on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set cookie
+   */
+  async setCookie(tabId: number, cookie: {
+    name: string;
+    value: string;
+    domain?: string;
+    path?: string;
+    expires?: number;
+    httpOnly?: boolean;
+    secure?: boolean;
+  }): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      await this.sendCommand(tabId, 'Network.setCookie', cookie);
+
+    } catch (error) {
+      console.error(`Failed to set cookie on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all cookies
+   */
+  async getCookies(tabId: number): Promise<any[]> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      const result = await this.sendCommand(tabId, 'Network.getCookies');
+      return result.cookies || [];
+
+    } catch (error) {
+      console.error(`Failed to get cookies from tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Clear all cookies
+   */
+  async clearCookies(tabId: number): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      await this.sendCommand(tabId, 'Network.clearBrowserCookies');
+
+    } catch (error) {
+      console.error(`Failed to clear cookies on tab ${tabId}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -1401,6 +1443,811 @@ export class CDPWrapper {
    */
   async wait(tabId: number, seconds: number): Promise<void> {
     await this.humanDelays.wait(seconds * 1000);
+  }
+
+  // ===== NAVIGATION & BROWSER CONTROL =====
+
+  /**
+   * Navigate to a URL
+   */
+  async navigate(tabId: number, url: string): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      await this.sendCommand(tabId, 'Page.navigate', { url });
+    } catch (error) {
+      console.error(`Failed to navigate to ${url} on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search using specified search engine
+   */
+  async search(tabId: number, query: string, engine: 'google' | 'duckduckgo' | 'bing' = 'duckduckgo'): Promise<void> {
+    const searchUrls = {
+      google: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+      duckduckgo: `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+      bing: `https://www.bing.com/search?q=${encodeURIComponent(query)}`
+    };
+
+    await this.navigate(tabId, searchUrls[engine]);
+  }
+
+  /**
+   * Go back in browser history
+   */
+  async goBack(tabId: number): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      await this.sendCommand(tabId, 'Page.navigateToHistoryEntry', { entryId: -1 });
+    } catch (error) {
+      console.error(`Failed to go back on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Go forward in browser history
+   */
+  async goForward(tabId: number): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      await this.sendCommand(tabId, 'Page.navigateToHistoryEntry', { entryId: 1 });
+    } catch (error) {
+      console.error(`Failed to go forward on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reload the page
+   */
+  async reload(tabId: number): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      await this.sendCommand(tabId, 'Page.reload');
+    } catch (error) {
+      console.error(`Failed to reload tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  // ===== FORM CONTROLS =====
+
+  /**
+   * Fill text input by reference
+   */
+  async input(tabId: number, ref: string, text: string, options: { clear?: boolean } = {}): Promise<void> {
+    try {
+      // Click on the input to focus it
+      await this.clickElement(tabId, ref);
+      
+      // Clear existing text if requested
+      if (options.clear) {
+        await this.pressKeyChord(tabId, 'Ctrl+A');
+        await this.humanDelays.wait(50);
+      }
+
+      // Type the text
+      await this.type(tabId, text);
+
+    } catch (error) {
+      console.error(`Failed to input text "${text}" to element ${ref} on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get dropdown options
+   */
+  async getDropdownOptions(tabId: number, ref: string): Promise<string[]> {
+    try {
+      const [optionsResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (elementRef) => {
+          const element = window.__claudeAccessibilityTree?.getElementByRef(elementRef);
+          if (!element || element.tagName.toLowerCase() !== 'select') {
+            return [];
+          }
+
+          return Array.from(element.options).map((option: HTMLOptionElement) => ({
+            value: option.value,
+            text: option.text,
+            selected: option.selected
+          }));
+        },
+        args: [ref]
+      });
+
+      return optionsResult.result || [];
+
+    } catch (error) {
+      console.error(`Failed to get dropdown options for element ${ref} on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Select dropdown option by value or text
+   */
+  async selectDropdown(tabId: number, ref: string, option: string | { text: string }): Promise<void> {
+    try {
+      const [selectResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (elementRef, optionValue) => {
+          const element = window.__claudeAccessibilityTree?.getElementByRef(elementRef);
+          if (!element || element.tagName.toLowerCase() !== 'select') {
+            return false;
+          }
+
+          const select = element as HTMLSelectElement;
+          
+          // Try to select by value first, then by text
+          if (typeof optionValue === 'string') {
+            // Select by value
+            select.value = optionValue;
+            if (select.value === optionValue) {
+              select.dispatchEvent(new Event('change', { bubbles: true }));
+              return true;
+            }
+
+            // Select by text
+            for (const option of select.options) {
+              if (option.text === optionValue) {
+                select.value = option.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
+              }
+            }
+          } else if (optionValue.text) {
+            // Select by text
+            for (const option of select.options) {
+              if (option.text === optionValue.text) {
+                select.value = option.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
+              }
+            }
+          }
+
+          return false;
+        },
+        args: [ref, option]
+      });
+
+      if (!selectResult.result) {
+        throw new Error(`Failed to select option "${JSON.stringify(option)}" in dropdown ${ref}`);
+      }
+
+    } catch (error) {
+      console.error(`Failed to select dropdown option for element ${ref} on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set checkbox state
+   */
+  async setCheckbox(tabId: number, ref: string, checked: boolean): Promise<void> {
+    try {
+      const [checkResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (elementRef, shouldCheck) => {
+          const element = window.__claudeAccessibilityTree?.getElementByRef(elementRef);
+          if (!element || element.type !== 'checkbox') {
+            return false;
+          }
+
+          const checkbox = element as HTMLInputElement;
+          if (checkbox.checked !== shouldCheck) {
+            checkbox.checked = shouldCheck;
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+
+          return true;
+        },
+        args: [ref, checked]
+      });
+
+      if (!checkResult.result) {
+        throw new Error(`Element ${ref} is not a checkbox`);
+      }
+
+    } catch (error) {
+      console.error(`Failed to set checkbox ${ref} to ${checked} on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Select radio button
+   */
+  async setRadio(tabId: number, ref: string): Promise<void> {
+    try {
+      const [radioResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (elementRef) => {
+          const element = window.__claudeAccessibilityTree?.getElementByRef(elementRef);
+          if (!element || element.type !== 'radio') {
+            return false;
+          }
+
+          const radio = element as HTMLInputElement;
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+
+          return true;
+        },
+        args: [ref]
+      });
+
+      if (!radioResult.result) {
+        throw new Error(`Element ${ref} is not a radio button`);
+      }
+
+    } catch (error) {
+      console.error(`Failed to select radio button ${ref} on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload file to file input
+   */
+  async uploadFile(tabId: number, ref: string, filePath: string): Promise<void> {
+    try {
+      // Get the element's node ID for CDP
+      const [nodeResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (elementRef) => {
+          const element = window.__claudeAccessibilityTree?.getElementByRef(elementRef);
+          if (!element || element.type !== 'file') {
+            return null;
+          }
+
+          // We need to get the node ID through CDP
+          return element;
+        },
+        args: [ref]
+      });
+
+      if (!nodeResult.result) {
+        throw new Error(`Element ${ref} is not a file input`);
+      }
+
+      // Use CDP to set file input files
+      await this.sendCommand(tabId, 'DOM.setFileInputFiles', {
+        files: [filePath],
+        nodeId: nodeResult.result // This would need proper node ID resolution
+      });
+
+    } catch (error) {
+      console.error(`Failed to upload file to element ${ref} on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  // ===== TAB MANAGEMENT =====
+
+  /**
+   * Get all tabs
+   */
+  async getTabs(): Promise<chrome.tabs.Tab[]> {
+    return new Promise((resolve) => {
+      chrome.tabs.query({}, resolve);
+    });
+  }
+
+  /**
+   * Switch to a tab
+   */
+  async switchTab(tabId: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      chrome.tabs.update(tabId, { active: true }, (tab) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  /**
+   * Create a new tab
+   */
+  async createTab(url?: string): Promise<chrome.tabs.Tab> {
+    return new Promise((resolve, reject) => {
+      chrome.tabs.create({ url }, (tab) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve(tab);
+        }
+      });
+    });
+  }
+
+  /**
+   * Close a tab
+   */
+  async closeTab(tabId: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      chrome.tabs.remove(tabId, () => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  /**
+   * Get active tab
+   */
+  async getActiveTab(): Promise<chrome.tabs.Tab | null> {
+    return new Promise((resolve) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        resolve(tabs[0] || null);
+      });
+    });
+  }
+
+  // ===== JAVASCRIPT EXECUTION =====
+
+  /**
+   * Evaluate JavaScript code
+   */
+  async evaluate(tabId: number, code: string, options: { returnByValue?: boolean } = {}): Promise<any> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      const result = await this.sendCommand(tabId, 'Runtime.evaluate', {
+        expression: code,
+        returnByValue: options.returnByValue || false,
+        awaitPromise: true
+      });
+
+      if (result.exceptionDetails) {
+        throw new Error(`JavaScript execution failed: ${result.exceptionDetails.text}`);
+      }
+
+      return options.returnByValue ? result.result.value : result.result;
+
+    } catch (error) {
+      console.error(`Failed to evaluate JavaScript on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Call function with arguments
+   */
+  async callFunction(tabId: number, func: Function, args: any[] = []): Promise<any> {
+    try {
+      const functionString = func.toString();
+      const argsString = JSON.stringify(args);
+      const code = `(${functionString}).apply(null, ${argsString})`;
+      
+      return await this.evaluate(tabId, code, { returnByValue: true });
+
+    } catch (error) {
+      console.error(`Failed to call function on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  // ===== CONTENT EXTRACTION =====
+
+  /**
+   * Get page text content
+   */
+  async getText(tabId: number): Promise<string> {
+    try {
+      const [textResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => document.body.textContent || ''
+      });
+
+      return textResult.result;
+
+    } catch (error) {
+      console.error(`Failed to get text content from tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get page HTML
+   */
+  async getHtml(tabId: number): Promise<string> {
+    try {
+      const [htmlResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => document.documentElement.outerHTML
+      });
+
+      return htmlResult.result;
+
+    } catch (error) {
+      console.error(`Failed to get HTML content from tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Extract structured data using LLM-based extraction
+   */
+  async extract(tabId: number, schema: any): Promise<any> {
+    try {
+      // This would integrate with the LLM provider to extract structured data
+      // For now, return the accessibility tree as structured data
+      const tree = await this.generateAccessibilityTree(tabId, {
+        interactiveOnly: false,
+        visibleOnly: true,
+        includeText: true,
+        includeBounds: true
+      });
+
+      return {
+        schema,
+        extractedData: tree,
+        timestamp: Date.now()
+      };
+
+    } catch (error) {
+      console.error(`Failed to extract structured data from tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find and scroll to text
+   */
+  async findText(tabId: number, query: string): Promise<boolean> {
+    try {
+      const [findResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (searchQuery) => {
+          // Simple text search and scroll
+          const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null
+          );
+
+          let node;
+          while (node = walker.nextNode()) {
+            if (node.textContent && node.textContent.toLowerCase().includes(searchQuery.toLowerCase())) {
+              const element = node.parentElement;
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return true;
+              }
+            }
+          }
+
+          return false;
+        },
+        args: [query]
+      });
+
+      return findResult.result;
+
+    } catch (error) {
+      console.error(`Failed to find text "${query}" on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all links on page
+   */
+  async getLinks(tabId: number): Promise<Array<{ text: string; href: string }>> {
+    try {
+      const [linksResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          return Array.from(document.querySelectorAll('a[href]')).map(link => ({
+            text: link.textContent?.trim() || '',
+            href: (link as HTMLAnchorElement).href
+          }));
+        }
+      });
+
+      return linksResult.result;
+
+    } catch (error) {
+      console.error(`Failed to get links from tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all images on page
+   */
+  async getImages(tabId: number): Promise<Array<{ alt: string; src: string }>> {
+    try {
+      const [imagesResult] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          return Array.from(document.querySelectorAll('img')).map(img => ({
+            alt: img.alt || '',
+            src: img.src
+          }));
+        }
+      });
+
+      return imagesResult.result;
+
+    } catch (error) {
+      console.error(`Failed to get images from tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  // ===== EMULATION =====
+
+  /**
+   * Set viewport size
+   */
+  async setViewport(tabId: number, width: number, height: number, deviceScaleFactor: number = 1): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      await this.sendCommand(tabId, 'Emulation.setDeviceMetricsOverride', {
+        width,
+        height,
+        deviceScaleFactor,
+        mobile: false
+      });
+
+    } catch (error) {
+      console.error(`Failed to set viewport on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set user agent
+   */
+  async setUserAgent(tabId: number, userAgent: string): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      await this.sendCommand(tabId, 'Emulation.setUserAgentOverride', {
+        userAgent
+      });
+
+    } catch (error) {
+      console.error(`Failed to set user agent on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set geolocation
+   */
+  async setGeolocation(tabId: number, latitude: number, longitude: number): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      await this.sendCommand(tabId, 'Emulation.setGeolocationOverride', {
+        latitude,
+        longitude,
+        accuracy: 1
+      });
+
+    } catch (error) {
+      console.error(`Failed to set geolocation on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set timezone
+   */
+  async setTimezone(tabId: number, timezoneId: string): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      await this.sendCommand(tabId, 'Emulation.setTimezoneOverride', {
+        timezoneId
+      });
+
+    } catch (error) {
+      console.error(`Failed to set timezone on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set locale
+   */
+  async setLocale(tabId: number, locale: string): Promise<void> {
+    try {
+      await this.ensureAttached(tabId);
+      
+      await this.sendCommand(tabId, 'Emulation.setLocaleOverride', {
+        locale
+      });
+
+    } catch (error) {
+      console.error(`Failed to set locale on tab ${tabId}:`, error);
+      throw error;
+    }
+  }
+
+  // ===== VISUAL INDICATORS =====
+
+  /**
+   * Show click indicator at coordinates
+   */
+  async showClickIndicator(tabId: number, x: number, y: number): Promise<void> {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (clickX, clickY) => {
+          // Create click indicator
+          const indicator = document.createElement('div');
+          indicator.style.position = 'absolute';
+          indicator.style.left = `${clickX - 10}px`;
+          indicator.style.top = `${clickY - 10}px`;
+          indicator.style.width = '20px';
+          indicator.style.height = '20px';
+          indicator.style.borderRadius = '50%';
+          indicator.style.backgroundColor = '#ff0000';
+          indicator.style.opacity = '0.8';
+          indicator.style.pointerEvents = 'none';
+          indicator.style.zIndex = '999999';
+          indicator.style.animation = 'claude-click-pulse 0.6s ease-out';
+
+          // Add CSS animation
+          if (!document.getElementById('claude-click-styles')) {
+            const style = document.createElement('style');
+            style.id = 'claude-click-styles';
+            style.textContent = `
+              @keyframes claude-click-pulse {
+                0% { transform: scale(0.5); opacity: 1; }
+                100% { transform: scale(2); opacity: 0; }
+              }
+            `;
+            document.head.appendChild(style);
+          }
+
+          document.body.appendChild(indicator);
+
+          // Remove after animation
+          setTimeout(() => {
+            if (indicator.parentNode) {
+              indicator.parentNode.removeChild(indicator);
+            }
+          }, 600);
+        },
+        args: [x, y]
+      });
+
+    } catch (error) {
+      console.error(`Failed to show click indicator at (${x}, ${y}) on tab ${tabId}:`, error);
+    }
+  }
+
+  /**
+   * Show agent indicator (pulsing border)
+   */
+  async showAgentIndicator(tabId: number): Promise<void> {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          // Remove existing indicator
+          const existing = document.getElementById('claude-agent-indicator');
+          if (existing) existing.remove();
+
+          // Create agent indicator
+          const indicator = document.createElement('div');
+          indicator.id = 'claude-agent-indicator';
+          indicator.style.position = 'fixed';
+          indicator.style.top = '0';
+          indicator.style.left = '0';
+          indicator.style.right = '0';
+          indicator.style.bottom = '0';
+          indicator.style.border = '4px solid #00ff00';
+          indicator.style.pointerEvents = 'none';
+          indicator.style.zIndex = '999998';
+          indicator.style.animation = 'claude-agent-pulse 2s infinite';
+
+          // Add CSS animation
+          if (!document.getElementById('claude-agent-styles')) {
+            const style = document.createElement('style');
+            style.id = 'claude-agent-styles';
+            style.textContent = `
+              @keyframes claude-agent-pulse {
+                0%, 100% { opacity: 0.3; }
+                50% { opacity: 0.8; }
+              }
+            `;
+            document.head.appendChild(style);
+          }
+
+          document.body.appendChild(indicator);
+        }
+      });
+
+    } catch (error) {
+      console.error(`Failed to show agent indicator on tab ${tabId}:`, error);
+    }
+  }
+
+  /**
+   * Hide agent indicator
+   */
+  async hideAgentIndicator(tabId: number): Promise<void> {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          const indicator = document.getElementById('claude-agent-indicator');
+          if (indicator) {
+            indicator.remove();
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error(`Failed to hide agent indicator on tab ${tabId}:`, error);
+    }
+  }
+
+  /**
+   * Hide indicators during screenshot
+   */
+  async hideIndicatorsDuringScreenshot(tabId: number): Promise<void> {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          // Hide all Claude indicators temporarily
+          const indicators = document.querySelectorAll('[id^="claude-"]');
+          indicators.forEach(indicator => {
+            (indicator as HTMLElement).style.display = 'none';
+          });
+
+          // Store original display values for restoration
+          (window as any).__claudeHiddenIndicators = Array.from(indicators).map(el => ({
+            element: el,
+            originalDisplay: (el as HTMLElement).style.display
+          }));
+        }
+      });
+
+    } catch (error) {
+      console.error(`Failed to hide indicators on tab ${tabId}:`, error);
+    }
+  }
+
+  /**
+   * Restore indicators after screenshot
+   */
+  async restoreIndicators(tabId: number): Promise<void> {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          const hiddenIndicators = (window as any).__claudeHiddenIndicators;
+          if (hiddenIndicators) {
+            hiddenIndicators.forEach(({ element, originalDisplay }: any) => {
+              element.style.display = originalDisplay;
+            });
+            delete (window as any).__claudeHiddenIndicators;
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error(`Failed to restore indicators on tab ${tabId}:`, error);
+    }
   }
 }
 
