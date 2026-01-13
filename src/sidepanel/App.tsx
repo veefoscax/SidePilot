@@ -10,7 +10,8 @@ import {
   Settings01Icon, 
   Add01Icon, 
   ArrowUp02Icon,
-  StopIcon 
+  StopIcon,
+  BookOpen01Icon
 } from '@hugeicons/core-free-icons';
 import { initializeTheme } from '@/lib/theme';
 import { useChatStore } from '@/stores/chat';
@@ -20,6 +21,8 @@ import { UserMessage } from '@/components/chat/UserMessage';
 import { AssistantMessage } from '@/components/chat/AssistantMessage';
 import { ThinkingIndicator } from '@/components/chat/ThinkingIndicator';
 import { ErrorCard } from '@/components/chat/ErrorCard';
+import { ModelSelectorDropdown } from '@/components/chat/ModelSelectorDropdown';
+import { ConversationManager } from '@/components/chat/ConversationManager';
 import { MultiProviderManager } from '@/components/settings/MultiProviderManager';
 import { Textarea } from '@/components/ui/textarea';
 import { Toaster } from 'sonner';
@@ -30,6 +33,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [input, setInput] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isConversationsOpen, setIsConversationsOpen] = useState(false);
 
   const { 
     messages, 
@@ -152,24 +156,29 @@ function App() {
       
       {/* Header */}
       <div className="h-12 flex items-center justify-between px-4 shrink-0">
-        {/* Left: Model info */}
+        {/* Left: Model selector */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {currentProvider ? (
-            <>
-              <span className="text-sm font-medium truncate">
-                {currentProvider.model.name}
-              </span>
-              <Badge variant="secondary" className="text-xs">
-                {currentProvider.provider}
-              </Badge>
-            </>
-          ) : (
-            <span className="text-sm text-muted-foreground">No model selected</span>
-          )}
+          <ModelSelectorDropdown />
         </div>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1 shrink-0">
+          <Sheet open={isConversationsOpen} onOpenChange={setIsConversationsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <HugeiconsIcon icon={BookOpen01Icon} className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[400px] sm:w-[540px]">
+              <SheetHeader>
+                <SheetTitle>Conversations</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6">
+                <ConversationManager />
+              </div>
+            </SheetContent>
+          </Sheet>
+
           <Button
             variant="ghost"
             size="icon"
