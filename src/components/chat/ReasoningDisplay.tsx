@@ -37,14 +37,6 @@ export function ReasoningDisplay({
     return null;
   }
 
-  const handleToggle = () => {
-    console.log('🧠 Reasoning toggle clicked:', { 
-      isExpanded, 
-      reasoning: reasoning?.substring(0, 50) + '...' 
-    });
-    setIsExpanded(!isExpanded);
-  };
-
   return (
     <div className={cn("mt-3", className)}>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
@@ -53,7 +45,6 @@ export function ReasoningDisplay({
             variant="ghost"
             size="sm"
             className="h-auto p-2 w-full justify-start text-left hover:bg-muted/50"
-            onClick={handleToggle}
           >
             <div className="flex items-center gap-2 w-full">
               <HugeiconsIcon 

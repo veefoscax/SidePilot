@@ -38,6 +38,9 @@ interface MultiProviderState {
   selectedModels: SelectedModel[]; // Models from all providers
   currentModel: string | null; // Currently active model fullId (provider:model)
   
+  // Provider display order for UI (persisted for drag-and-drop)
+  providerOrder: ProviderType[]; // Order of providers in UI
+  
   // Provider-specific model loading
   availableModelsByProvider: Record<ProviderType, ModelInfo[]>;
   loadingProviders: ProviderType[];
@@ -49,6 +52,11 @@ interface MultiProviderState {
   // Actions - Provider Management
   setProviderConfig: (type: ProviderType, config: Partial<Omit<ProviderConfig, 'type'>>) => void;
   testProviderConnection: (type: ProviderType) => Promise<boolean>;
+  
+  // Actions - Provider Order Management
+  setProviderOrder: (order: ProviderType[]) => void;
+  addProviderToOrder: (type: ProviderType) => void;
+  removeProviderFromOrder: (type: ProviderType) => void;
   
   // Actions - Model Loading
   loadModelsForProvider: (type: ProviderType) => Promise<void>;
@@ -65,6 +73,7 @@ interface MultiProviderState {
   initializeStore: () => void;
   getConfiguredProviders: () => ProviderType[];
   getSelectedModelsByProvider: (provider: ProviderType) => SelectedModel[];
+  getOrderedConfiguredProviders: () => ProviderType[]; // Get providers in display order
   
   // Actions - Active Provider
   getCurrentProvider: () => { provider: ProviderType; model: SelectedModel } | null;
@@ -134,6 +143,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
       providers: createDefaultProviders(),
       selectedModels: [],
       currentModel: null,
+      providerOrder: [], // Will be populated as providers are configured
       availableModelsByProvider: {} as Record<ProviderType, ModelInfo[]>,
       loadingProviders: [],
       isLoading: false,
@@ -169,6 +179,16 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         if (isConfigured && config.apiKey && config.apiKey.trim().length > 0) {
           console.log('🔄 Auto-loading models for configured provider:', type);
           setTimeout(() => get().loadModelsForProvider(type), 100);
+        }
+        
+        // Add to provider order if not already present and is configured
+        if (isConfigured) {
+          const currentOrder = get().providerOrder;
+          if (!currentOrder.includes(type)) {
+            set(state => ({
+              providerOrder: [...state.providerOrder, type]
+            }));
+          }
         }
       },
       
@@ -243,6 +263,26 @@ export const useMultiProviderStore = create<MultiProviderState>()(
           }));
           return false;
         }
+      },
+      
+      // Provider Order Management Actions
+      setProviderOrder: (order: ProviderType[]) => {
+        set({ providerOrder: order });
+      },
+      
+      addProviderToOrder: (type: ProviderType) => {
+        set(state => {
+          if (!state.providerOrder.includes(type)) {
+            return { providerOrder: [...state.providerOrder, type] };
+          }
+          return state;
+        });
+      },
+      
+      removeProviderFromOrder: (type: ProviderType) => {
+        set(state => ({
+          providerOrder: state.providerOrder.filter(p => p !== type)
+        }));
       },
       
       // Model Loading Actions
@@ -413,6 +453,23 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         return selectedModels.filter(m => m.provider === provider);
       },
       
+      getOrderedConfiguredProviders: () => {
+        const { providers, providerOrder } = get();
+        const configuredProviders = Object.values(providers)
+          .filter(p => {
+            const providerInfo = getProviderInfo(p.type);
+            return p.isConfigured || !providerInfo.requiresApiKey;
+          })
+          .map(p => p.type);
+          
+        // Return providers in the order specified by providerOrder, 
+        // followed by any configured providers not in the order
+        const orderedConfigured = providerOrder.filter(type => configuredProviders.includes(type));
+        const unorderedConfigured = configuredProviders.filter(type => !providerOrder.includes(type));
+        
+        return [...orderedConfigured, ...unorderedConfigured];
+      },
+      
       // Active Provider Actions
       getCurrentProvider: () => {
         const { currentModel, selectedModels, providers } = get();
@@ -479,6 +536,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         providers: state.providers,
         selectedModels: state.selectedModels,
         currentModel: state.currentModel,
+        providerOrder: state.providerOrder,
       }),
     }
   )

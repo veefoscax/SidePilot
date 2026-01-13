@@ -7,13 +7,12 @@
 
 import { OpenAIProvider } from './openai';
 import { ModelInfo } from './types';
-import { getDefaultModelsForPlan } from './provider-configs';
 
 export class ZAIProvider extends OpenAIProvider {
   protected getDefaultModels(): ModelInfo[] {
     // Determine if this is a coding plan based on base URL
-    const isCodingPlan = this.config.baseUrl?.includes('api.z.ai/api/coding');
-    
+    const isCodingPlan = this.config.baseUrl?.includes('api.z.ai/api/coding') || this.config.baseUrl?.includes('/coding/');
+
     if (isCodingPlan) {
       return [
         {
@@ -60,7 +59,7 @@ export class ZAIProvider extends OpenAIProvider {
         },
       ];
     }
-    
+
     // General plan models
     return [
       {
@@ -123,7 +122,7 @@ export class ZAIProvider extends OpenAIProvider {
   }
 
   protected getDefaultModel(): string {
-    const isCodingPlan = this.config.baseUrl?.includes('api.z.ai/api/coding');
+    const isCodingPlan = this.config.baseUrl?.includes('api.z.ai/api/coding') || this.config.baseUrl?.includes('/coding/');
     return isCodingPlan ? 'glm-4.7' : 'glm-4-plus';
   }
 
@@ -134,7 +133,7 @@ export class ZAIProvider extends OpenAIProvider {
   protected async performConnectionTest(): Promise<{ models: ModelInfo[] }> {
     try {
       const defaultModel = this.getDefaultModel();
-      
+
       // Test with minimal chat request to verify endpoint
       const response = await this.makeRequest('/chat/completions', {
         method: 'POST',
@@ -163,7 +162,7 @@ export class ZAIProvider extends OpenAIProvider {
    */
   protected async handleErrorResponse(response: Response): Promise<never> {
     let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-    
+
     try {
       const errorData = await response.json();
       if (errorData.error?.message) {
@@ -183,7 +182,7 @@ export class ZAIProvider extends OpenAIProvider {
           `Visit https://open.bigmodel.cn/usercenter/apikeys to manage your account.`
         );
       }
-      
+
       throw new Error(
         `ZAI Authentication Error: ${errorMessage}\n\n` +
         `Please verify your ZAI API key and ensure it has access to the coding plan.\n` +

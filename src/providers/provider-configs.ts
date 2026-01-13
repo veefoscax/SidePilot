@@ -627,11 +627,11 @@ export function supportsMultiplePlans(type: ProviderType): boolean {
 export function getDefaultModelsForPlan(type: ProviderType, planType?: string): string[] {
   const config = PROVIDER_CONFIGS[type];
   if (!config) return [];
-  
+
   if (planType && config.planTypes?.[planType]) {
     return config.planTypes[planType].defaultModels;
   }
-  
+
   return config.defaultModels;
 }
 export function getProviderCapabilities(type: ProviderType): ProviderConfigTemplate['capabilities'] {

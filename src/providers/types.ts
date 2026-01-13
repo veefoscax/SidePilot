@@ -160,7 +160,7 @@ export interface LLMResponse {
 }
 
 export interface StreamChunk {
-  type: "text" | "tool_use" | "done" | "error";
+  type: "text" | "tool_use" | "done" | "error" | "reasoning";
   text?: string;
   toolCall?: Partial<ToolCall>;
   usage?: TokenUsage;

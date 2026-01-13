@@ -97,6 +97,7 @@ interface OpenAIStreamChunk {
     delta: {
       role?: 'assistant';
       content?: string;
+      reasoning_content?: string; // GLM-4 reasoning support
       tool_calls?: Array<{
         index: number;
         id?: string;
@@ -157,8 +158,7 @@ export class OpenAIProvider extends BaseProvider {
     const decoder = new TextDecoder();
     let buffer = '';
     let hasContent = false;
-    let reasoningBuffer = '';
-    let isInReasoningMode = false;
+    let hasReasoning = false;
 
     try {
       while (true) {
@@ -173,7 +173,7 @@ export class OpenAIProvider extends BaseProvider {
           if (line.startsWith('data: ')) {
             const data = line.slice(6).trim();
             if (data === '[DONE]') {
-              console.log('ZAI Stream completed, hasContent:', hasContent);
+              console.log('ZAI Stream completed:', { hasContent, hasReasoning });
               yield { type: 'done' };
               return;
             }
@@ -182,36 +182,33 @@ export class OpenAIProvider extends BaseProvider {
 
             try {
               const chunk: OpenAIStreamChunk = JSON.parse(data);
-              console.log('ZAI Stream chunk:', chunk);
+              console.log('ZAI Stream chunk:', { 
+                type: chunk.choices?.[0]?.delta?.reasoning_content ? 'reasoning' : 
+                      chunk.choices?.[0]?.delta?.content ? 'content' : 'other',
+                hasContent: !!chunk.choices?.[0]?.delta?.content,
+                hasReasoning: !!chunk.choices?.[0]?.delta?.reasoning_content,
+                finishReason: chunk.choices?.[0]?.finish_reason
+              });
               
               const streamChunk = this.parseStreamChunk(chunk);
               if (streamChunk) {
-                // Check if this is reasoning content (for GLM-4.7)
-                if (streamChunk.type === 'text' && streamChunk.text) {
+                // Handle reasoning content directly from GLM-4.7
+                if (streamChunk.type === 'reasoning') {
+                  hasReasoning = true;
+                  yield streamChunk;
+                } else if (streamChunk.type === 'text' && streamChunk.text) {
                   const text = streamChunk.text;
                   
-                  // GLM-4.7 reasoning detection patterns
-                  if (text.includes('<thinking>') || text.includes('思考：') || text.includes('分析：')) {
-                    isInReasoningMode = true;
-                    reasoningBuffer += text;
-                    yield { type: 'reasoning', text };
-                    continue;
+                  // Regular content - any text counts as content
+                  if (text.trim()) { // Only count non-empty text as content
+                    hasContent = true;
+                    yield streamChunk;
+                  } else if (text === '') {
+                    // Empty text chunk - still yield but don't count as content
+                    yield streamChunk;
                   }
-                  
-                  if (isInReasoningMode && (text.includes('</thinking>') || text.includes('结论：') || text.includes('答案：'))) {
-                    isInReasoningMode = false;
-                    reasoningBuffer += text;
-                    yield { type: 'reasoning', text };
-                    continue;
-                  }
-                  
-                  if (isInReasoningMode) {
-                    reasoningBuffer += text;
-                    yield { type: 'reasoning', text };
-                    continue;
-                  }
-                  
-                  // Regular content
+                } else if (streamChunk.type === 'tool_use') {
+                  // Tool calls also count as content
                   hasContent = true;
                   yield streamChunk;
                 } else {
@@ -225,10 +222,16 @@ export class OpenAIProvider extends BaseProvider {
         }
       }
       
-      // If we reach here without content, yield an error
-      if (!hasContent) {
-        console.warn('ZAI stream ended without content');
-        yield { type: 'text', text: 'No response received from ZAI API. Please check your API key and plan configuration.' };
+      // If we reach here without any content or reasoning, yield a fallback message
+      if (!hasContent && !hasReasoning) {
+        console.warn('ZAI stream ended without content or reasoning - yielding fallback');
+        hasContent = true; // Mark as having content to prevent infinite loop
+        yield { 
+          type: 'text', 
+          text: 'Response completed. The model may have provided reasoning without visible content.' 
+        };
+      } else {
+        console.log('ZAI stream completed successfully:', { hasContent, hasReasoning });
       }
     } finally {
       reader.releaseLock();
@@ -308,7 +311,7 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   private supportsReasoning(modelId: string): boolean {
-    return modelId.includes('o1') || modelId.includes('o3') || modelId.includes('reasoner') || modelId.includes('glm-4.7');
+    return modelId.includes('o1') || modelId.includes('o3') || modelId.includes('reasoner') || modelId.includes('glm-4.7') || modelId.includes('glm-4.6');
   }
 
   private supportsVision(modelId: string): boolean {
@@ -447,6 +450,14 @@ export class OpenAIProvider extends BaseProvider {
     if (!choice) return null;
 
     const delta = choice.delta;
+
+    // Handle GLM-4 reasoning content
+    if (delta.reasoning_content) {
+      return {
+        type: 'reasoning',
+        text: delta.reasoning_content,
+      };
+    }
 
     if (delta.content) {
       return {

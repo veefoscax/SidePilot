@@ -12,6 +12,7 @@ import { toolRegistry } from '@/tools/registry';
 import { MessageList } from '@/components/chat/MessageList';
 import { InputArea } from '@/components/chat/InputArea';
 import { ModelSelectorDropdown } from '@/components/chat/ModelSelectorDropdown';
+import { CapabilityWarnings } from '@/components/chat/CapabilityWarnings';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -254,6 +255,15 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Model capability warnings */}
+      {currentProvider && (
+        <CapabilityWarnings 
+          model={currentProvider.model}
+          requirements={{ tools: true }} // Chat interface requires tools
+          className="p-4 border-b"
+        />
       )}
 
       {/* Message list */}
