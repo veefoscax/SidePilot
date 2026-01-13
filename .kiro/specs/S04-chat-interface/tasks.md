@@ -2,79 +2,128 @@
 
 ## Implementation Checklist
 
-### 1. Zustand Chat Store
-- [ ] Create src/stores/chat.ts <!-- id: 0 -->
-- [ ] Define Message, ToolCall, ToolResult interfaces <!-- id: 1 -->
-- [ ] Implement addUserMessage action <!-- id: 2 -->
-- [ ] Implement streaming actions (start, append, end) <!-- id: 3 -->
-- [ ] Implement addToolResult action <!-- id: 4 -->
-- [ ] Add persistence with chrome.storage <!-- id: 5 -->
+### 1. Zustand Chat Store ✅ COMPLETED
+- [x] Create src/stores/chat.ts <!-- id: 0 -->
+- [x] Define Message, ToolCall, ToolResult interfaces <!-- id: 1 -->
+- [x] Implement addUserMessage action <!-- id: 2 -->
+- [x] Implement streaming actions (start, append, end) <!-- id: 3 -->
+- [x] Implement addToolResult action <!-- id: 4 -->
+- [x] Add persistence with chrome.storage <!-- id: 5 -->
 
-### 2. Message Components
-- [ ] Create MessageList with auto-scroll <!-- id: 6 -->
-- [ ] Create UserMessage component <!-- id: 7 -->
-- [ ] Create AssistantMessage component <!-- id: 8 -->
-- [ ] Style with Tailwind dark mode <!-- id: 9 -->
+### 2. Install Dependencies
+- [ ] Install react-markdown and syntax highlighting <!-- id: 6 -->
+  - Install react-markdown for markdown rendering
+  - Install react-syntax-highlighter for code blocks
+  - _Requirements: AC6 - Markdown rendering with syntax highlighting_
 
-### 3. Tool Use Card
-- [ ] Create ToolUseCard component <!-- id: 10 -->
-- [ ] Expandable input/output toggle <!-- id: 11 -->
-- [ ] Status badge (pending, executing, complete, error) <!-- id: 12 -->
-- [ ] Screenshot display <!-- id: 13 -->
+### 3. Create Chat Components Directory
+- [ ] Create src/components/chat/ directory structure <!-- id: 7 -->
+  - Set up component organization
+  - _Requirements: AC1, AC2, AC4, AC5 - All chat UI components_
 
-### 4. Thinking Indicator
-- [ ] Create ThinkingIndicator with bouncing dots <!-- id: 14 -->
-- [ ] Show when streaming <!-- id: 15 -->
+### 4. Message Components
+- [ ] Create MessageList with auto-scroll <!-- id: 8 -->
+  - Implement auto-scroll to bottom on new messages
+  - Add pin to bottom toggle functionality
+  - _Requirements: AC1 - Auto-scroll and pin to bottom_
 
-### 5. Error Card
-- [ ] Create ErrorCard component <!-- id: 16 -->
-- [ ] Show error message <!-- id: 17 -->
-- [ ] Retry button <!-- id: 18 -->
-- [ ] Dismiss button <!-- id: 19 -->
+- [ ] Create UserMessage component <!-- id: 9 -->
+  - Style user messages differently from assistant
+  - Use Tailwind dark mode classes
+  - _Requirements: AC1 - User messages styled differently_
 
-### 6. Input Area
-- [ ] Create InputArea component <!-- id: 20 -->
-- [ ] Multiline Textarea <!-- id: 21 -->
-- [ ] Send button <!-- id: 22 -->
-- [ ] Enter key handling (with Shift for newline) <!-- id: 23 -->
-- [ ] Disabled during streaming <!-- id: 24 -->
+- [ ] Create AssistantMessage component <!-- id: 10 -->
+  - Render assistant messages with markdown support
+  - Include tool call display integration
+  - _Requirements: AC1 - Assistant messages with markdown_
 
-### 7. Markdown Renderer
-- [ ] Create Markdown component <!-- id: 25 -->
-- [ ] Use react-markdown or similar <!-- id: 26 -->
-- [ ] Syntax highlighting for code blocks <!-- id: 27 -->
-- [ ] Style links, lists, headers <!-- id: 28 -->
+### 5. Markdown Renderer
+- [ ] Create Markdown component <!-- id: 11 -->
+  - Use react-markdown for rendering
+  - Add syntax highlighting for code blocks
+  - Style links, lists, headers appropriately
+  - _Requirements: AC6 - Code blocks, links, lists, headers_
 
-### 8. Chat Page
-- [ ] Create Chat.tsx page <!-- id: 29 -->
-- [ ] Connect to chat store <!-- id: 30 -->
-- [ ] Connect to provider store <!-- id: 31 -->
-- [ ] Handle send message → stream response <!-- id: 32 -->
+### 6. Tool Use Card
+- [ ] Create ToolUseCard component <!-- id: 12 -->
+  - Show tool name and expandable input/output
+  - Implement status badges (pending, executing, complete, error)
+  - Add screenshot display capability
+  - _Requirements: AC4 - Tool name, expandable I/O, status, screenshots_
 
-### 9. Chat Flow Implementation
-- [ ] On send: add user message to store <!-- id: 33 -->
-- [ ] Call provider.stream() with messages <!-- id: 34 -->
-- [ ] Append chunks to streamingContent <!-- id: 35 -->
-- [ ] On done: end streaming, add assistant message <!-- id: 36 -->
-- [ ] Handle tool calls from response <!-- id: 37 -->
+### 7. Thinking Indicator
+- [ ] Create ThinkingIndicator with bouncing dots <!-- id: 13 -->
+  - Implement animated thinking indicator
+  - Show during streaming state
+  - _Requirements: AC3 - Thinking indicator animation_
 
-### 10. Testing
-- [ ] Test message display <!-- id: 38 -->
-- [ ] Test streaming visuals <!-- id: 39 -->
-- [ ] Test tool use card expansion <!-- id: 40 -->
-- [ ] Test error handling <!-- id: 41 -->
-- [ ] Test message persistence <!-- id: 42 -->
+### 8. Error Card
+- [ ] Create ErrorCard component <!-- id: 14 -->
+  - Display error messages clearly
+  - Add retry and dismiss buttons
+  - _Requirements: AC5 - Error card with message, retry, dismiss_
+
+### 9. Input Area
+- [ ] Create InputArea component <!-- id: 15 -->
+  - Implement multiline textarea
+  - Add send button with proper styling
+  - Handle Enter key (send) and Shift+Enter (newline)
+  - Disable during streaming
+  - _Requirements: AC2 - Multiline textarea, send button, Enter key, disabled while streaming_
+
+### 10. Chat Page
+- [ ] Create Chat.tsx page <!-- id: 16 -->
+  - Set up main chat page layout
+  - Connect to chat store and provider store
+  - Implement message sending and streaming flow
+  - _Requirements: US1, US2 - Send messages and view streaming responses_
+
+### 11. Chat Flow Implementation
+- [ ] Implement complete chat flow in Chat.tsx <!-- id: 17 -->
+  - Handle send message → add to store → call provider.stream()
+  - Process streaming chunks and append to streamingContent
+  - Handle completion: end streaming, add assistant message
+  - Process tool calls from LLM responses
+  - _Requirements: US1, US2, US3 - Message sending, streaming, tool use display_
+
+### 12. App Navigation Integration
+- [ ] Update App.tsx to enable Chat navigation <!-- id: 18 -->
+  - Remove "disabled" from Chat button
+  - Add routing to Chat page
+  - Update navigation state management
+  - _Requirements: US1 - User can access chat interface_
+
+### 13. Testing & Validation
+- [ ] Test message display and styling <!-- id: 19 -->
+  - Verify user/assistant message styling
+  - Test markdown rendering
+  - _Requirements: AC1, AC6 - Message styling and markdown_
+
+- [ ] Test streaming functionality <!-- id: 20 -->
+  - Verify real-time text display
+  - Test thinking indicator animation
+  - _Requirements: AC3 - Real-time display and thinking indicator_
+
+- [ ] Test tool use card functionality <!-- id: 21 -->
+  - Verify expandable input/output
+  - Test status badge updates
+  - _Requirements: AC4 - Tool use card features_
+
+- [ ] Test error handling and recovery <!-- id: 22 -->
+  - Verify error display
+  - Test retry functionality
+  - _Requirements: AC5 - Error handling with retry_
+
+- [ ] Test message persistence <!-- id: 23 -->
+  - Verify conversation history is saved
+  - Test restoration after page reload
+  - _Requirements: US5 - Message history preservation_
 
 ## Success Criteria
-- Messages display correctly with styling
-- Streaming works with visual feedback
-- Tool uses show expandable cards
-- Errors display with retry option
+- Messages display correctly with proper styling (user vs assistant)
+- Streaming works with visual feedback (thinking indicator)
+- Tool uses show expandable cards with status
+- Errors display clearly with retry option
 - Input area handles Enter/Shift+Enter correctly
-
-### 11. Automated Testing (Playwright)
-- [ ] Install Playwright dependencies <!-- id: 43 -->
-- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 44 -->
-- [ ] Create integration tests for UI/Logic <!-- id: 45 -->
-- [ ] Add test script to package.json <!-- id: 46 -->
-- [ ] Update DEVLOG with test results and screenshots <!-- id: 47 -->
+- Message history persists across sessions
+- Chat interface is accessible from main navigation

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   AlertDialog,
@@ -67,7 +68,8 @@ export function MultiProviderManager() {
     providerConfigs.forEach(config => {
       if (config.provider && store.providers) {
         const storeConfig = store.providers[config.provider];
-        if (storeConfig?.error && !storeConfig.isConnected) {
+        // Add null safety checks
+        if (storeConfig?.error && !storeConfig?.isConnected) {
           // Only show toast if we haven't shown it recently
           const lastErrorTime = localStorage.getItem(`error-toast-${config.provider}`);
           const now = Date.now();
@@ -277,9 +279,9 @@ function ProviderConfigCard({
   const supportedProviders = getSupportedProviders(); // All 40+ providers
   
   const providerInfo = config.provider ? getProviderInfo(config.provider) : null;
-  const storeConfig = config.provider ? (store.providers[config.provider] || null) : null;
-  const availableModels = config.provider ? (store.availableModelsByProvider?.[config.provider] || []) : [];
-  const isLoadingModels = config.provider ? store.loadingProviders?.includes(config.provider) : false;
+  const storeConfig = config.provider && store.providers ? (store.providers[config.provider] || null) : null;
+  const availableModels = config.provider && store.availableModelsByProvider ? (store.availableModelsByProvider[config.provider] || []) : [];
+  const isLoadingModels = config.provider && store.loadingProviders ? store.loadingProviders.includes(config.provider) : false;
   
   const handleProviderChange = (providerType: ProviderType) => {
     const providerInfo = getProviderInfo(providerType);
@@ -305,18 +307,20 @@ function ProviderConfigCard({
 
   const handleApiKeyChange = (apiKey: string) => {
     onUpdate({ apiKey });
-    if (config.provider && apiKey.trim()) {
+    if (config.provider && apiKey.trim() && store.setProviderConfig) {
       store.setProviderConfig(config.provider, { apiKey, baseUrl: config.baseUrl });
-      store.loadModelsForProvider(config.provider);
+      if (store.loadModelsForProvider) {
+        store.loadModelsForProvider(config.provider);
+      }
     }
   };
 
   const handleBaseUrlChange = (baseUrl: string) => {
     onUpdate({ baseUrl });
-    if (config.provider) {
+    if (config.provider && store.setProviderConfig) {
       store.setProviderConfig(config.provider, { apiKey: config.apiKey, baseUrl });
       // Reload models when URL changes
-      if (baseUrl.trim()) {
+      if (baseUrl.trim() && store.loadModelsForProvider) {
         store.loadModelsForProvider(config.provider);
       }
     }
@@ -537,12 +541,12 @@ function ProviderConfigCard({
             <div className="space-y-1">
               <label className="text-xs font-medium">API Key</label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="password"
                   placeholder="Enter your API key..."
                   value={config.apiKey}
                   onChange={(e) => handleApiKeyChange(e.target.value)}
-                  className="flex-1 px-2 py-1 text-xs border rounded h-8"
+                  className="flex-1 h-8"
                 />
                 <Button
                   size="sm"
@@ -566,12 +570,12 @@ function ProviderConfigCard({
             <div className="space-y-1">
               <label className="text-xs font-medium">Server URL</label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text"
                   placeholder={`Enter server URL (e.g., ${config.provider === 'ollama' ? 'http://localhost:11434' : 'http://127.0.0.1:1234'})`}
                   value={config.baseUrl}
                   onChange={(e) => handleBaseUrlChange(e.target.value)}
-                  className="flex-1 px-2 py-1 text-xs border rounded h-8"
+                  className="flex-1 h-8"
                 />
                 <Button
                   size="sm"

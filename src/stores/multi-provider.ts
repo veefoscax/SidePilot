@@ -154,7 +154,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
       
       testProviderConnection: async (type: ProviderType) => {
         const { providers } = get();
-        const providerConfig = providers[type];
+        const providerConfig = providers?.[type];
         
         // Ensure provider config exists
         if (!providerConfig) {
@@ -163,7 +163,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         }
         
         const providerInfo = getProviderInfo(type);
-        if (!providerConfig.isConfigured && providerInfo.requiresApiKey) {
+        if (!providerConfig?.isConfigured && providerInfo.requiresApiKey) {
           set(state => ({
             providers: {
               ...state.providers,
