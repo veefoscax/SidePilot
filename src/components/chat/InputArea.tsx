@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { VoiceControls } from './VoiceControls';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRight01Icon } from '@hugeicons/core-free-icons';
 
@@ -53,6 +54,16 @@ export function InputArea({
     }
   };
 
+  const handleVoiceTranscript = (transcript: string) => {
+    // Append voice transcript to current input
+    setInput(prev => prev + (prev ? ' ' : '') + transcript);
+    
+    // Focus textarea after voice input
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
   const canSend = input.trim().length > 0 && !disabled;
 
   return (
@@ -68,16 +79,25 @@ export function InputArea({
               onKeyDown={handleKeyDown}
               placeholder={disabled ? "AI is responding..." : placeholder}
               disabled={disabled}
-              className="min-h-[44px] max-h-32 resize-none pr-12"
+              className="min-h-[44px] max-h-32 resize-none pr-20"
               rows={1}
             />
             
-            {/* Character count (optional, for very long messages) */}
-            {input.length > 500 && (
-              <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
-                {input.length}
-              </div>
-            )}
+            {/* Voice controls in textarea */}
+            <div className="absolute bottom-2 right-2 flex items-center gap-1">
+              <VoiceControls
+                onTranscript={handleVoiceTranscript}
+                disabled={disabled}
+                className="mr-1"
+              />
+              
+              {/* Character count (optional, for very long messages) */}
+              {input.length > 500 && (
+                <div className="text-xs text-muted-foreground bg-background/80 px-1 rounded">
+                  {input.length}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Send button */}
