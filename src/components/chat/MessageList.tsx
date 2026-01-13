@@ -1,8 +1,8 @@
 /**
  * MessageList Component
  * 
- * Displays the list of chat messages with auto-scroll functionality.
- * Includes pin to bottom toggle and proper message rendering.
+ * Displays chat messages with modern UX patterns including message grouping,
+ * smart timestamp display, and improved spacing following iMessage/WhatsApp conventions.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -14,6 +14,37 @@ import { ErrorCard } from './ErrorCard';
 import { Button } from '@/components/ui/button';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
+
+// Helper function to determine if messages should be grouped
+function shouldGroupMessages(current: Message, previous: Message): boolean {
+  if (!previous) return false;
+  
+  // Same sender
+  if (current.role !== previous.role) return false;
+  
+  // Within 2 minutes of each other
+  const timeDiff = current.timestamp - previous.timestamp;
+  if (timeDiff > 2 * 60 * 1000) return false; // 2 minutes
+  
+  return true;
+}
+
+// Helper function to determine if timestamp should be shown
+function shouldShowTimestamp(current: Message, previous: Message, next: Message): boolean {
+  if (!previous) return true; // First message
+  
+  // Show timestamp if significant time gap (>5 minutes)
+  const timeDiff = current.timestamp - previous.timestamp;
+  if (timeDiff > 5 * 60 * 1000) return true;
+  
+  // Show timestamp if sender changes
+  if (current.role !== previous.role) return true;
+  
+  // Show timestamp if it's the last message in a group
+  if (!next || !shouldGroupMessages(next, current)) return true;
+  
+  return false;
+}
 
 export function MessageList() {
   const { messages, isStreaming, streamingContent, error } = useChatStore();
@@ -53,13 +84,13 @@ export function MessageList() {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="h-full overflow-y-auto px-4 py-4 space-y-4"
+        className="h-full overflow-y-auto px-4 py-6"
       >
         {/* Empty state */}
         {messages.length === 0 && !isStreaming && (
           <div className="flex items-center justify-center h-full text-center">
             <div className="max-w-md">
-              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                 <span className="text-2xl">💬</span>
               </div>
               <h3 className="text-lg font-semibold mb-2">Start a conversation</h3>
@@ -70,16 +101,32 @@ export function MessageList() {
           </div>
         )}
 
-        {/* Messages */}
-        {messages.map((message) => (
-          <div key={message.id}>
-            {message.role === 'user' ? (
-              <UserMessage message={message} />
-            ) : (
-              <AssistantMessage message={message} />
-            )}
-          </div>
-        ))}
+        {/* Messages with grouping logic */}
+        {messages.map((message, index) => {
+          const previousMessage = messages[index - 1];
+          const nextMessage = messages[index + 1];
+          
+          const isGrouped = shouldGroupMessages(message, previousMessage);
+          const showTimestamp = shouldShowTimestamp(message, previousMessage, nextMessage);
+
+          return (
+            <div key={message.id}>
+              {message.role === 'user' ? (
+                <UserMessage 
+                  message={message} 
+                  isGrouped={isGrouped}
+                  showTimestamp={showTimestamp}
+                />
+              ) : (
+                <AssistantMessage 
+                  message={message}
+                  isGrouped={isGrouped}
+                  showTimestamp={showTimestamp}
+                />
+              )}
+            </div>
+          );
+        })}
 
         {/* Streaming message */}
         {isStreaming && streamingContent && (
@@ -91,6 +138,8 @@ export function MessageList() {
               timestamp: Date.now(),
             }}
             isStreaming={true}
+            isGrouped={false}
+            showTimestamp={false}
           />
         )}
 
@@ -111,7 +160,7 @@ export function MessageList() {
             size="icon"
             variant="secondary"
             onClick={scrollToBottom}
-            className="rounded-full shadow-lg"
+            className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
           >
             <HugeiconsIcon icon={ArrowDown01Icon} className="h-4 w-4" />
           </Button>
