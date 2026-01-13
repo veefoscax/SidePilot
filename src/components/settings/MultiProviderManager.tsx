@@ -43,6 +43,7 @@ interface ProviderConfig {
   id: string;
   provider: ProviderType | null;
   apiKey: string;
+  baseUrl: string;
   selectedModels: string[];
   isExpanded: boolean;
 }
@@ -50,7 +51,7 @@ interface ProviderConfig {
 export function MultiProviderManager() {
   const store = useMultiProviderStore();
   const [providerConfigs, setProviderConfigs] = useState<ProviderConfig[]>([
-    { id: '1', provider: null, apiKey: '', selectedModels: [], isExpanded: true }
+    { id: '1', provider: null, apiKey: '', baseUrl: '', selectedModels: [], isExpanded: true }
   ]);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOverItem, setDragOverItem] = useState<string | null>(null);
@@ -84,6 +85,7 @@ export function MultiProviderManager() {
       id: Date.now().toString(),
       provider: null,
       apiKey: '',
+      baseUrl: '',
       selectedModels: [],
       isExpanded: true
     };
@@ -280,9 +282,22 @@ function ProviderConfigCard({
   const isLoadingModels = config.provider ? store.loadingProviders?.includes(config.provider) : false;
   
   const handleProviderChange = (providerType: ProviderType) => {
+    const providerInfo = getProviderInfo(providerType);
+    let defaultBaseUrl = '';
+    
+    // Set default URLs for local providers
+    if (!providerInfo.requiresApiKey) {
+      if (providerType === 'ollama') {
+        defaultBaseUrl = 'http://localhost:11434';
+      } else if (providerType === 'lmstudio') {
+        defaultBaseUrl = 'http://127.0.0.1:1234';
+      }
+    }
+    
     onUpdate({ 
       provider: providerType, 
       apiKey: '', 
+      baseUrl: defaultBaseUrl,
       selectedModels: [],
       isExpanded: true 
     });
@@ -291,13 +306,32 @@ function ProviderConfigCard({
   const handleApiKeyChange = (apiKey: string) => {
     onUpdate({ apiKey });
     if (config.provider && apiKey.trim()) {
-      store.setProviderConfig(config.provider, { apiKey });
+      store.setProviderConfig(config.provider, { apiKey, baseUrl: config.baseUrl });
       store.loadModelsForProvider(config.provider);
+    }
+  };
+
+  const handleBaseUrlChange = (baseUrl: string) => {
+    onUpdate({ baseUrl });
+    if (config.provider) {
+      store.setProviderConfig(config.provider, { apiKey: config.apiKey, baseUrl });
+      // Reload models when URL changes
+      if (baseUrl.trim()) {
+        store.loadModelsForProvider(config.provider);
+      }
     }
   };
 
   const handleTestConnection = async () => {
     if (!config.provider) return;
+    
+    // Update store with current configuration before testing
+    if (providerInfo?.requiresApiKey) {
+      store.setProviderConfig(config.provider, { apiKey: config.apiKey });
+    } else {
+      store.setProviderConfig(config.provider, { baseUrl: config.baseUrl });
+    }
+    
     setIsTesting(true);
     const success = await store.testProviderConnection(config.provider);
     setIsTesting(false);
@@ -527,8 +561,40 @@ function ProviderConfigCard({
             </div>
           )}
 
+          {/* Server URL Input for Local Providers */}
+          {config.provider && !providerInfo?.requiresApiKey && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Server URL</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder={`Enter server URL (e.g., ${config.provider === 'ollama' ? 'http://localhost:11434' : 'http://127.0.0.1:1234'})`}
+                  value={config.baseUrl}
+                  onChange={(e) => handleBaseUrlChange(e.target.value)}
+                  className="flex-1 px-2 py-1 text-xs border rounded h-8"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleTestConnection}
+                  disabled={isTesting || !config.baseUrl.trim()}
+                  className="h-8 px-2"
+                >
+                  {isTesting ? (
+                    <HugeiconsIcon icon={Loading01Icon} className="h-3 w-3 animate-spin" />
+                  ) : (
+                    'Test'
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Model Selection */}
-          {config.provider && (config.apiKey.trim() || !providerInfo?.requiresApiKey) && (
+          {config.provider && (
+            (providerInfo?.requiresApiKey && config.apiKey.trim()) || 
+            (!providerInfo?.requiresApiKey && config.baseUrl.trim())
+          ) && (
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium">Models</label>

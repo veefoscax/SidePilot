@@ -765,7 +765,7 @@ _(To be filled during development)_
 |------|-------------|---------------|------------------|
 | S01 Extension Scaffold | 61.6 credits | 18.0 credits/hour | High due to debugging, comprehensive testing, and configuration fixes |
 | S03 Provider Settings UI | 191 credits | 88.2 credits/hour | Complete implementation: 151 credits (main) + 25 credits (enhancements) + 15 credits (polish) |
-| **Total Project** | **291 credits** | **25.7 avg** | **S01 + S02 + S03 + Checkpoint complete, ready for Phase 2** |
+| **Total Project** | **299 credits** | **26.4 avg** | **S01 + S02 + S03 + Checkpoint + URL Config complete, ready for Phase 2** |
 
 ## Pre-Phase 2 Checkpoint Fixes
 
@@ -869,6 +869,52 @@ _(To be filled during development)_
 - ✅ **Model Loading**: Dynamic model fetching with proper fallbacks
 
 **Ready for Phase 2**: All critical runtime errors resolved, extension stable for chat interface implementation.
+
+## S03.6: Local Provider URL Configuration Enhancement
+- **Started**: 2026-01-13 04:00
+- **Completed**: 2026-01-13 04:20
+- **Time**: 20 minutes
+- **Token Usage**: ~8 credits (Total: ~299 credits)
+- **User Request**: "shouldnt we be able to change the addres like in ollama to lmstudio?"
+- **Kiro Commands Used**:
+  - readFile (3 times) - analyzing current implementation
+  - strReplace (8 times) - adding URL configuration functionality
+  - grepSearch (2 times) - finding local providers and UI sections
+  - executePwsh (2 times) - build verification and testing
+  - fsWrite/deleteFile (2 times) - test script creation and cleanup
+  - getDiagnostics (1 time) - TypeScript validation
+- **Files Modified**:
+  - **ENHANCED**: src/components/settings/MultiProviderManager.tsx (added URL configuration for local providers)
+
+#### Enhancement Details
+
+**🎯 Feature Added: Configurable Server URLs for Local Providers**
+- **Problem**: Local providers (Ollama, LMStudio) were using hardcoded URLs, preventing users from connecting to custom ports or remote servers
+- **Solution**: Added URL input field for local providers with default values and validation
+- **Implementation**:
+  1. Added `baseUrl` field to ProviderConfig interface
+  2. Created `handleBaseUrlChange` handler with store integration
+  3. Added Server URL input field for local providers (!requiresApiKey)
+  4. Updated model selection condition to check baseUrl for local providers
+  5. Enhanced test connection to pass baseUrl to store
+
+**📊 Technical Implementation**:
+- **Default URLs**: Ollama (http://localhost:11434), LMStudio (http://127.0.0.1:1234)
+- **Dynamic Placeholders**: Show appropriate default URL based on provider
+- **Validation Logic**: Models only show when URL is provided for local providers
+- **Store Integration**: baseUrl passed to provider configuration and connection testing
+
+**🧪 Verification Results**:
+- ✅ Build successful (362.71 kB bundle)
+- ✅ TypeScript diagnostics clean
+- ✅ Logic tested with comprehensive test cases
+- ✅ UI shows URL field for local providers, API key field for others
+- ✅ Model selection properly gated by URL/API key presence
+
+- **Summary**: Successfully added configurable server URL support for local providers (Ollama, LMStudio). Users can now connect to custom ports, remote servers, or different local configurations. The UI intelligently shows URL fields for local providers and API key fields for cloud providers, with proper validation and store integration.
+- **User Impact**: Enables flexible local provider configuration - users can run Ollama on custom ports, connect to remote Ollama instances, or use LMStudio with non-default configurations.
+
+**Ready for Phase 2**: Enhanced local provider flexibility maintains extension stability while adding requested functionality.
 
 ---
 
