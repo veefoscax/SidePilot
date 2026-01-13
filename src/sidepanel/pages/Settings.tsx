@@ -10,6 +10,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 
 import { MultiProviderManager } from '@/components/settings/MultiProviderManager';
+import { BrowserAutomationSettings } from '@/components/settings/BrowserAutomationSettings';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -35,8 +36,9 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
         </div>
       </div>
       
-      <div className="p-4">
+      <div className="p-4 space-y-6">
         <MultiProviderManager />
+        <BrowserAutomationSettings />
       </div>
     </div>
   );

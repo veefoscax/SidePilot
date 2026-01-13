@@ -7,6 +7,7 @@
 
 import { useChatStore } from '@/stores/chat';
 import { useMultiProviderStore } from '@/stores/multi-provider';
+import { toolRegistry } from '@/tools/registry';
 import { MessageList } from '@/components/chat/MessageList';
 import { InputArea } from '@/components/chat/InputArea';
 import { ModelSelectorDropdown } from '@/components/chat/ModelSelectorDropdown';
@@ -34,7 +35,8 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
     appendStreamContent, 
     endStreaming, 
     setError,
-    clearMessages 
+    clearMessages,
+    addToolResult
   } = useChatStore();
 
   const { 
@@ -69,22 +71,46 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
       // Stream response from provider using the current model
       const stream = activeProviderInstance.stream(allMessages, {
         model: currentProvider.model.id, // Use the selected model ID
+        tools: toolRegistry.getAnthropicTools(), // Add browser automation tools
       });
       let fullContent = '';
+      const toolCalls: any[] = [];
 
       for await (const chunk of stream) {
         if (chunk.type === 'text') {
           const chunkContent = chunk.text || '';
           fullContent += chunkContent;
           appendStreamContent(chunkContent);
-        } else if (chunk.type === 'tool_call') {
-          // Handle tool calls (future implementation)
-          console.log('Tool call received:', chunk);
+        } else if (chunk.type === 'tool_use' && chunk.toolCall) {
+          // Handle tool calls
+          console.log('Tool call received:', chunk.toolCall);
+          toolCalls.push({
+            id: chunk.toolCall.id,
+            name: chunk.toolCall.name,
+            input: chunk.toolCall.input,
+            status: 'pending'
+          });
+          
+          // Execute the tool
+          try {
+            const result = await toolRegistry.execute(chunk.toolCall.name, chunk.toolCall.input);
+            addToolResult(chunk.toolCall.id, {
+              toolUseId: chunk.toolCall.id,
+              output: JSON.stringify(result.data),
+              screenshot: result.screenshot,
+            });
+          } catch (toolError) {
+            console.error('Tool execution error:', toolError);
+            addToolResult(chunk.toolCall.id, {
+              toolUseId: chunk.toolCall.id,
+              error: toolError instanceof Error ? toolError.message : 'Tool execution failed',
+            });
+          }
         }
       }
 
       // End streaming and add assistant message
-      endStreaming(fullContent || 'No response received');
+      endStreaming(fullContent || 'No response received', toolCalls.length > 0 ? toolCalls : undefined);
 
     } catch (err) {
       console.error('Chat error:', err);
