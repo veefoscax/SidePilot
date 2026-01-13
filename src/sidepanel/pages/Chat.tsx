@@ -98,8 +98,9 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
 
       for await (const chunk of stream) {
         if (chunk.type === 'text') {
-          fullContent += chunk.content;
-          appendStreamContent(chunk.content);
+          const chunkContent = chunk.content || '';
+          fullContent += chunkContent;
+          appendStreamContent(chunkContent);
         } else if (chunk.type === 'tool_call') {
           // Handle tool calls (future implementation)
           console.log('Tool call received:', chunk);
@@ -107,7 +108,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
       }
 
       // End streaming and add assistant message
-      endStreaming(fullContent);
+      endStreaming(fullContent || 'No response received');
 
     } catch (err) {
       console.error('Chat error:', err);

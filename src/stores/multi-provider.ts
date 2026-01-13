@@ -158,17 +158,25 @@ export const useMultiProviderStore = create<MultiProviderState>()(
       },
       
       testProviderConnection: async (type: ProviderType) => {
+        console.log('🏪 Store: Testing connection for', type);
         const { providers } = get();
         const providerConfig = providers?.[type];
         
         // Ensure provider config exists
         if (!providerConfig) {
-          console.error(`Provider config not found for ${type}`);
+          console.error(`❌ Provider config not found for ${type}`);
           return false;
         }
         
+        console.log('📋 Provider config:', {
+          isConfigured: providerConfig.isConfigured,
+          hasApiKey: !!providerConfig.apiKey,
+          hasBaseUrl: !!providerConfig.baseUrl
+        });
+        
         const providerInfo = getProviderInfo(type);
         if (!providerConfig?.isConfigured && providerInfo.requiresApiKey) {
+          console.log('❌ Provider not configured and requires API key');
           set(state => ({
             providers: {
               ...state.providers,
@@ -178,16 +186,20 @@ export const useMultiProviderStore = create<MultiProviderState>()(
           return false;
         }
         
+        console.log('🔄 Setting loading state...');
         set({ isLoading: true });
         
         try {
+          console.log('🏭 Creating provider instance...');
           const provider = createProvider({
             type,
             apiKey: providerConfig.apiKey || '',
             baseUrl: providerConfig.baseUrl,
           });
           
+          console.log('🧪 Calling provider.testConnection()...');
           const success = await provider.testConnection();
+          console.log('✅ Provider test result:', success);
           
           set(state => ({
             providers: {
@@ -204,6 +216,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
           
           return success;
         } catch (error) {
+          console.error('💥 Provider test error:', error);
           const errorMessage = error instanceof Error ? error.message : 'Connection failed';
           set(state => ({
             providers: {

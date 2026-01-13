@@ -363,12 +363,17 @@ function ProviderConfigCard({
   const handleTestConnection = async () => {
     if (!config.provider) return;
     
+    console.log('🧪 Testing connection for:', config.provider);
+    console.log('🔑 API Key:', config.apiKey ? '***' : 'empty');
+    console.log('🌐 Base URL:', config.baseUrl);
+    
     // Update store with current configuration before testing
     if (providerInfo?.requiresApiKey) {
       if (!config.apiKey.trim()) {
         toast.error('API key is required');
         return;
       }
+      console.log('📝 Setting provider config with API key');
       store.setProviderConfig(config.provider, { 
         apiKey: config.apiKey,
         baseUrl: config.baseUrl 
@@ -378,16 +383,19 @@ function ProviderConfigCard({
         toast.error('Server URL is required');
         return;
       }
+      console.log('📝 Setting provider config with base URL');
       store.setProviderConfig(config.provider, { 
         apiKey: config.apiKey,
         baseUrl: config.baseUrl 
       });
     }
     
+    console.log('🔄 Starting connection test...');
     setIsTesting(true);
     
     try {
       const success = await store.testProviderConnection(config.provider);
+      console.log('✅ Connection test result:', success);
       setIsTesting(false);
       
       // Show toast notification
@@ -395,13 +403,16 @@ function ProviderConfigCard({
         toast.success(`${providerInfo?.name || config.provider} connected successfully`);
         // Auto-load models after successful connection
         if (store.loadModelsForProvider) {
+          console.log('📥 Loading models...');
           store.loadModelsForProvider(config.provider);
         }
       } else {
         const error = storeConfig?.error || 'Connection failed';
+        console.log('❌ Connection failed:', error);
         toast.error(`${providerInfo?.name || config.provider}: ${error}`);
       }
     } catch (error) {
+      console.log('💥 Connection test threw error:', error);
       setIsTesting(false);
       const errorMessage = error instanceof Error ? error.message : 'Connection failed';
       toast.error(`${providerInfo?.name || config.provider}: ${errorMessage}`);
