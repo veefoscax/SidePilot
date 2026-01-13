@@ -134,11 +134,11 @@ sidepilot/
 This project uses [Kiro](https://kiro.dev) for specification-driven development.
 
 ### Implemented Specs
-- [ ] S01: Extension Scaffold
-- [ ] S02: Provider Factory
-- [ ] S03: Provider Settings UI
-- [ ] S04: Chat Interface
-- [ ] S05: CDP Wrapper
+- [x] S01: Extension Scaffold ✅
+- [x] S02: Provider Factory ✅
+- [x] S03: Provider Settings UI ✅
+- [x] S04: Chat Interface ✅
+- [ ] S05: CDP Wrapper (Browser-Use Enhanced)
 - [ ] S06: Permission System
 - [ ] S07: Browser Tools
 - [ ] S08: Shortcuts System
@@ -166,5 +166,16 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- Multi-provider architecture inspired by [Cline](https://github.com/cline/cline)
+- **Browser Automation** patterns inspired by [browser-use](https://github.com/browser-use/browser-use) - the excellent Python library for making websites accessible to AI agents
+- **Multi-provider** architecture inspired by [Cline](https://github.com/cline/cline) - the autonomous coding agent
 - Built with [Kiro](https://kiro.dev) for the Dynamous Hackathon
+
+### Open Source Tools We Love ❤️
+
+| Project | Usage in SidePilot |
+|---------|-------------------|
+| [browser-use](https://github.com/browser-use/browser-use) | Accessibility tree parsing, smart element targeting, human-like interactions |
+| [Cline](https://github.com/cline/cline) | Multi-provider factory pattern, model capability detection |
+| [shadcn/ui](https://ui.shadcn.com/) | Beautiful Nova-style components |
+| [HugeIcons](https://hugeicons.com/) | 4,600+ beautiful stroke icons |
+| [Zustand](https://github.com/pmndrs/zustand) | Lightweight state management |
