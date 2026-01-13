@@ -61,6 +61,25 @@ export function MultiProviderManager() {
   
   useEffect(() => {
     store.initializeStore();
+    
+    // Initialize provider configs from store
+    const storeProviders = store.providers;
+    if (storeProviders && Object.keys(storeProviders).length > 0) {
+      const configuredProviders = Object.entries(storeProviders)
+        .filter(([_, config]) => config.isConfigured)
+        .map(([type, config], index) => ({
+          id: (index + 1).toString(),
+          provider: type as ProviderType,
+          apiKey: config.apiKey || '',
+          baseUrl: config.baseUrl || '',
+          selectedModels: store.getSelectedModelsByProvider(type as ProviderType).map(m => m.id),
+          isExpanded: false
+        }));
+      
+      if (configuredProviders.length > 0) {
+        setProviderConfigs(configuredProviders);
+      }
+    }
   }, []);
 
   // Show toast when provider has error
@@ -207,7 +226,22 @@ export function MultiProviderManager() {
                 onUpdate={(updates) => updateProviderConfig(config.id, updates)}
                 onRemove={() => removeProviderConfig(config.id)}
                 onToggleExpanded={() => toggleExpanded(config.id)}
-                onSaveAndCollapse={() => updateProviderConfig(config.id, { isExpanded: false })}
+                onSaveAndCollapse={() => {
+                  // Save current configuration to store before collapsing
+                  if (config.provider) {
+                    if (providerInfo?.requiresApiKey) {
+                      store.setProviderConfig(config.provider, { 
+                        apiKey: config.apiKey,
+                        baseUrl: config.baseUrl 
+                      });
+                    } else {
+                      store.setProviderConfig(config.provider, { 
+                        baseUrl: config.baseUrl 
+                      });
+                    }
+                  }
+                  updateProviderConfig(config.id, { isExpanded: false });
+                }}
                 onDragStart={(e) => handleDragStart(e, config.id)}
                 onDragOver={handleDragOver}
                 onDragEnter={() => handleDragEnter(config.id)}
@@ -331,21 +365,46 @@ function ProviderConfigCard({
     
     // Update store with current configuration before testing
     if (providerInfo?.requiresApiKey) {
-      store.setProviderConfig(config.provider, { apiKey: config.apiKey });
+      if (!config.apiKey.trim()) {
+        toast.error('API key is required');
+        return;
+      }
+      store.setProviderConfig(config.provider, { 
+        apiKey: config.apiKey,
+        baseUrl: config.baseUrl 
+      });
     } else {
-      store.setProviderConfig(config.provider, { baseUrl: config.baseUrl });
+      if (!config.baseUrl.trim()) {
+        toast.error('Server URL is required');
+        return;
+      }
+      store.setProviderConfig(config.provider, { 
+        apiKey: config.apiKey,
+        baseUrl: config.baseUrl 
+      });
     }
     
     setIsTesting(true);
-    const success = await store.testProviderConnection(config.provider);
-    setIsTesting(false);
     
-    // Show toast notification
-    if (success) {
-      toast.success(`${providerInfo?.name || config.provider} connected successfully`);
-    } else {
-      const error = storeConfig?.error || 'Connection failed';
-      toast.error(`${providerInfo?.name || config.provider}: ${error}`);
+    try {
+      const success = await store.testProviderConnection(config.provider);
+      setIsTesting(false);
+      
+      // Show toast notification
+      if (success) {
+        toast.success(`${providerInfo?.name || config.provider} connected successfully`);
+        // Auto-load models after successful connection
+        if (store.loadModelsForProvider) {
+          store.loadModelsForProvider(config.provider);
+        }
+      } else {
+        const error = storeConfig?.error || 'Connection failed';
+        toast.error(`${providerInfo?.name || config.provider}: ${error}`);
+      }
+    } catch (error) {
+      setIsTesting(false);
+      const errorMessage = error instanceof Error ? error.message : 'Connection failed';
+      toast.error(`${providerInfo?.name || config.provider}: ${errorMessage}`);
     }
   };
 
@@ -356,20 +415,50 @@ function ProviderConfigCard({
       // Remove from selected
       const newSelectedModels = config.selectedModels.filter(id => id !== modelId);
       onUpdate({ selectedModels: newSelectedModels });
+      
+      // Also remove from store
+      if (config.provider) {
+        const model = availableModels.find((m: any) => m.id === modelId);
+        if (model) {
+          store.removeSelectedModel(`${config.provider}:${modelId}`);
+        }
+      }
     } else {
       // Add to selected and move to top
       const newSelectedModels = [modelId, ...config.selectedModels];
       onUpdate({ selectedModels: newSelectedModels });
+      
+      // Also add to store
+      if (config.provider) {
+        const model = availableModels.find((m: any) => m.id === modelId);
+        if (model) {
+          store.addSelectedModel(model, config.provider);
+        }
+      }
     }
   };
 
   const handleSelectAll = () => {
     const allModelIds = availableModels.map((model: any) => model.id);
     onUpdate({ selectedModels: allModelIds });
+    
+    // Also add all to store
+    if (config.provider) {
+      availableModels.forEach((model: any) => {
+        store.addSelectedModel(model, config.provider);
+      });
+    }
   };
 
   const handleSelectNone = () => {
     onUpdate({ selectedModels: [] });
+    
+    // Also remove all from store
+    if (config.provider) {
+      config.selectedModels.forEach(modelId => {
+        store.removeSelectedModel(`${config.provider}:${modelId}`);
+      });
+    }
   };
 
   const getCardTitle = () => {

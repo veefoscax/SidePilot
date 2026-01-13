@@ -16,7 +16,7 @@ export function UserMessage({ message }: UserMessageProps) {
     <div className="flex justify-end mb-4">
       <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-sm px-4 py-3 max-w-[80%] shadow-sm">
         <div className="whitespace-pre-wrap break-words">
-          {message.content}
+          {message.content || 'No content'}
         </div>
         <div className="text-xs opacity-70 mt-2">
           {new Date(message.timestamp).toLocaleTimeString([], { 

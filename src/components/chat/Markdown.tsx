@@ -35,6 +35,11 @@ export function Markdown({ content }: MarkdownProps) {
     return () => observer.disconnect();
   }, []);
 
+  // Handle undefined or null content
+  if (!content || content === 'undefined') {
+    return <div className="text-muted-foreground italic">No content</div>;
+  }
+
   return (
     <ReactMarkdown
       components={{

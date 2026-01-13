@@ -20,7 +20,7 @@ export function AssistantMessage({ message, isStreaming = false }: AssistantMess
       <div className="bg-muted rounded-2xl rounded-bl-sm px-4 py-3 max-w-[80%] shadow-sm">
         {/* Message content with markdown */}
         <div className="prose prose-sm dark:prose-invert max-w-none">
-          <Markdown content={message.content} />
+          <Markdown content={message.content || 'No content'} />
         </div>
 
         {/* Tool calls */}
