@@ -7,31 +7,37 @@ initializeMessageListener();
 
 // Register theme change handlers
 registerHandler('THEME_CHANGED', async (payload) => {
-  console.log(`🎨 Theme changed to: ${payload.theme}`);
+  // Handle both undefined payload and missing theme property
+  const theme = payload?.theme || 'dark';
+  
+  console.log(`🎨 Theme changed to: ${theme}`);
   
   // Store theme preference
   await chrome.storage.local.set({
-    chromeTheme: payload.theme,
+    chromeTheme: theme,
     themeLastUpdated: Date.now()
   });
   
   // Update icons based on theme
-  await updateIconsForTheme(payload.theme);
+  await updateIconsForTheme(theme);
   
   return { success: true };
 });
 
 registerHandler('CHROME_THEME_CHANGED', async (payload) => {
-  console.log(`🎨 Chrome theme changed to: ${payload.theme}`);
+  // Handle both undefined payload and missing theme property
+  const theme = payload?.theme || 'dark';
+  
+  console.log(`🎨 Chrome theme changed to: ${theme}`);
   
   // Store Chrome theme change
   await chrome.storage.local.set({
-    chromeTheme: payload.theme,
+    chromeTheme: theme,
     themeLastUpdated: Date.now()
   });
   
   // Update icons based on theme
-  await updateIconsForTheme(payload.theme);
+  await updateIconsForTheme(theme);
   
   return { success: true };
 });

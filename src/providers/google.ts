@@ -16,11 +16,9 @@ import {
   LLMResponse, 
   StreamChunk, 
   ContentPart,
-  ToolDefinition,
   ToolCall,
   ModelInfo
 } from './types';
-import { getModelsByProvider } from './models-registry';
 
 interface GoogleContent {
   parts: Array<{
@@ -293,7 +291,7 @@ export class GoogleProvider extends BaseProvider {
         content += part.text;
       } else if (part.functionCall) {
         toolCalls.push({
-          id: `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
           name: part.functionCall.name,
           input: part.functionCall.args,
         });
@@ -325,7 +323,7 @@ export class GoogleProvider extends BaseProvider {
         return {
           type: 'tool_use',
           toolCall: {
-            id: `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
             name: part.functionCall.name,
             input: part.functionCall.args,
           },

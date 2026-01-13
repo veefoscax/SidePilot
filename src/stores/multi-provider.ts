@@ -140,7 +140,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
               ...state.providers[type],
               ...config,
               type, // Ensure type is always set
-              isConfigured: config.apiKey ? config.apiKey.trim().length > 0 || !providerInfo.requiresApiKey : state.providers[type].isConfigured,
+              isConfigured: (config.apiKey && config.apiKey.trim().length > 0) || !providerInfo.requiresApiKey,
             }
           },
           error: null
@@ -172,7 +172,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         try {
           const provider = createProvider({
             type,
-            apiKey: providerConfig.apiKey,
+            apiKey: providerConfig.apiKey || '',
             baseUrl: providerConfig.baseUrl,
           });
           
@@ -227,7 +227,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         try {
           const provider = createProvider({
             type,
-            apiKey: providerConfig.apiKey,
+            apiKey: providerConfig.apiKey || '',
             baseUrl: providerConfig.baseUrl,
           });
           
