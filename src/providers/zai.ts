@@ -24,7 +24,7 @@ export class ZAIProvider extends OpenAIProvider {
             supportsVision: false,
             supportsTools: true,
             supportsStreaming: true,
-            supportsReasoning: false,
+            supportsReasoning: true, // GLM-4.7 supports reasoning
             supportsPromptCache: false,
             contextWindow: 128000,
             maxOutputTokens: 4096,

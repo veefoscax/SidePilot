@@ -157,6 +157,8 @@ export class OpenAIProvider extends BaseProvider {
     const decoder = new TextDecoder();
     let buffer = '';
     let hasContent = false;
+    let reasoningBuffer = '';
+    let isInReasoningMode = false;
 
     try {
       while (true) {
@@ -184,10 +186,37 @@ export class OpenAIProvider extends BaseProvider {
               
               const streamChunk = this.parseStreamChunk(chunk);
               if (streamChunk) {
+                // Check if this is reasoning content (for GLM-4.7)
                 if (streamChunk.type === 'text' && streamChunk.text) {
+                  const text = streamChunk.text;
+                  
+                  // GLM-4.7 reasoning detection patterns
+                  if (text.includes('<thinking>') || text.includes('思考：') || text.includes('分析：')) {
+                    isInReasoningMode = true;
+                    reasoningBuffer += text;
+                    yield { type: 'reasoning', text };
+                    continue;
+                  }
+                  
+                  if (isInReasoningMode && (text.includes('</thinking>') || text.includes('结论：') || text.includes('答案：'))) {
+                    isInReasoningMode = false;
+                    reasoningBuffer += text;
+                    yield { type: 'reasoning', text };
+                    continue;
+                  }
+                  
+                  if (isInReasoningMode) {
+                    reasoningBuffer += text;
+                    yield { type: 'reasoning', text };
+                    continue;
+                  }
+                  
+                  // Regular content
                   hasContent = true;
+                  yield streamChunk;
+                } else {
+                  yield streamChunk;
                 }
-                yield streamChunk;
               }
             } catch (error) {
               console.warn('Failed to parse ZAI stream chunk:', { data, error });
@@ -438,12 +467,18 @@ export class OpenAIProvider extends BaseProvider {
           };
         }
         if (toolCall.function?.arguments) {
-          return {
-            type: 'tool_use',
-            toolCall: {
-              input: toolCall.function.arguments,
-            },
-          };
+          try {
+            const parsedArgs = JSON.parse(toolCall.function.arguments);
+            return {
+              type: 'tool_use',
+              toolCall: {
+                input: parsedArgs,
+              },
+            };
+          } catch (error) {
+            console.warn('Failed to parse tool arguments:', error);
+            return null;
+          }
         }
       }
     }

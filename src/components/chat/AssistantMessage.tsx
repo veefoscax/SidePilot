@@ -28,6 +28,13 @@ export function AssistantMessage({
 }: AssistantMessageProps) {
   const [isHovered, setIsHovered] = useState(false);
 
+  console.log('💬 AssistantMessage render:', { 
+    messageId: message.id, 
+    hasReasoning: !!message.reasoning, 
+    reasoningLength: message.reasoning?.length || 0,
+    contentLength: message.content?.length || 0
+  });
+
   const handleSpeakMessage = () => {
     // Extract plain text from markdown content for TTS
     const plainText = message.content?.replace(/[#*`_~\[\]()]/g, '') || '';

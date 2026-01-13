@@ -79,6 +79,7 @@ const chromeStorage = createJSONStorage(() => ({
   getItem: async (name: string) => {
     try {
       const result = await chrome.storage.local.get(name);
+      console.log('📥 Chrome storage get:', { name, result: result[name] ? 'found' : 'not found' });
       return result[name] ?? null;
     } catch (error) {
       console.error('Failed to get from Chrome storage:', error);
@@ -88,6 +89,7 @@ const chromeStorage = createJSONStorage(() => ({
   setItem: async (name: string, value: string) => {
     try {
       await chrome.storage.local.set({ [name]: value });
+      console.log('💾 Chrome storage set:', { name, size: value.length });
     } catch (error) {
       console.error('Failed to set Chrome storage:', error);
     }
@@ -95,6 +97,7 @@ const chromeStorage = createJSONStorage(() => ({
   removeItem: async (name: string) => {
     try {
       await chrome.storage.local.remove(name);
+      console.log('🗑️ Chrome storage remove:', { name });
     } catch (error) {
       console.error('Failed to remove from Chrome storage:', error);
     }
@@ -138,23 +141,34 @@ export const useMultiProviderStore = create<MultiProviderState>()(
       
       // Provider Management Actions
       setProviderConfig: (type: ProviderType, config: Partial<Omit<ProviderConfig, 'type'>>) => {
+        console.log('🔧 Setting provider config:', { type, config });
         const providerInfo = getProviderInfo(type);
-        set(state => ({
-          providers: {
+        const isConfigured = (config.apiKey && config.apiKey.trim().length > 0) || !providerInfo.requiresApiKey;
+        
+        set(state => {
+          const newProviders = {
             ...state.providers,
             [type]: {
               ...state.providers[type],
               ...config,
               type, // Ensure type is always set
-              isConfigured: (config.apiKey && config.apiKey.trim().length > 0) || !providerInfo.requiresApiKey,
+              isConfigured,
             }
-          },
-          error: null
-        }));
+          };
+          
+          console.log('💾 Updated providers state:', newProviders[type]);
+          console.log('🔍 Full providers state:', Object.keys(newProviders));
+          
+          return {
+            providers: newProviders,
+            error: null
+          };
+        });
         
         // Auto-load models if provider becomes configured
-        if (config.apiKey && config.apiKey.trim().length > 0) {
-          get().loadModelsForProvider(type);
+        if (isConfigured && config.apiKey && config.apiKey.trim().length > 0) {
+          console.log('🔄 Auto-loading models for configured provider:', type);
+          setTimeout(() => get().loadModelsForProvider(type), 100);
         }
       },
       

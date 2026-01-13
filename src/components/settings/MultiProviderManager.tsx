@@ -698,7 +698,7 @@ function ProviderConfigCard({
                 onValueChange={handlePlanTypeChange}
               >
                 <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Choose plan type..." className="truncate" />
+                  <SelectValue placeholder="Choose plan type..." />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(getProviderPlanTypes(config.provider) || {}).map(([planKey, planConfig]) => (

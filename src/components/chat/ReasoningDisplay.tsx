@@ -25,12 +25,23 @@ export function ReasoningDisplay({
 }: ReasoningDisplayProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  console.log('🧠 ReasoningDisplay render:', { 
+    hasReasoning: !!reasoning, 
+    reasoningLength: reasoning?.length || 0, 
+    isStreaming, 
+    isExpanded 
+  });
+
   if (!reasoning && !isStreaming) {
+    console.log('🧠 ReasoningDisplay: No reasoning content, not rendering');
     return null;
   }
 
   const handleToggle = () => {
-    console.log('Reasoning toggle clicked:', { isExpanded, reasoning: reasoning?.substring(0, 50) });
+    console.log('🧠 Reasoning toggle clicked:', { 
+      isExpanded, 
+      reasoning: reasoning?.substring(0, 50) + '...' 
+    });
     setIsExpanded(!isExpanded);
   };
 
