@@ -4,12 +4,13 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Settings02Icon, MessageMultiple01Icon } from '@hugeicons/core-free-icons';
 import { initializeTheme } from '@/lib/theme';
 import { SettingsPage } from './pages/Settings';
+import { ChatPage } from './pages/Chat';
 import { Toaster } from 'sonner';
 
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState<'home' | 'settings'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'settings' | 'chat'>('home');
 
   useEffect(() => {
     // Initialize theme detection
@@ -42,6 +43,16 @@ function App() {
     return <SettingsPage onBack={() => setCurrentPage('home')} />;
   }
 
+  // Show Chat page
+  if (currentPage === 'chat') {
+    return (
+      <ChatPage 
+        onBack={() => setCurrentPage('home')} 
+        onSettings={() => setCurrentPage('settings')}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Toaster position="top-center" richColors />
@@ -69,11 +80,11 @@ function App() {
             <Button
               variant="outline"
               size="sm"
-              disabled
+              onClick={() => setCurrentPage('chat')}
               className="flex items-center gap-2"
             >
               <HugeiconsIcon icon={MessageMultiple01Icon} className="h-4 w-4" />
-              Chat (Soon)
+              Chat
             </Button>
           </div>
         </header>

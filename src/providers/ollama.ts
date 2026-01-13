@@ -188,7 +188,7 @@ export class OllamaProvider extends BaseProvider {
   }
 
   private buildRequest(messages: ChatMessage[], options: ChatOptions): OllamaRequest {
-    const { model = 'llama3.3:70b', maxTokens, temperature, systemPrompt } = options;
+    const { model = 'qwen3:1.7b', maxTokens, temperature, systemPrompt } = options;
 
     // Convert messages to Ollama format
     const ollamaMessages: OllamaMessage[] = [];

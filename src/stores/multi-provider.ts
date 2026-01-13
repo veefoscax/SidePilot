@@ -64,6 +64,11 @@ interface MultiProviderState {
   initializeStore: () => void;
   getConfiguredProviders: () => ProviderType[];
   getSelectedModelsByProvider: (provider: ProviderType) => SelectedModel[];
+  
+  // Actions - Active Provider
+  getCurrentProvider: () => { provider: ProviderType; model: SelectedModel } | null;
+  getCurrentProviderInstance: () => any | null;
+  getFirstConfiguredProvider: () => { provider: ProviderType; model: SelectedModel } | null;
 }
 
 /**
@@ -377,6 +382,64 @@ export const useMultiProviderStore = create<MultiProviderState>()(
       getSelectedModelsByProvider: (provider: ProviderType) => {
         const { selectedModels } = get();
         return selectedModels.filter(m => m.provider === provider);
+      },
+      
+      // Active Provider Actions
+      getCurrentProvider: () => {
+        const { currentModel, selectedModels, providers } = get();
+        if (!currentModel) return null;
+        
+        const model = selectedModels.find(m => m.fullId === currentModel);
+        if (!model) return null;
+        
+        const providerConfig = providers[model.provider];
+        if (!providerConfig?.isConfigured) return null;
+        
+        return { provider: model.provider, model };
+      },
+      
+      getCurrentProviderInstance: () => {
+        const currentProvider = get().getCurrentProvider();
+        if (!currentProvider) return null;
+        
+        const { providers } = get();
+        const providerConfig = providers[currentProvider.provider];
+        
+        try {
+          return createProvider({
+            type: currentProvider.provider,
+            apiKey: providerConfig.apiKey || '',
+            baseUrl: providerConfig.baseUrl,
+          });
+        } catch (error) {
+          console.error('Failed to create provider instance:', error);
+          return null;
+        }
+      },
+      
+      getFirstConfiguredProvider: () => {
+        const { providers, availableModelsByProvider } = get();
+        
+        // Find first configured provider
+        const configuredProvider = Object.values(providers).find(p => p.isConfigured);
+        if (!configuredProvider) return null;
+        
+        // Get available models for this provider
+        const availableModels = availableModelsByProvider[configuredProvider.type];
+        if (!availableModels || availableModels.length === 0) return null;
+        
+        // Create a model object from the first available model
+        const firstModel = availableModels[0];
+        const model: SelectedModel = {
+          id: firstModel.id,
+          provider: configuredProvider.type,
+          name: firstModel.name,
+          fullId: `${configuredProvider.type}:${firstModel.id}`,
+          capabilities: firstModel.capabilities,
+          pricing: firstModel.pricing,
+        };
+        
+        return { provider: configuredProvider.type, model };
       },
     }),
     {
