@@ -167,9 +167,9 @@ export class OllamaProvider extends BaseProvider {
         },
       }));
     } catch (error) {
-      console.warn('Failed to fetch Ollama models, using registry:', error);
-      // Fallback to registry models
-      return getModelsByProvider('ollama');
+      console.warn('Failed to fetch Ollama models:', error);
+      // Return empty array - let the UI show "No models available"
+      return [];
     }
   }
 

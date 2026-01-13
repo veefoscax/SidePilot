@@ -8,7 +8,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ProviderType, ModelInfo, LLMProvider } from '@/providers/types';
-import { createProvider } from '@/providers/factory';
+import { createProvider, getProviderInfo } from '@/providers/factory';
 import { getModelsByProvider } from '@/providers/models-registry';
 
 interface ProviderState {
@@ -109,15 +109,16 @@ export const useProviderStore = create<ProviderState>()(
         try {
           let models: ModelInfo[] = [];
           
-          // Only load models if we have an API key (except for Ollama which doesn't need one)
+          // Check if provider requires API key
+          const providerInfo = getProviderInfo(type);
           const { apiKey } = get();
           const hasApiKey = apiKey && apiKey.trim().length > 0;
           
-          if (type === 'ollama' || hasApiKey) {
+          if (!providerInfo.requiresApiKey || hasApiKey) {
             try {
               const config = {
                 type,
-                apiKey: type === 'ollama' ? '' : apiKey,
+                apiKey: providerInfo.requiresApiKey ? apiKey : '',
                 baseUrl: get().baseUrl,
               };
               
@@ -168,9 +169,10 @@ export const useProviderStore = create<ProviderState>()(
           const { selectedProvider } = get();
           get().loadModelsForProvider(selectedProvider);
         } else {
-          // If API key is cleared, clear models (except for Ollama)
+          // If API key is cleared, clear models (except for providers that don't require API keys)
           const { selectedProvider } = get();
-          if (selectedProvider !== 'ollama') {
+          const providerInfo = getProviderInfo(selectedProvider);
+          if (providerInfo.requiresApiKey) {
             set({ availableModels: [], selectedModel: '', selectedModels: [] });
           }
         }
@@ -224,7 +226,8 @@ export const useProviderStore = create<ProviderState>()(
       testConnection: async () => {
         const { selectedProvider, apiKey, selectedModel, baseUrl } = get();
         
-        if (!apiKey && selectedProvider !== 'ollama') {
+        const providerInfo = getProviderInfo(selectedProvider);
+        if (providerInfo.requiresApiKey && !apiKey) {
           set({ error: 'API key is required for this provider', isConnected: false });
           return false;
         }
@@ -264,7 +267,8 @@ export const useProviderStore = create<ProviderState>()(
       initializeProvider: async () => {
         const { selectedProvider, apiKey, selectedModel, baseUrl } = get();
         
-        if (!apiKey && selectedProvider !== 'ollama') {
+        const providerInfo = getProviderInfo(selectedProvider);
+        if (providerInfo.requiresApiKey && !apiKey) {
           return;
         }
         

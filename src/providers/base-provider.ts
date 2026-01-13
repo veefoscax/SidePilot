@@ -4,7 +4,18 @@
  * Abstract base class for all LLM providers with common functionality.
  */
 
-import { LLMProvider, ProviderConfig, ProviderType, ChatMessage, ChatOptions, LLMResponse, StreamChunk } from './types';
+import { 
+  LLMProvider, 
+  ProviderConfig, 
+  ProviderType, 
+  ChatMessage, 
+  ChatOptions, 
+  LLMResponse, 
+  StreamChunk,
+  ProviderError,
+  AuthenticationError,
+  RateLimitError
+} from './types';
 
 export abstract class BaseProvider implements LLMProvider {
   readonly type: ProviderType;
@@ -41,8 +52,19 @@ export abstract class BaseProvider implements LLMProvider {
       return this.config.baseUrl;
     }
     
-    // Import here to avoid circular dependency
-    const { PROVIDER_BASE_URLS } = require('./models-registry');
+    // Default base URLs for providers
+    const PROVIDER_BASE_URLS: Record<string, string> = {
+      anthropic: 'https://api.anthropic.com',
+      openai: 'https://api.openai.com',
+      google: 'https://generativelanguage.googleapis.com',
+      deepseek: 'https://api.deepseek.com',
+      groq: 'https://api.groq.com',
+      mistral: 'https://api.mistral.ai',
+      ollama: 'http://localhost:11434',
+      lmstudio: 'http://127.0.0.1:1234',
+      // Add more as needed
+    };
+    
     return PROVIDER_BASE_URLS[this.type] || '';
   }
 
@@ -123,8 +145,6 @@ export abstract class BaseProvider implements LLMProvider {
    * Handle error responses from API
    */
   protected async handleErrorResponse(response: Response): Promise<never> {
-    const { ProviderError, AuthenticationError, RateLimitError } = require('./types');
-    
     let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
     
     try {

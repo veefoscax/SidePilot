@@ -188,8 +188,8 @@ export class GoogleProvider extends BaseProvider {
       console.warn('Failed to fetch Google models:', error);
     }
     
-    // Fallback to registry
-    return getModelsByProvider('google');
+    // Return empty array - let the UI show "No models available"
+    return [];
   }
 
   private buildRequest(messages: ChatMessage[], options: ChatOptions): GoogleRequest {

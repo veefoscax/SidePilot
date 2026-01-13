@@ -8,7 +8,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ProviderType, ModelInfo } from '@/providers/types';
-import { createProvider } from '@/providers/factory';
+import { createProvider, getProviderInfo } from '@/providers/factory';
 
 interface ProviderConfig {
   type: ProviderType;
@@ -102,13 +102,14 @@ function createDefaultProviders(): Record<ProviderType, ProviderConfig> {
   const providers: Record<string, ProviderConfig> = {};
   
   // Core providers that users commonly configure
-  const coreProviders: ProviderType[] = ['anthropic', 'openai', 'google', 'deepseek', 'groq', 'ollama'];
+  const coreProviders: ProviderType[] = ['anthropic', 'openai', 'google', 'deepseek', 'groq', 'ollama', 'lmstudio'];
   
   coreProviders.forEach(type => {
+    const providerInfo = getProviderInfo(type);
     providers[type] = {
       type,
       apiKey: '',
-      baseUrl: type === 'ollama' ? 'http://localhost:11434' : undefined,
+      baseUrl: !providerInfo.requiresApiKey ? (type === 'ollama' ? 'http://localhost:11434' : 'http://127.0.0.1:1234') : undefined,
       isConfigured: false,
       isConnected: false,
     };
@@ -131,6 +132,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
       
       // Provider Management Actions
       setProviderConfig: (type: ProviderType, config: Partial<Omit<ProviderConfig, 'type'>>) => {
+        const providerInfo = getProviderInfo(type);
         set(state => ({
           providers: {
             ...state.providers,
@@ -138,7 +140,7 @@ export const useMultiProviderStore = create<MultiProviderState>()(
               ...state.providers[type],
               ...config,
               type, // Ensure type is always set
-              isConfigured: config.apiKey ? config.apiKey.trim().length > 0 || type === 'ollama' : state.providers[type].isConfigured,
+              isConfigured: config.apiKey ? config.apiKey.trim().length > 0 || !providerInfo.requiresApiKey : state.providers[type].isConfigured,
             }
           },
           error: null
@@ -154,7 +156,8 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         const { providers } = get();
         const providerConfig = providers[type];
         
-        if (!providerConfig.isConfigured && type !== 'ollama') {
+        const providerInfo = getProviderInfo(type);
+        if (!providerConfig.isConfigured && providerInfo.requiresApiKey) {
           set(state => ({
             providers: {
               ...state.providers,
@@ -211,7 +214,8 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         if (loadingProviders.includes(type)) return;
         
         // Only load if provider is configured
-        if (!providerConfig.isConfigured && type !== 'ollama') {
+        const providerInfo = getProviderInfo(type);
+        if (!providerConfig.isConfigured && providerInfo.requiresApiKey) {
           console.log(`🔑 Provider ${type} not configured, skipping model loading`);
           return;
         }
@@ -241,15 +245,24 @@ export const useMultiProviderStore = create<MultiProviderState>()(
               ...state.availableModelsByProvider,
               [type]: models
             },
+            providers: {
+              ...state.providers,
+              [type]: { ...state.providers[type], error: undefined }
+            },
             loadingProviders: state.loadingProviders.filter(p => p !== type)
           }));
           
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to load models';
           console.error(`❌ Failed to load models for ${type}:`, error);
           set(state => ({
             availableModelsByProvider: {
               ...state.availableModelsByProvider,
               [type]: []
+            },
+            providers: {
+              ...state.providers,
+              [type]: { ...state.providers[type], error: errorMessage, isConnected: false }
             },
             loadingProviders: state.loadingProviders.filter(p => p !== type)
           }));
@@ -259,7 +272,10 @@ export const useMultiProviderStore = create<MultiProviderState>()(
       loadModelsForAllConfiguredProviders: async () => {
         const { providers } = get();
         const configuredProviders = Object.values(providers)
-          .filter(p => p.isConfigured || p.type === 'ollama')
+          .filter(p => {
+            const providerInfo = getProviderInfo(p.type);
+            return p.isConfigured || !providerInfo.requiresApiKey;
+          })
           .map(p => p.type);
           
         console.log(`🔄 Loading models for ${configuredProviders.length} configured providers`);
@@ -339,7 +355,10 @@ export const useMultiProviderStore = create<MultiProviderState>()(
       getConfiguredProviders: () => {
         const { providers } = get();
         return Object.values(providers)
-          .filter(p => p.isConfigured || p.type === 'ollama')
+          .filter(p => {
+            const providerInfo = getProviderInfo(p.type);
+            return p.isConfigured || !providerInfo.requiresApiKey;
+          })
           .map(p => p.type);
       },
       

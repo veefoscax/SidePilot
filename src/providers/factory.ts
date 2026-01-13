@@ -10,6 +10,7 @@ import { AnthropicProvider } from './anthropic';
 import { OpenAIProvider } from './openai';
 import { GoogleProvider } from './google';
 import { OllamaProvider } from './ollama';
+import { LMStudioProvider } from './lmstudio';
 
 /**
  * Provider class registry
@@ -27,7 +28,7 @@ const PROVIDER_CLASSES: Record<ProviderType, new (config: ProviderConfig) => LLM
   groq: OpenAIProvider,
   mistral: OpenAIProvider,
   ollama: OllamaProvider,
-  lmstudio: OllamaProvider, // Same API as Ollama
+  lmstudio: LMStudioProvider, // LM Studio with correct port
 
   // Tier 3: Extended providers (OpenAI-compatible)
   openrouter: OpenAIProvider,
@@ -236,6 +237,15 @@ export function getProviderInfo(type: ProviderType): {
       name: 'Ollama',
       description: 'Run models locally',
       website: 'https://ollama.ai',
+      requiresApiKey: false,
+      supportsStreaming: true,
+      supportsTools: false,
+      supportsVision: false,
+    },
+    lmstudio: {
+      name: 'LM Studio',
+      description: 'Local LLM server with UI',
+      website: 'https://lmstudio.ai',
       requiresApiKey: false,
       supportsStreaming: true,
       supportsTools: false,

@@ -181,13 +181,7 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   async listModels(): Promise<ModelInfo[]> {
-    // For OpenAI-compatible providers, try to get models from registry first
-    const registryModels = getModelsByProvider(this.type);
-    if (registryModels.length > 0) {
-      return registryModels;
-    }
-
-    // For OpenAI, we can fetch available models
+    // For OpenAI, we can fetch available models directly from the API
     if (this.type === 'openai') {
       try {
         const response = await this.makeRequest('/models');
@@ -215,6 +209,8 @@ export class OpenAIProvider extends BaseProvider {
       }
     }
 
+    // For other OpenAI-compatible providers, return empty array
+    // Let the UI show "No models available" - they should configure their own models
     return [];
   }
 

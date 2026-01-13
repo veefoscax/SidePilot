@@ -33,6 +33,7 @@ import {
   Save,
   DragDropVerticalIcon
 } from '@hugeicons/core-free-icons';
+import { toast } from 'sonner';
 
 import { useMultiProviderStore } from '@/stores/multi-provider';
 import { ProviderType } from '@/providers/types';
@@ -59,6 +60,24 @@ export function MultiProviderManager() {
   useEffect(() => {
     store.initializeStore();
   }, []);
+
+  // Show toast when provider has error
+  useEffect(() => {
+    providerConfigs.forEach(config => {
+      if (config.provider) {
+        const storeConfig = store.providers[config.provider];
+        if (storeConfig?.error && !storeConfig.isConnected) {
+          // Only show toast if we haven't shown it recently
+          const lastErrorTime = localStorage.getItem(`error-toast-${config.provider}`);
+          const now = Date.now();
+          if (!lastErrorTime || now - parseInt(lastErrorTime) > 5000) { // 5 second cooldown
+            toast.error(`${getProviderInfo(config.provider).name}: ${storeConfig.error}`);
+            localStorage.setItem(`error-toast-${config.provider}`, now.toString());
+          }
+        }
+      }
+    });
+  }, [providerConfigs, store.providers]);
 
   const addProviderConfig = () => {
     const newConfig: ProviderConfig = {
@@ -280,8 +299,16 @@ function ProviderConfigCard({
   const handleTestConnection = async () => {
     if (!config.provider) return;
     setIsTesting(true);
-    await store.testProviderConnection(config.provider);
+    const success = await store.testProviderConnection(config.provider);
     setIsTesting(false);
+    
+    // Show toast notification
+    if (success) {
+      toast.success(`${providerInfo?.name || config.provider} connected successfully`);
+    } else {
+      const error = storeConfig?.error || 'Connection failed';
+      toast.error(`${providerInfo?.name || config.provider}: ${error}`);
+    }
   };
 
   const handleModelToggle = (modelId: string) => {
@@ -296,6 +323,15 @@ function ProviderConfigCard({
       const newSelectedModels = [modelId, ...config.selectedModels];
       onUpdate({ selectedModels: newSelectedModels });
     }
+  };
+
+  const handleSelectAll = () => {
+    const allModelIds = availableModels.map((model: any) => model.id);
+    onUpdate({ selectedModels: allModelIds });
+  };
+
+  const handleSelectNone = () => {
+    onUpdate({ selectedModels: [] });
   };
 
   const getCardTitle = () => {
@@ -321,7 +357,7 @@ function ProviderConfigCard({
           onDragOver(e);
         }
       }}
-      onDragEnter={(e) => {
+      onDragEnter={() => {
         // Only handle if not dragging a model
         if (!draggedModel) {
           onDragEnter();
@@ -374,7 +410,12 @@ function ProviderConfigCard({
                   {storeConfig.isConnected ? (
                     <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 text-green-500" />
                   ) : storeConfig.error ? (
-                    <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3 text-red-500" />
+                    <div 
+                      className="h-3 w-3 text-red-500 cursor-help" 
+                      title={storeConfig.error}
+                    >
+                      <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" />
+                    </div>
                   ) : null}
                 </>
               )}
@@ -458,7 +499,7 @@ function ProviderConfigCard({
           </div>
 
           {/* API Key Input */}
-          {config.provider && config.provider !== 'ollama' && (
+          {config.provider && providerInfo?.requiresApiKey && (
             <div className="space-y-1">
               <label className="text-xs font-medium">API Key</label>
               <div className="flex gap-2">
@@ -487,9 +528,31 @@ function ProviderConfigCard({
           )}
 
           {/* Model Selection */}
-          {config.provider && (config.apiKey.trim() || config.provider === 'ollama') && (
+          {config.provider && (config.apiKey.trim() || !providerInfo?.requiresApiKey) && (
             <div className="space-y-1">
-              <label className="text-xs font-medium">Models</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium">Models</label>
+                {availableModels.length > 0 && (
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSelectAll}
+                      className="h-5 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      All
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSelectNone}
+                      className="h-5 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      None
+                    </Button>
+                  </div>
+                )}
+              </div>
               
               {isLoadingModels ? (
                 <div className="space-y-1">
@@ -498,8 +561,15 @@ function ProviderConfigCard({
                   ))}
                 </div>
               ) : availableModels.length === 0 ? (
-                <div className="p-2 text-center text-muted-foreground border rounded text-xs">
-                  No models available
+                <div className="p-2 text-center border rounded text-xs">
+                  {storeConfig?.error ? (
+                    <div className="text-red-500">
+                      <div className="font-medium">Failed to load models</div>
+                      <div className="text-xs mt-1 text-muted-foreground">{storeConfig.error}</div>
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground">No models available</div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-2">

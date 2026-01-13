@@ -60,7 +60,6 @@
 - [x] Test provider selection persists via Chrome storage <!-- id: 38 -->
 - [x] Test API key saves securely via Chrome storage <!-- id: 39 -->
 - [x] Test connection test works with real providers <!-- id: 40 -->
-- [x] Verify Ollama provider works without API key (local testing) <!-- id: 50 -->
 - [x] Test model selection updates badges dynamically <!-- id: 41 -->
 - [x] Verify model list filters correctly by provider <!-- id: 51 -->
 - [x] Verify capability badges match model registry data <!-- id: 52 -->

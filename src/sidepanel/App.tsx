@@ -4,6 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Settings02Icon, MessageMultiple01Icon } from '@hugeicons/core-free-icons';
 import { initializeTheme } from '@/lib/theme';
 import { SettingsPage } from './pages/Settings';
+import { Toaster } from 'sonner';
 
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
@@ -43,6 +44,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Toaster position="top-center" richColors />
       <div className="max-w-md mx-auto p-6">
         <header className="text-center mb-8">
           <div className="mb-4">

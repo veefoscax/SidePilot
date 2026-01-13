@@ -247,47 +247,6 @@ export const MODEL_REGISTRY: Record<string, Omit<ModelInfo, 'id'>> = {
     },
   },
 
-  // Ollama Local Models (common defaults)
-  "llama3.3:70b": {
-    name: "Llama 3.3 70B",
-    provider: "ollama",
-    capabilities: {
-      supportsVision: false,
-      supportsTools: false,
-      supportsStreaming: true,
-      supportsReasoning: false,
-      supportsPromptCache: false,
-      contextWindow: 128000,
-      maxOutputTokens: 4096,
-    },
-  },
-  "qwen2.5:32b": {
-    name: "Qwen 2.5 32B",
-    provider: "ollama",
-    capabilities: {
-      supportsVision: false,
-      supportsTools: false,
-      supportsStreaming: true,
-      supportsReasoning: false,
-      supportsPromptCache: false,
-      contextWindow: 32768,
-      maxOutputTokens: 4096,
-    },
-  },
-  "deepseek-r1:32b": {
-    name: "DeepSeek R1 32B",
-    provider: "ollama",
-    capabilities: {
-      supportsVision: false,
-      supportsTools: false,
-      supportsStreaming: true,
-      supportsReasoning: true,
-      supportsPromptCache: false,
-      contextWindow: 128000,
-      maxOutputTokens: 4096,
-    },
-  },
-
   // Mistral Models
   "mistral-large-latest": {
     name: "Mistral Large",
@@ -332,7 +291,7 @@ export const PROVIDER_BASE_URLS: Record<ProviderType, string> = {
   groq: "https://api.groq.com/openai/v1",
   mistral: "https://api.mistral.ai/v1",
   ollama: "http://localhost:11434",
-  lmstudio: "http://localhost:1234/v1",
+  lmstudio: "http://127.0.0.1:1234",
   openrouter: "https://openrouter.ai/api/v1",
   together: "https://api.together.xyz/v1",
   fireworks: "https://api.fireworks.ai/inference/v1",
@@ -414,8 +373,6 @@ export function getDefaultModel(provider: ProviderType): string | undefined {
       return 'llama-3.3-70b-versatile';
     case 'zai':
       return 'glm-4-plus';
-    case 'ollama':
-      return 'llama3.3:70b';
     case 'mistral':
       return 'mistral-large-latest';
     case 'xai':

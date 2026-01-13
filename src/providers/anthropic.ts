@@ -141,14 +141,14 @@ export class AnthropicProvider extends BaseProvider {
     try {
       // Try to fetch models from Anthropic API (if they provide a models endpoint)
       // Note: Anthropic doesn't currently provide a public models API endpoint
-      // So we'll use the registry for now but structure it for future API support
-      console.log('Using Anthropic model registry (no public models API available)');
+      // So we'll return empty array and let the UI show "No models available"
+      console.log('Anthropic does not provide a public models API endpoint');
     } catch (error) {
       console.warn('Failed to fetch Anthropic models:', error);
     }
     
-    // Use registry models for Anthropic
-    return getModelsByProvider('anthropic');
+    // Return empty array - let the UI show "No models available"
+    return [];
   }
 
   private buildRequest(messages: ChatMessage[], options: ChatOptions): AnthropicRequest {
