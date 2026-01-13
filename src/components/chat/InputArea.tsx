@@ -8,9 +8,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { VoiceControls } from './VoiceControls';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowRight01Icon } from '@hugeicons/core-free-icons';
+import { ArrowRight01Icon, Clock01Icon } from '@hugeicons/core-free-icons';
+import { useChatStore } from '@/stores/chat';
 
 interface InputAreaProps {
   onSend: (message: string) => void;
@@ -25,6 +27,7 @@ export function InputArea({
 }: InputAreaProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { messageQueue, queueMessage, isStreaming } = useChatStore();
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -36,13 +39,25 @@ export function InputArea({
 
   const handleSend = () => {
     const trimmedInput = input.trim();
-    if (trimmedInput && !disabled) {
-      onSend(trimmedInput);
-      setInput('');
-      
-      // Reset textarea height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
+    if (trimmedInput) {
+      if (isStreaming) {
+        // Queue the message if currently streaming
+        queueMessage(trimmedInput);
+        setInput('');
+        
+        // Reset textarea height
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+        }
+      } else if (!disabled) {
+        // Send immediately if not streaming
+        onSend(trimmedInput);
+        setInput('');
+        
+        // Reset textarea height
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+        }
       }
     }
   };
@@ -64,10 +79,20 @@ export function InputArea({
     }
   };
 
-  const canSend = input.trim().length > 0 && !disabled;
+  const canSend = input.trim().length > 0;
 
   return (
     <div className="border-t bg-background p-4">
+      {/* Queued messages indicator */}
+      {messageQueue.length > 0 && (
+        <div className="max-w-4xl mx-auto mb-2">
+          <Badge variant="secondary" className="text-xs">
+            <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3 mr-1" />
+            {messageQueue.length} message{messageQueue.length > 1 ? 's' : ''} queued
+          </Badge>
+        </div>
+      )}
+      
       <div className="relative max-w-4xl mx-auto">
         <div className="flex gap-2 items-end">
           {/* Textarea */}
@@ -77,8 +102,14 @@ export function InputArea({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={disabled ? "AI is responding..." : placeholder}
-              disabled={disabled}
+              placeholder={
+                isStreaming 
+                  ? "Type to queue next message..." 
+                  : disabled 
+                    ? "AI is responding..." 
+                    : placeholder
+              }
+              disabled={disabled && !isStreaming}
               className="min-h-[44px] max-h-32 resize-none pr-20"
               rows={1}
             />
@@ -87,7 +118,7 @@ export function InputArea({
             <div className="absolute bottom-2 right-2 flex items-center gap-1">
               <VoiceControls
                 onTranscript={handleVoiceTranscript}
-                disabled={disabled}
+                disabled={disabled && !isStreaming}
                 className="mr-1"
               />
               
@@ -114,11 +145,11 @@ export function InputArea({
         {/* Keyboard shortcut hint */}
         <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
           <span>
-            Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to send, 
+            Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to {isStreaming ? 'queue' : 'send'}, 
             <kbd className="px-1 py-0.5 bg-muted rounded text-xs ml-1">Shift + Enter</kbd> for new line
           </span>
           
-          {disabled && (
+          {isStreaming && (
             <span className="text-primary">AI is typing...</span>
           )}
         </div>

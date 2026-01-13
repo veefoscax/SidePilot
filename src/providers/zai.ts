@@ -1,15 +1,67 @@
 /**
  * ZAI (智谱 Zhipu AI) Provider
  * 
- * Implements ZAI's GLM models with proper coding endpoint support.
+ * Implements ZAI's GLM models with support for both general and coding plans.
  * Based on PROVIDER_LIST.md documentation.
  */
 
 import { OpenAIProvider } from './openai';
 import { ModelInfo } from './types';
+import { getDefaultModelsForPlan } from './provider-configs';
 
 export class ZAIProvider extends OpenAIProvider {
   protected getDefaultModels(): ModelInfo[] {
+    // Determine if this is a coding plan based on base URL
+    const isCodingPlan = this.config.baseUrl?.includes('api.z.ai/api/coding');
+    
+    if (isCodingPlan) {
+      return [
+        {
+          id: 'glm-4.7',
+          name: 'GLM-4.7 (Coding)',
+          provider: this.type,
+          capabilities: {
+            supportsVision: false,
+            supportsTools: true,
+            supportsStreaming: true,
+            supportsReasoning: false,
+            supportsPromptCache: false,
+            contextWindow: 128000,
+            maxOutputTokens: 4096,
+          },
+        },
+        {
+          id: 'glm-4.6',
+          name: 'GLM-4.6 (Coding)',
+          provider: this.type,
+          capabilities: {
+            supportsVision: false,
+            supportsTools: true,
+            supportsStreaming: true,
+            supportsReasoning: false,
+            supportsPromptCache: false,
+            contextWindow: 128000,
+            maxOutputTokens: 4096,
+          },
+        },
+        {
+          id: 'glm-4.5',
+          name: 'GLM-4.5 (Coding)',
+          provider: this.type,
+          capabilities: {
+            supportsVision: false,
+            supportsTools: true,
+            supportsStreaming: true,
+            supportsReasoning: false,
+            supportsPromptCache: false,
+            contextWindow: 128000,
+            maxOutputTokens: 4096,
+          },
+        },
+      ];
+    }
+    
+    // General plan models
     return [
       {
         id: 'glm-4-plus',
@@ -71,7 +123,8 @@ export class ZAIProvider extends OpenAIProvider {
   }
 
   protected getDefaultModel(): string {
-    return 'glm-4-plus';
+    const isCodingPlan = this.config.baseUrl?.includes('api.z.ai/api/coding');
+    return isCodingPlan ? 'glm-4.7' : 'glm-4-plus';
   }
 
   /**
@@ -80,11 +133,13 @@ export class ZAIProvider extends OpenAIProvider {
    */
   protected async performConnectionTest(): Promise<{ models: ModelInfo[] }> {
     try {
-      // Test with minimal chat request to verify coding endpoint
+      const defaultModel = this.getDefaultModel();
+      
+      // Test with minimal chat request to verify endpoint
       const response = await this.makeRequest('/chat/completions', {
         method: 'POST',
         body: JSON.stringify({
-          model: 'glm-4-plus',
+          model: defaultModel,
           messages: [{ role: 'user', content: 'test' }],
           max_tokens: 1,
         }),

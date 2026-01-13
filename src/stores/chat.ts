@@ -13,9 +13,11 @@ interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  reasoning?: string; // For models that provide reasoning/thinking
   toolCalls?: ToolCall[];
   toolResults?: ToolResult[];
   timestamp: number;
+  isReverted?: boolean; // For revert functionality
 }
 
 interface ToolCall {
@@ -59,6 +61,10 @@ interface ChatState {
   // Streaming state
   isStreaming: boolean;
   streamingContent: string;
+  streamingReasoning: string; // For reasoning/thinking content
+  
+  // Message queue for handling multiple requests
+  messageQueue: string[];
   
   // Error state
   error: string | null;
@@ -69,9 +75,14 @@ interface ChatState {
   
   // Actions
   addUserMessage: (content: string) => string;
+  queueMessage: (content: string) => void; // Queue message while streaming
   startStreaming: () => void;
   appendStreamContent: (chunk: string) => void;
-  endStreaming: (fullContent: string, toolCalls?: ToolCall[]) => void;
+  appendStreamReasoning: (chunk: string) => void; // For reasoning content
+  endStreaming: (fullContent: string, toolCalls?: ToolCall[], reasoning?: string) => void;
+  cancelStreaming: () => void; // Cancel current response
+  revertLastMessage: () => void; // Revert last assistant message
+  processNextQueuedMessage: () => string | null; // Process next queued message
   addToolResult: (toolUseId: string, result: ToolResult) => void;
   setError: (error: string | null) => void;
   clearMessages: () => void;
@@ -132,6 +143,8 @@ export const useChatStore = create<ChatState>()(
       currentConversationId: null,
       isStreaming: false,
       streamingContent: '',
+      streamingReasoning: '',
+      messageQueue: [],
       error: null,
       savedConversations: [],
       conversationTemplates: [
@@ -188,12 +201,31 @@ export const useChatStore = create<ChatState>()(
         }));
         return id;
       },
+
+      // Queue message while streaming
+      queueMessage: (content: string) => {
+        set(state => ({
+          messageQueue: [...state.messageQueue, content]
+        }));
+      },
+
+      // Process next queued message
+      processNextQueuedMessage: () => {
+        const state = get();
+        if (state.messageQueue.length > 0) {
+          const [nextMessage, ...remainingQueue] = state.messageQueue;
+          set({ messageQueue: remainingQueue });
+          return nextMessage;
+        }
+        return null;
+      },
       
       // Task 3: Implement streaming actions (start, append, end)
       startStreaming: () => {
         set({ 
           isStreaming: true, 
           streamingContent: '',
+          streamingReasoning: '',
           error: null 
         });
       },
@@ -203,19 +235,49 @@ export const useChatStore = create<ChatState>()(
           streamingContent: state.streamingContent + chunk
         }));
       },
+
+      appendStreamReasoning: (chunk: string) => {
+        set(state => ({
+          streamingReasoning: state.streamingReasoning + chunk
+        }));
+      },
       
-      endStreaming: (fullContent: string, toolCalls?: ToolCall[]) => {
+      endStreaming: (fullContent: string, toolCalls?: ToolCall[], reasoning?: string) => {
         set(state => ({
           isStreaming: false,
           streamingContent: '',
+          streamingReasoning: '',
           messages: [...state.messages, {
             id: crypto.randomUUID(),
             role: 'assistant',
-            content: fullContent,
+            content: fullContent || 'No response received',
+            reasoning,
             toolCalls,
             timestamp: Date.now(),
           }],
         }));
+      },
+
+      cancelStreaming: () => {
+        set({
+          isStreaming: false,
+          streamingContent: '',
+          streamingReasoning: '',
+          error: null,
+        });
+      },
+
+      revertLastMessage: () => {
+        set(state => {
+          const messages = [...state.messages];
+          if (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+            messages[messages.length - 1] = {
+              ...messages[messages.length - 1],
+              isReverted: true,
+            };
+          }
+          return { messages };
+        });
       },
       
       // Task 4: Implement addToolResult action
@@ -256,6 +318,8 @@ export const useChatStore = create<ChatState>()(
           messages: [], 
           isStreaming: false, 
           streamingContent: '', 
+          streamingReasoning: '',
+          messageQueue: [],
           error: null 
         });
       },
@@ -272,6 +336,7 @@ export const useChatStore = create<ChatState>()(
             error: null,
             isStreaming: false,
             streamingContent: '',
+            streamingReasoning: '',
           }));
         }
       },

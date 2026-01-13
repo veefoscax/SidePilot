@@ -39,12 +39,14 @@ import { toast } from 'sonner';
 import { useMultiProviderStore } from '@/stores/multi-provider';
 import { ProviderType } from '@/providers/types';
 import { getProviderInfo, getSupportedProviders } from '@/providers/factory';
+import { getProviderPlanTypes, supportsMultiplePlans } from '@/providers/provider-configs';
 
 interface ProviderConfig {
   id: string;
   provider: ProviderType | null;
   apiKey: string;
   baseUrl: string;
+  planType?: string; // For providers with multiple plan types (e.g., ZAI coding vs general)
   selectedModels: string[];
   isExpanded: boolean;
 }
@@ -52,7 +54,7 @@ interface ProviderConfig {
 export function MultiProviderManager() {
   const store = useMultiProviderStore();
   const [providerConfigs, setProviderConfigs] = useState<ProviderConfig[]>([
-    { id: '1', provider: null, apiKey: '', baseUrl: '', selectedModels: [], isExpanded: true }
+    { id: '1', provider: null, apiKey: '', baseUrl: '', planType: undefined, selectedModels: [], isExpanded: true }
   ]);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOverItem, setDragOverItem] = useState<string | null>(null);
@@ -72,6 +74,7 @@ export function MultiProviderManager() {
           provider: type as ProviderType,
           apiKey: config.apiKey || '',
           baseUrl: config.baseUrl || '',
+          planType: config.planType,
           selectedModels: store.getSelectedModelsByProvider(type as ProviderType).map(m => m.id),
           isExpanded: false
         }));
@@ -107,6 +110,7 @@ export function MultiProviderManager() {
       provider: null,
       apiKey: '',
       baseUrl: '',
+      planType: undefined,
       selectedModels: [],
       isExpanded: true
     };
@@ -233,11 +237,13 @@ export function MultiProviderManager() {
                     if (providerInfo?.requiresApiKey) {
                       store.setProviderConfig(config.provider, { 
                         apiKey: config.apiKey,
-                        baseUrl: config.baseUrl 
+                        baseUrl: config.baseUrl,
+                        planType: config.planType
                       });
                     } else {
                       store.setProviderConfig(config.provider, { 
-                        baseUrl: config.baseUrl 
+                        baseUrl: config.baseUrl,
+                        planType: config.planType
                       });
                     }
                   }
@@ -321,6 +327,7 @@ function ProviderConfigCard({
   const handleProviderChange = (providerType: ProviderType) => {
     const providerInfo = getProviderInfo(providerType);
     let defaultBaseUrl = '';
+    let defaultPlanType = undefined;
     
     // Set default URLs for local providers
     if (!providerInfo.requiresApiKey) {
@@ -331,19 +338,53 @@ function ProviderConfigCard({
       }
     }
     
+    // Set default plan type for providers that support multiple plans
+    if (supportsMultiplePlans(providerType)) {
+      const planTypes = getProviderPlanTypes(providerType);
+      if (planTypes) {
+        // For ZAI, default to coding plan since that's what most users have
+        if (providerType === 'zai') {
+          defaultPlanType = 'coding';
+        } else {
+          // For other providers, use the first available plan
+          defaultPlanType = Object.keys(planTypes)[0];
+        }
+      }
+    }
+    
     onUpdate({ 
       provider: providerType, 
       apiKey: '', 
       baseUrl: defaultBaseUrl,
+      planType: defaultPlanType,
       selectedModels: [],
       isExpanded: true 
     });
   };
 
+  const handlePlanTypeChange = (planType: string) => {
+    onUpdate({ planType });
+    if (config.provider && store.setProviderConfig) {
+      store.setProviderConfig(config.provider, { 
+        apiKey: config.apiKey, 
+        baseUrl: config.baseUrl,
+        planType: planType
+      });
+      // Reload models when plan type changes
+      if (store.loadModelsForProvider) {
+        store.loadModelsForProvider(config.provider);
+      }
+    }
+  };
+
   const handleApiKeyChange = (apiKey: string) => {
     onUpdate({ apiKey });
     if (config.provider && apiKey.trim() && store.setProviderConfig) {
-      store.setProviderConfig(config.provider, { apiKey, baseUrl: config.baseUrl });
+      store.setProviderConfig(config.provider, { 
+        apiKey, 
+        baseUrl: config.baseUrl,
+        planType: config.planType
+      });
       if (store.loadModelsForProvider) {
         store.loadModelsForProvider(config.provider);
       }
@@ -353,7 +394,11 @@ function ProviderConfigCard({
   const handleBaseUrlChange = (baseUrl: string) => {
     onUpdate({ baseUrl });
     if (config.provider && store.setProviderConfig) {
-      store.setProviderConfig(config.provider, { apiKey: config.apiKey, baseUrl });
+      store.setProviderConfig(config.provider, { 
+        apiKey: config.apiKey, 
+        baseUrl,
+        planType: config.planType
+      });
       // Reload models when URL changes
       if (baseUrl.trim() && store.loadModelsForProvider) {
         store.loadModelsForProvider(config.provider);
@@ -377,7 +422,8 @@ function ProviderConfigCard({
       console.log('📝 Setting provider config with API key');
       store.setProviderConfig(config.provider, { 
         apiKey: config.apiKey,
-        baseUrl: config.baseUrl 
+        baseUrl: config.baseUrl,
+        planType: config.planType
       });
     } else {
       if (!config.baseUrl.trim()) {
@@ -387,7 +433,8 @@ function ProviderConfigCard({
       console.log('📝 Setting provider config with base URL');
       store.setProviderConfig(config.provider, { 
         apiKey: config.apiKey,
-        baseUrl: config.baseUrl 
+        baseUrl: config.baseUrl,
+        planType: config.planType
       });
     }
     
@@ -641,6 +688,36 @@ function ProviderConfigCard({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Plan Type Selection - For providers with multiple plans */}
+          {config.provider && supportsMultiplePlans(config.provider) && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Plan Type</label>
+              <Select
+                value={config.planType || ''}
+                onValueChange={handlePlanTypeChange}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Choose plan type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(getProviderPlanTypes(config.provider) || {}).map(([planKey, planConfig]) => (
+                    <SelectItem key={planKey} value={planKey}>
+                      <div className="flex flex-col items-start w-full">
+                        <span className="font-medium capitalize">{planKey} Plan</span>
+                        <span className="text-xs text-muted-foreground truncate w-full">{planConfig.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {config.planType && (
+                <div className="text-xs text-muted-foreground">
+                  Using: {getProviderPlanTypes(config.provider)?.[config.planType]?.baseUrl}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* API Key Input */}
           {config.provider && providerInfo?.requiresApiKey && (

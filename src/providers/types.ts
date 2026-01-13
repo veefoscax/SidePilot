@@ -96,6 +96,7 @@ export interface UserProviderConfig {
   apiKey?: string;
   baseUrl?: string;
   groupId?: string; // For MiniMax
+  planType?: string; // For providers with multiple plan types (e.g., ZAI coding vs general)
   extraHeaders?: Record<string, string>;
 }
 

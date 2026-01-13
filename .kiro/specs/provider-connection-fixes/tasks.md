@@ -13,11 +13,11 @@ This implementation plan systematically fixes all provider connection issues by 
   - Add model caching and fallback mechanisms
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 1.1 Write property test for connection test consistency
+- [x] 1.1 Write property test for connection test consistency
   - **Property 1: Connection Test Configuration Consistency**
   - **Validates: Requirements 1.1**
 
-- [ ] 1.2 Write property test for connection test reliability
+- [x] 1.2 Write property test for connection test reliability
   - **Property 2: Connection Test Reliability**
   - **Validates: Requirements 1.2**
 
@@ -28,11 +28,11 @@ This implementation plan systematically fixes all provider connection issues by 
   - Add support for all authentication methods (bearer, header, query, none)
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 2.1 Write property test for provider factory correctness
+- [x] 2.1 Write property test for provider factory correctness
   - **Property 11: Provider Factory Correctness**
   - **Validates: Requirements 5.1, 5.2, 5.3, 5.4**
 
-- [ ] 2.2 Write property test for configuration validation
+- [x] 2.2 Write property test for configuration validation
   - **Property 12: Configuration Validation**
   - **Validates: Requirements 5.5**
 
@@ -43,7 +43,7 @@ This implementation plan systematically fixes all provider connection issues by 
   - Implement ZAI-specific error handling for coding plan issues
   - _Requirements: 1.5, 3.1, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [ ] 3.1 Write unit tests for ZAI provider configuration
+- [x] 3.1 Write unit tests for ZAI provider configuration
   - Test coding endpoint usage
   - Test GLM model loading
   - Test ZAI-specific error messages

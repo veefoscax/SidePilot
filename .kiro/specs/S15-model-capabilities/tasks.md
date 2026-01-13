@@ -1,41 +1,68 @@
-# S15: Model Capabilities - Tasks
+# Implementation Plan: Model Capabilities
 
-## Implementation Checklist
+## Overview
 
-### 1. Constants
-- [ ] Add CAPABILITY_BADGES to types <!-- id: 0 -->
-- [ ] Add CAPABILITY_WARNINGS to types <!-- id: 1 -->
+This implementation plan adds model capability awareness to the UI, showing users what features each model supports and adapting the interface accordingly.
 
-### 2. ModelWarnings Component
-- [ ] Create `src/components/settings/ModelWarnings.tsx` <!-- id: 2 -->
-- [ ] Check capabilities and collect warnings <!-- id: 3 -->
-- [ ] Render alerts with severity styling <!-- id: 4 -->
-- [ ] Add to Settings page below model selector <!-- id: 5 -->
+## Tasks
 
-### 3. Vision Fallback
-- [ ] Create getPageRepresentation utility <!-- id: 6 -->
-- [ ] Implement vision path (screenshot) <!-- id: 7 -->
-- [ ] Implement text path (accessibility) <!-- id: 8 -->
-- [ ] Integrate into chat flow <!-- id: 9 -->
+- [ ] 1. Capability Constants and Types
+  - Add CAPABILITY_BADGES constant with icons and colors
+  - Add CAPABILITY_WARNINGS constant with messages
+  - Define CapabilityLevel type (full/partial/none)
+  - _Requirements: AC1_
 
-### 4. Streaming Adaptation
-- [ ] Disable ThinkingIndicator when no streaming <!-- id: 10 -->
-- [ ] Await full response before display <!-- id: 11 -->
-- [ ] Show "Generating..." static message <!-- id: 12 -->
+- [ ] 2. Model Warnings Component
+  - Create src/components/settings/ModelWarnings.tsx
+  - Check model capabilities and collect applicable warnings
+  - Render Alert components with appropriate severity styling
+  - Add to Settings page below model selector
+  - Use HugeIcons for warning icons
+  - _Requirements: AC2_
 
-### 5. Tool Disable
-- [ ] Hide browser tools when no tools support <!-- id: 13 -->
-- [ ] Update UI to reflect limitations <!-- id: 14 -->
-- [ ] Add info message in chat <!-- id: 15 -->
+- [ ] 2.1 Write tests for model warnings
+  - Test warning detection logic
+  - Test alert rendering
+  - _Requirements: AC2_
 
-### 6. Model Registry Updates
-- [ ] Verify all models have accurate capabilities <!-- id: 16 -->
-- [ ] Add missing models/providers <!-- id: 17 -->
-- [ ] Test with various models <!-- id: 18 -->
+- [ ] 3. Vision Fallback Implementation
+  - Create getPageRepresentation utility
+  - Implement vision path (screenshot) for vision-capable models
+  - Implement text path (accessibility tree) for text-only models
+  - Add capability check before page representation
+  - Integrate into chat flow
+  - _Requirements: AC3_
 
-### 7. Automated Testing (Playwright)
-- [ ] Install Playwright dependencies <!-- id: 19 -->
-- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 20 -->
-- [ ] Create integration tests for UI/Logic <!-- id: 21 -->
-- [ ] Add test script to package.json <!-- id: 22 -->
-- [ ] Update DEVLOG with test results and screenshots <!-- id: 23 -->
+- [ ] 4. Checkpoint - Test Vision Fallback
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 5. Streaming Adaptation
+  - Detect streaming capability from model info
+  - Disable ThinkingIndicator when no streaming
+  - Await full response before display for non-streaming
+  - Show "Generating..." static message instead
+  - _Requirements: AC4_
+
+- [ ] 6. Tool Disable Logic
+  - Check tools capability before sending tools to API
+  - Hide browser tools UI section when no tools support
+  - Update UI to reflect tool limitations
+  - Add info message in chat explaining limitations
+  - _Requirements: AC5_
+
+- [ ] 7. Model Registry Verification
+  - Verify all models have accurate capabilities
+  - Add missing models from providers
+  - Cross-reference with provider documentation
+  - Test with various models to confirm
+  - _Requirements: AC6_
+
+- [ ] 8. Final Checkpoint
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- Model capabilities affect UX significantly
+- Graceful degradation is key for non-capable models
+- Keep model registry updated with new releases
+- Consider capability auto-detection in future

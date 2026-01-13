@@ -14,6 +14,7 @@ interface ProviderConfig {
   type: ProviderType;
   apiKey: string;
   baseUrl?: string;
+  planType?: string; // For providers with multiple plan types (e.g., ZAI coding vs general)
   isConfigured: boolean;
   isConnected: boolean;
   error?: string;
@@ -191,14 +192,15 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         
         try {
           console.log('🏭 Creating provider instance...');
-          const provider = createProvider({
-            type,
+          const provider = createProvider(type, {
             apiKey: providerConfig.apiKey || '',
             baseUrl: providerConfig.baseUrl,
+            planType: providerConfig.planType,
           });
           
           console.log('🧪 Calling provider.testConnection()...');
-          const success = await provider.testConnection();
+          const result = await provider.testConnection();
+          const success = result.success;
           console.log('✅ Provider test result:', success);
           
           set(state => ({
@@ -255,10 +257,10 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         }));
         
         try {
-          const provider = createProvider({
-            type,
+          const provider = createProvider(type, {
             apiKey: providerConfig.apiKey || '',
             baseUrl: providerConfig.baseUrl,
+            planType: providerConfig.planType,
           });
           
           let models: ModelInfo[] = [];
@@ -419,10 +421,10 @@ export const useMultiProviderStore = create<MultiProviderState>()(
         const providerConfig = providers[currentProvider.provider];
         
         try {
-          return createProvider({
-            type: currentProvider.provider,
+          return createProvider(currentProvider.provider, {
             apiKey: providerConfig.apiKey || '',
             baseUrl: providerConfig.baseUrl,
+            planType: providerConfig.planType,
           });
         } catch (error) {
           console.error('Failed to create provider instance:', error);

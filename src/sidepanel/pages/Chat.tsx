@@ -5,6 +5,7 @@
  * Handles message sending, streaming, and provider integration.
  */
 
+import { useEffect } from 'react';
 import { useChatStore } from '@/stores/chat';
 import { useMultiProviderStore } from '@/stores/multi-provider';
 import { toolRegistry } from '@/tools/registry';
@@ -18,7 +19,8 @@ import {
   ArrowLeft01Icon, 
   Settings02Icon,
   Delete01Icon,
-  WifiOffIcon
+  WifiOffIcon,
+  UndoIcon
 } from '@hugeicons/core-free-icons';
 
 interface ChatPageProps {
@@ -30,13 +32,17 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
   const { 
     messages, 
     isStreaming, 
+    messageQueue,
     addUserMessage, 
     startStreaming, 
     appendStreamContent, 
+    appendStreamReasoning,
     endStreaming, 
     setError,
     clearMessages,
-    addToolResult
+    addToolResult,
+    revertLastMessage,
+    processNextQueuedMessage
   } = useChatStore();
 
   const { 
@@ -44,6 +50,19 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
     getCurrentProviderInstance,
     selectedModels
   } = useMultiProviderStore();
+
+  // Process queued messages when streaming ends
+  useEffect(() => {
+    if (!isStreaming && messageQueue.length > 0) {
+      const nextMessage = processNextQueuedMessage();
+      if (nextMessage) {
+        // Send the next queued message
+        setTimeout(() => {
+          handleSendMessage(nextMessage);
+        }, 100); // Small delay to ensure UI updates
+      }
+    }
+  }, [isStreaming, messageQueue.length]);
 
   // Handle sending a message
   const handleSendMessage = async (content: string) => {
@@ -81,6 +100,10 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
           const chunkContent = chunk.text || '';
           fullContent += chunkContent;
           appendStreamContent(chunkContent);
+        } else if (chunk.type === 'reasoning') {
+          // Handle reasoning/thinking content
+          const reasoningContent = chunk.text || '';
+          appendStreamReasoning(reasoningContent);
         } else if (chunk.type === 'tool_use' && chunk.toolCall) {
           // Handle tool calls
           console.log('Tool call received:', chunk.toolCall);
@@ -110,7 +133,12 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
       }
 
       // End streaming and add assistant message
-      endStreaming(fullContent || 'No response received', toolCalls.length > 0 ? toolCalls : undefined);
+      const finalReasoning = useChatStore.getState().streamingReasoning;
+      endStreaming(
+        fullContent || 'No response received', 
+        toolCalls.length > 0 ? toolCalls : undefined,
+        finalReasoning || undefined
+      );
 
     } catch (err) {
       console.error('Chat error:', err);
@@ -149,6 +177,19 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
             <Badge variant="secondary" className="text-xs">
               {messages.length} messages
             </Badge>
+          )}
+
+          {/* Revert last message button */}
+          {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && !isStreaming && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={revertLastMessage}
+              className="h-8 w-8"
+              title="Revert last response"
+            >
+              <HugeiconsIcon icon={UndoIcon} className="h-4 w-4" />
+            </Button>
           )}
 
           {/* Clear chat button */}

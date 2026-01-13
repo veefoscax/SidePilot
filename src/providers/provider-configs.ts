@@ -22,6 +22,14 @@ export interface ProviderConfigTemplate {
     supportsStreaming: boolean;
     supportsReasoning: boolean;
   };
+  // Support for multiple plan types/endpoints
+  planTypes?: {
+    [planName: string]: {
+      baseUrl: string;
+      description: string;
+      defaultModels: string[];
+    };
+  };
 }
 
 /**
@@ -216,6 +224,18 @@ export const PROVIDER_CONFIGS: Record<ProviderType, ProviderConfigTemplate> = {
       supportsTools: true,
       supportsStreaming: true,
       supportsReasoning: false,
+    },
+    planTypes: {
+      general: {
+        baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+        description: 'General ZAI plan for standard usage',
+        defaultModels: ['glm-4-plus', 'glm-4-flash', 'glm-4v-plus', 'glm-4-long'],
+      },
+      coding: {
+        baseUrl: 'https://api.z.ai/api/coding/paas/v4',
+        description: 'ZAI Coding plan optimized for development tasks',
+        defaultModels: ['glm-4.7', 'glm-4.6', 'glm-4.5'],
+      },
     },
   },
 
@@ -588,8 +608,32 @@ export function getDefaultBaseUrl(type: ProviderType): string {
 }
 
 /**
- * Get provider capabilities
+ * Get available plan types for a provider
  */
+export function getProviderPlanTypes(type: ProviderType): Record<string, { baseUrl: string; description: string; defaultModels: string[] }> | undefined {
+  return PROVIDER_CONFIGS[type]?.planTypes;
+}
+
+/**
+ * Check if provider supports multiple plan types
+ */
+export function supportsMultiplePlans(type: ProviderType): boolean {
+  return !!PROVIDER_CONFIGS[type]?.planTypes;
+}
+
+/**
+ * Get default models for a specific plan type
+ */
+export function getDefaultModelsForPlan(type: ProviderType, planType?: string): string[] {
+  const config = PROVIDER_CONFIGS[type];
+  if (!config) return [];
+  
+  if (planType && config.planTypes?.[planType]) {
+    return config.planTypes[planType].defaultModels;
+  }
+  
+  return config.defaultModels;
+}
 export function getProviderCapabilities(type: ProviderType): ProviderConfigTemplate['capabilities'] {
   return PROVIDER_CONFIGS[type]?.capabilities ?? {
     supportsVision: false,

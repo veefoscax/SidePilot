@@ -1,33 +1,64 @@
-# S11: Network & Console Tracking - Tasks
+# Implementation Plan: Network & Console Tracking
 
-## Implementation Checklist
+## Overview
 
-### 1. Verify CDP Integration
-- [ ] Confirm `cdpWrapper.enableNetworkTracking()` works <!-- id: 0 -->
-- [ ] Confirm `cdpWrapper.enableConsoleTracking()` works <!-- id: 1 -->
-- [ ] Confirm `cdpWrapper.getNetworkRequests()` returns data <!-- id: 2 -->
-- [ ] Confirm `cdpWrapper.getConsoleLogs()` returns data <!-- id: 3 -->
+This implementation plan adds network request and console log tracking capabilities using CDP, enabling AI to monitor page activity and debug issues.
 
-### 2. Network Tool
-- [ ] Create `src/tools/network.ts` <!-- id: 4 -->
-- [ ] Implement tool with filter parameter <!-- id: 5 -->
-- [ ] Format output as JSON <!-- id: 6 -->
-- [ ] Add to tool registry <!-- id: 7 -->
+## Tasks
 
-### 3. Console Tool
-- [ ] Create `src/tools/console.ts` <!-- id: 8 -->
-- [ ] Implement tool with type filter <!-- id: 9 -->
-- [ ] Include stack traces for errors <!-- id: 10 -->
-- [ ] Add to tool registry <!-- id: 11 -->
+- [ ] 1. Verify CDP Integration
+  - Confirm cdpWrapper.enableNetworkTracking() works
+  - Confirm cdpWrapper.enableConsoleTracking() works
+  - Confirm cdpWrapper.getNetworkRequests() returns data
+  - Confirm cdpWrapper.getConsoleLogs() returns data
+  - Test with real page loads
+  - _Requirements: AC1_
 
-### 4. Testing
-- [ ] Test network capture on API-heavy page <!-- id: 12 -->
-- [ ] Test console capture with console.log/error <!-- id: 13 -->
-- [ ] Test filtering works correctly <!-- id: 14 -->
+- [ ] 2. Network Tool Implementation
+  - Create src/tools/network.ts
+  - Implement tool with filter parameter (url, method, status)
+  - Format output as structured JSON
+  - Include request/response headers
+  - Limit results to MAX_REQUESTS
+  - Add to tool registry
+  - _Requirements: AC2, AC3_
 
-### 5. Automated Testing (Playwright)
-- [ ] Install Playwright dependencies <!-- id: 15 -->
-- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 16 -->
-- [ ] Create integration tests for UI/Logic <!-- id: 17 -->
-- [ ] Add test script to package.json <!-- id: 18 -->
-- [ ] Update DEVLOG with test results and screenshots <!-- id: 19 -->
+- [ ] 2.1 Write tests for network tool
+  - Test filtering by URL pattern
+  - Test filtering by HTTP method
+  - Test filtering by status code
+  - _Requirements: AC2_
+
+- [ ] 3. Console Tool Implementation
+  - Create src/tools/console.ts
+  - Implement tool with type filter (log/warn/error/info)
+  - Include stack traces for errors
+  - Limit results to MAX_LOGS
+  - Format timestamps
+  - Add to tool registry
+  - _Requirements: AC4, AC5_
+
+- [ ] 3.1 Write tests for console tool
+  - Test filtering by log type
+  - Test stack trace formatting
+  - _Requirements: AC4_
+
+- [ ] 4. Checkpoint - Test CDP Tracking
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 5. Integration Testing
+  - Test network capture on API-heavy page
+  - Test console capture with console.log/error
+  - Test filtering works correctly
+  - Test memory limits respected
+  - _Requirements: All_
+
+- [ ] 6. Final Checkpoint
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- CDP tracking starts with enableNetworkTracking()/enableConsoleTracking()
+- MAX_REQUESTS and MAX_LOGS prevent memory issues
+- Network requests include timing information
+- Console logs include source location

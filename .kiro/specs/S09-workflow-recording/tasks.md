@@ -1,60 +1,93 @@
-# S09: Workflow Recording - Tasks
+# Implementation Plan: Workflow Recording
 
-## Implementation Checklist
+## Overview
 
-### 1. Types
-- [ ] Create src/lib/workflow.ts <!-- id: 0 -->
-- [ ] Define WorkflowStep interface <!-- id: 1 -->
-- [ ] Define WorkflowRecording interface <!-- id: 2 -->
+This implementation plan creates a workflow recording system that captures user actions as a series of steps with screenshots, enabling users to save and replay complex browser automation sequences.
 
-### 2. Workflow Store
-- [ ] Create src/stores/workflow.ts <!-- id: 3 -->
-- [ ] Implement startRecording <!-- id: 4 -->
-- [ ] Implement captureStep with screenshot <!-- id: 5 -->
-- [ ] Implement stopRecording <!-- id: 6 -->
-- [ ] Implement cancelRecording <!-- id: 7 -->
-- [ ] Implement deleteStep <!-- id: 8 -->
-- [ ] Implement updateStepDescription <!-- id: 9 -->
+## Tasks
 
-### 3. Recording Bar
-- [ ] Create src/components/RecordingBar.tsx <!-- id: 10 -->
-- [ ] Show recording indicator <!-- id: 11 -->
-- [ ] Show step count <!-- id: 12 -->
-- [ ] Stop/Cancel buttons <!-- id: 13 -->
+- [ ] 1. Types and Core Definitions
+  - Create src/lib/workflow.ts with core types
+  - Define WorkflowStep interface (id, action, params, screenshot, description)
+  - Define WorkflowRecording interface (id, name, steps, createdAt)
+  - Define WorkflowState enum (idle, recording, editing)
+  - _Requirements: AC1_
 
-### 4. Step Preview
-- [ ] Create src/components/WorkflowStepCard.tsx <!-- id: 14 -->
-- [ ] Show screenshot thumbnail <!-- id: 15 -->
-- [ ] Show action description <!-- id: 16 -->
-- [ ] Edit description <!-- id: 17 -->
-- [ ] Delete step button <!-- id: 18 -->
+- [ ] 2. Workflow Store Implementation
+  - Create src/stores/workflow.ts with Zustand
+  - Implement startRecording to begin capture
+  - Implement captureStep with automatic screenshot
+  - Implement stopRecording to finalize workflow
+  - Implement cancelRecording to discard
+  - Implement deleteStep to remove single step
+  - Implement updateStepDescription for manual edits
+  - Add persistence to chrome.storage.local
+  - _Requirements: AC2, AC3_
 
-### 5. Recording Modal
-- [ ] Create src/components/WorkflowEditor.tsx <!-- id: 19 -->
-- [ ] Name input <!-- id: 20 -->
-- [ ] Steps list <!-- id: 21 -->
-- [ ] Save as shortcut button <!-- id: 22 -->
-- [ ] Discard button <!-- id: 23 -->
+- [ ] 2.1 Write tests for workflow store
+  - Test recording lifecycle
+  - Test step capture and modification
+  - Test persistence
+  - _Requirements: AC2_
 
-### 6. Generate Prompt
-- [ ] Implement generateWorkflowPrompt <!-- id: 24 -->
-- [ ] Include all step descriptions <!-- id: 25 -->
-- [ ] Format for AI understanding <!-- id: 26 -->
+- [ ] 3. Recording Bar Component
+  - Create src/components/RecordingBar.tsx
+  - Show pulsing recording indicator
+  - Display current step count
+  - Add Stop Recording button
+  - Add Cancel Recording button
+  - Position at top of side panel
+  - _Requirements: AC4_
 
-### 7. Integration
-- [ ] Add to slash menu <!-- id: 27 -->
-- [ ] Hook step capture to CDP actions <!-- id: 28 -->
-- [ ] Save result as shortcut <!-- id: 29 -->
+- [ ] 4. Checkpoint - Test Core Recording
+  - Ensure all tests pass, ask the user if questions arise.
 
-## Success Criteria
-- Recording captures screenshots and actions
-- Steps display in preview
-- Workflow saves as shortcut
-- Generated prompt is clear
+- [ ] 5. Step Preview Component
+  - Create src/components/WorkflowStepCard.tsx
+  - Show screenshot thumbnail (resized)
+  - Display action description
+  - Add inline edit for description
+  - Add delete step button
+  - Add drag handle for reordering
+  - _Requirements: AC5_
 
-### 8. Automated Testing (Playwright)
-- [ ] Install Playwright dependencies <!-- id: 30 -->
-- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 31 -->
-- [ ] Create integration tests for UI/Logic <!-- id: 32 -->
-- [ ] Add test script to package.json <!-- id: 33 -->
-- [ ] Update DEVLOG with test results and screenshots <!-- id: 34 -->
+- [ ] 6. Workflow Editor Modal
+  - Create src/components/WorkflowEditor.tsx
+  - Add workflow name input
+  - Display scrollable steps list
+  - Add Save as Shortcut button
+  - Add Discard button
+  - Show total steps count and estimated time
+  - _Requirements: AC6_
+
+- [ ] 7. Prompt Generation
+  - Implement generateWorkflowPrompt utility
+  - Include all step descriptions in order
+  - Format for AI understanding with numbered steps
+  - Add context about starting URL
+  - _Requirements: AC7_
+
+- [ ] 8. Integration with System
+  - Add "Record Workflow" to slash menu
+  - Hook step capture to CDP action completions
+  - Auto-capture screenshot after each action
+  - Save final workflow as shortcut
+  - Connect to shortcuts store
+  - _Requirements: AC8, AC9_
+
+- [ ] 9. Integration Testing
+  - Test complete workflow recording flow
+  - Test step editing and deletion
+  - Test saving as shortcut
+  - Test prompt generation quality
+  - _Requirements: All_
+
+- [ ] 10. Final Checkpoint
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- Recording should be non-intrusive
+- Screenshots should be optimized for storage
+- Workflow prompts need to be clear for AI execution
+- Consider adding workflow replay functionality in future

@@ -1,31 +1,52 @@
-# S10: Tab Groups - Tasks
+# Implementation Plan: Tab Groups
 
-## Implementation Checklist
+## Overview
 
-### 1. Core Implementation
-- [ ] Create `src/lib/tab-groups.ts` <!-- id: 0 -->
-- [ ] Implement `TabGroupManager` class <!-- id: 1 -->
-- [ ] Implement `createGroup()` method <!-- id: 2 -->
-- [ ] Implement `updateGroup()` method <!-- id: 3 -->
-- [ ] Implement `ungroupTabs()` method <!-- id: 4 -->
-- [ ] Implement `listGroups()` method <!-- id: 5 -->
+This implementation plan creates a tab groups system using Chrome's tabGroups API, enabling AI to organize browser tabs into logical groups with colors and titles.
 
-### 2. Tool Integration
-- [ ] Create `src/tools/tab-groups.ts` <!-- id: 6 -->
-- [ ] Define tool parameters and schema <!-- id: 7 -->
-- [ ] Implement execute function for all actions <!-- id: 8 -->
-- [ ] Add to tool registry <!-- id: 9 -->
+## Tasks
 
-### 3. Testing
-- [ ] Test create group with multiple tabs <!-- id: 10 -->
-- [ ] Test update group color and title <!-- id: 11 -->
-- [ ] Test collapse/expand group <!-- id: 12 -->
-- [ ] Test ungroup tabs <!-- id: 13 -->
-- [ ] Test list all groups <!-- id: 14 -->
+- [ ] 1. Core Tab Groups Implementation
+  - Create src/lib/tab-groups.ts
+  - Implement TabGroupManager class singleton
+  - Implement createGroup(tabs, title, color)
+  - Implement updateGroup(groupId, options)
+  - Implement ungroupTabs(tabIds)
+  - Implement listGroups() with tab info
+  - _Requirements: AC1, AC2_
 
-### 4. Automated Testing (Playwright)
-- [ ] Install Playwright dependencies <!-- id: 15 -->
-- [ ] Create static build verification tests (verify dist/ output size & content) <!-- id: 16 -->
-- [ ] Create integration tests for UI/Logic <!-- id: 17 -->
-- [ ] Add test script to package.json <!-- id: 18 -->
-- [ ] Update DEVLOG with test results and screenshots <!-- id: 19 -->
+- [ ] 1.1 Write tests for tab group manager
+  - Test group creation
+  - Test group updates
+  - Test ungrouping
+  - _Requirements: AC1_
+
+- [ ] 2. Tool Integration
+  - Create src/tools/tab-groups.ts
+  - Define tool parameters (action, tabs, title, color)
+  - Implement execute function for all actions
+  - Add to tool registry
+  - Add Anthropic and OpenAI schemas
+  - _Requirements: AC3_
+
+- [ ] 3. Checkpoint - Verify Tab Groups API
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 4. Testing and Validation
+  - Test create group with multiple tabs
+  - Test update group color (grey/blue/red/yellow/green/pink/purple/cyan)
+  - Test update group title
+  - Test collapse/expand group
+  - Test ungroup tabs
+  - Test list all groups with metadata
+  - _Requirements: AC4_
+
+- [ ] 5. Final Checkpoint
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- Requires tabGroups permission in manifest
+- Chrome 89+ supports tab groups
+- Colors are limited to Chrome's predefined set
+- Groups persist across browser restarts

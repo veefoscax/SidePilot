@@ -10,6 +10,7 @@ import { type Message } from '@/stores/chat';
 import { Markdown } from './Markdown';
 import { ToolUseCard } from './ToolUseCard';
 import { VoiceControls } from './VoiceControls';
+import { ReasoningDisplay } from './ReasoningDisplay';
 import { cn } from '@/lib/utils';
 
 interface AssistantMessageProps {
@@ -61,6 +62,11 @@ export function AssistantMessage({
           <div className="prose prose-sm dark:prose-invert max-w-none">
             <Markdown content={message.content || 'No content'} />
           </div>
+
+          {/* Reasoning display - expandable */}
+          {message.reasoning && (
+            <ReasoningDisplay reasoning={message.reasoning} />
+          )}
 
           {/* Tool calls */}
           {message.toolCalls && message.toolCalls.length > 0 && (

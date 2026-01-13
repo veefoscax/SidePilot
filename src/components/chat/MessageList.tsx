@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useChatStore, type Message } from '@/stores/chat';
 import { UserMessage } from './UserMessage';
 import { AssistantMessage } from './AssistantMessage';
+import { StreamingMessage } from './StreamingMessage';
 import { ThinkingIndicator } from './ThinkingIndicator';
 import { ErrorCard } from './ErrorCard';
 import { Button } from '@/components/ui/button';
@@ -47,7 +48,7 @@ function shouldShowTimestamp(current: Message, previous: Message, next: Message)
 }
 
 export function MessageList() {
-  const { messages, isStreaming, streamingContent, error } = useChatStore();
+  const { messages, isStreaming, streamingContent, streamingReasoning, error } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPinnedToBottom, setIsPinnedToBottom] = useState(true);
@@ -58,7 +59,7 @@ export function MessageList() {
     if (isPinnedToBottom && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, streamingContent, isPinnedToBottom]);
+  }, [messages, streamingContent, streamingReasoning, isPinnedToBottom]);
 
   // Check if user has scrolled away from bottom
   const handleScroll = () => {
@@ -129,22 +130,12 @@ export function MessageList() {
         })}
 
         {/* Streaming message */}
-        {isStreaming && streamingContent && (
-          <AssistantMessage 
-            message={{
-              id: 'streaming',
-              role: 'assistant',
-              content: streamingContent,
-              timestamp: Date.now(),
-            }}
-            isStreaming={true}
-            isGrouped={false}
-            showTimestamp={false}
-          />
+        {isStreaming && (streamingContent || streamingReasoning) && (
+          <StreamingMessage />
         )}
 
-        {/* Thinking indicator */}
-        {isStreaming && !streamingContent && <ThinkingIndicator />}
+        {/* Thinking indicator - only when streaming but no content yet */}
+        {isStreaming && !streamingContent && !streamingReasoning && <ThinkingIndicator />}
 
         {/* Error display */}
         {error && <ErrorCard error={error} />}

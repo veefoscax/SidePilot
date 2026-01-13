@@ -14,7 +14,8 @@ import {
   ChatOptions, 
   LLMResponse, 
   StreamChunk, 
-  ModelInfo
+  ModelInfo,
+  ConnectionResult
 } from './types';
 import { getModelsByProvider } from './models-registry';
 
@@ -173,17 +174,36 @@ export class OllamaProvider extends BaseProvider {
     }
   }
 
-  async testConnection(): Promise<boolean> {
+  async testConnection(): Promise<ConnectionResult> {
     try {
       // Test if Ollama server is running
       const response = await fetch(`${this.getBaseUrl()}/api/tags`, {
         method: 'GET',
         headers: this.getHeaders(),
       });
-      return response.ok;
+      
+      if (response.ok) {
+        // Try to get models as well
+        const models = await this.listModels();
+        return {
+          success: true,
+          models,
+          timestamp: new Date(),
+        };
+      } else {
+        return {
+          success: false,
+          error: new Error(`Ollama server responded with status ${response.status}`),
+          timestamp: new Date(),
+        };
+      }
     } catch (error) {
       console.warn('Ollama connection test failed:', error);
-      return false;
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error('Connection failed'),
+        timestamp: new Date(),
+      };
     }
   }
 

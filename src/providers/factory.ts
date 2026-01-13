@@ -103,7 +103,7 @@ export function createProvider(type: ProviderType, userConfig: UserProviderConfi
   const config: ProviderConfig = {
     type,
     apiKey: userConfig.apiKey,
-    baseUrl: userConfig.baseUrl || template.baseUrl,
+    baseUrl: getBaseUrlForPlan(type, userConfig.planType, userConfig.baseUrl, template),
     extraHeaders: { ...template.extraHeaders, ...userConfig.extraHeaders },
     groupId: userConfig.groupId,
     // Provider-specific fields
@@ -126,6 +126,29 @@ export function createProvider(type: ProviderType, userConfig: UserProviderConfi
       'PROVIDER_CREATION_FAILED'
     );
   }
+}
+
+/**
+ * Get base URL for provider based on plan type
+ */
+function getBaseUrlForPlan(
+  type: ProviderType, 
+  planType: string | undefined, 
+  userBaseUrl: string | undefined, 
+  template: any
+): string {
+  // If user provided explicit base URL, use it
+  if (userBaseUrl) {
+    return userBaseUrl;
+  }
+  
+  // If provider supports plan types and plan type is specified
+  if (template.planTypes && planType && template.planTypes[planType]) {
+    return template.planTypes[planType].baseUrl;
+  }
+  
+  // Default to template base URL
+  return template.baseUrl;
 }
 
 /**
