@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -17,7 +16,6 @@ import { initializeTheme } from '@/lib/theme';
 import { useChatStore } from '@/stores/chat';
 import { useMultiProviderStore } from '@/stores/multi-provider';
 import { toolRegistry } from '@/tools/registry';
-import { MessageList } from '@/components/chat/MessageList';
 import { UserMessage } from '@/components/chat/UserMessage';
 import { AssistantMessage } from '@/components/chat/AssistantMessage';
 import { ThinkingIndicator } from '@/components/chat/ThinkingIndicator';
@@ -25,25 +23,34 @@ import { ErrorCard } from '@/components/chat/ErrorCard';
 import { ModelSelectorDropdown } from '@/components/chat/ModelSelectorDropdown';
 import { ConversationManager } from '@/components/chat/ConversationManager';
 import { MultiProviderManager } from '@/components/settings/MultiProviderManager';
+import { BrowserAutomationSettings, type BrowserAutomationSettings as BrowserSettingsType } from '@/components/settings/BrowserAutomationSettings';
 import { Textarea } from '@/components/ui/textarea';
 import { Toaster } from 'sonner';
-import { cn } from '@/lib/utils';
 
 function App() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [isLoading, setIsLoading] = useState(true);
   const [input, setInput] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isConversationsOpen, setIsConversationsOpen] = useState(false);
+  const [browserSettings, setBrowserSettings] = useState<BrowserSettingsType>({
+    backend: 'builtin',
+    humanLikeDelays: true,
+    stealthMode: false,
+    screenshotAnnotations: true,
+    maxScreenshotWidth: 1920,
+    maxScreenshotHeight: 1080
+  });
 
   const { 
     messages, 
     isStreaming, 
-    streamingContent, 
+    streamingContent,
+    streamingReasoning,
     error,
     addUserMessage, 
     startStreaming, 
-    appendStreamContent, 
+    appendStreamContent,
+    appendStreamReasoning,
     endStreaming, 
     setError,
     clearMessages,
@@ -59,7 +66,6 @@ function App() {
   useEffect(() => {
     // Initialize theme detection
     initializeTheme().then((detectedTheme) => {
-      setTheme(detectedTheme);
       setIsLoading(false);
       
       // Notify service worker of the detected theme to update icons
@@ -145,6 +151,10 @@ Always use tools when appropriate instead of just describing how to do something
           const chunkContent = chunk.text || '';
           fullContent += chunkContent;
           appendStreamContent(chunkContent);
+        } else if (chunk.type === 'reasoning') {
+          // Handle reasoning/thinking content
+          const reasoningContent = chunk.text || '';
+          appendStreamReasoning(reasoningContent);
         } else if (chunk.type === 'tool_use' && chunk.toolCall) {
           // Handle tool calls
           console.log('Tool call received:', chunk.toolCall);
@@ -173,9 +183,13 @@ Always use tools when appropriate instead of just describing how to do something
         }
       }
 
+      // Get final reasoning from store
+      const finalReasoning = useChatStore.getState().streamingReasoning;
+
       endStreaming(
         fullContent || 'No response received',
-        toolCalls.length > 0 ? toolCalls : undefined
+        toolCalls.length > 0 ? toolCalls : undefined,
+        finalReasoning || undefined
       );
 
     } catch (err) {
@@ -203,7 +217,6 @@ Always use tools when appropriate instead of just describing how to do something
     setInput(suggestion);
   };
 
-  const currentProvider = getCurrentProvider();
   const hasModelsAvailable = selectedModels.length > 0;
   const canSend = input.trim().length > 0 && !isStreaming;
 
@@ -216,11 +229,11 @@ Always use tools when appropriate instead of just describing how to do something
   }
 
   return (
-    <div className="h-screen bg-background text-foreground flex flex-col">
+    <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden">
       <Toaster position="top-center" richColors />
       
-      {/* Header */}
-      <div className="h-12 flex items-center justify-between px-4 shrink-0">
+      {/* Header - Fixed */}
+      <div className="h-12 flex items-center justify-between px-4 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         {/* Left: Model selector */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <ModelSelectorDropdown />
@@ -260,19 +273,22 @@ Always use tools when appropriate instead of just describing how to do something
                 <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-[400px] sm:w-[540px]">
+            <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Settings</SheetTitle>
               </SheetHeader>
-              <div className="mt-6">
+              <div className="mt-6 space-y-6">
                 <MultiProviderManager />
+                <Separator />
+                <BrowserAutomationSettings 
+                  settings={browserSettings}
+                  onSettingsChange={setBrowserSettings}
+                />
               </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
-
-      <Separator />
 
       {/* Message Area */}
       <div className="flex-1 relative">
@@ -376,6 +392,7 @@ Always use tools when appropriate instead of just describing how to do something
                     id: 'streaming',
                     role: 'assistant',
                     content: streamingContent,
+                    reasoning: streamingReasoning || undefined,
                     timestamp: Date.now(),
                   }}
                   isStreaming={true}
@@ -385,10 +402,25 @@ Always use tools when appropriate instead of just describing how to do something
               </div>
             )}
 
-            {/* Thinking indicator */}
+            {/* Thinking indicator - show when streaming but no content yet, or when we have reasoning but no content */}
             {isStreaming && !streamingContent && (
               <div className="mb-4">
-                <ThinkingIndicator />
+                {streamingReasoning ? (
+                  <AssistantMessage 
+                    message={{
+                      id: 'thinking',
+                      role: 'assistant',
+                      content: '',
+                      reasoning: streamingReasoning,
+                      timestamp: Date.now(),
+                    }}
+                    isStreaming={true}
+                    isGrouped={false}
+                    showTimestamp={false}
+                  />
+                ) : (
+                  <ThinkingIndicator />
+                )}
               </div>
             )}
 
@@ -402,10 +434,8 @@ Always use tools when appropriate instead of just describing how to do something
         </ScrollArea>
       </div>
 
-      <Separator />
-
-      {/* Input Area */}
-      <div className="p-4 shrink-0">
+      {/* Input Area - Fixed at bottom */}
+      <div className="p-4 shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky bottom-0 z-10">
         <div className="flex gap-2 items-end">
           <div className="flex-1">
             <Textarea
