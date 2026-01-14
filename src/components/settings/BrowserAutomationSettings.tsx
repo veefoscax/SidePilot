@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Rocket01Icon,
@@ -24,7 +25,9 @@ import {
   CheckmarkCircle02Icon,
   Alert02Icon,
   InformationCircleIcon,
-  Download01Icon
+  Download01Icon,
+  ArrowDown01Icon,
+  ArrowUp01Icon
 } from '@hugeicons/core-free-icons';
 import { BrowserUseClient } from '@/lib/browser-use-client';
 import { NativeHostClient } from '@/lib/native-host-client';
@@ -48,6 +51,7 @@ interface BrowserAutomationSettingsProps {
 }
 
 export function BrowserAutomationSettings({ settings, onSettingsChange }: BrowserAutomationSettingsProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
   const [cloudStatus, setCloudStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [nativeStatus, setNativeStatus] = useState<'idle' | 'checking' | 'connected' | 'not-installed' | 'error'>('idle');
   const [cloudError, setCloudError] = useState<string>('');
@@ -171,420 +175,310 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
   }, [settings.backend]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Browser Automation Backend</h3>
-        <p className="text-sm text-muted-foreground">
-          Choose how SidePilot controls the browser for AI automation tasks.
-        </p>
-      </div>
-
-      {/* Backend Selection */}
+    <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
       <div className="space-y-4">
-        {/* Built-in CDP Engine */}
-        <Card className={settings.backend === 'builtin' ? 'ring-2 ring-primary' : ''}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <HugeiconsIcon icon={Rocket01Icon} className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Built-in Browser Control</CardTitle>
-                <Badge variant="secondary">Recommended</Badge>
-              </div>
-              <Button
-                variant={settings.backend === 'builtin' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => updateSettings({ backend: 'builtin' })}
-              >
-                {settings.backend === 'builtin' ? 'Selected' : 'Select'}
-              </Button>
-            </div>
-            <CardDescription>
-              Uses Chrome's native DevTools Protocol for direct browser automation. No external services or setup required.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Click, type, scroll, navigate</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Screenshots with annotations</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Smart element targeting</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Works offline</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Human-like interactions</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Network monitoring</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-yellow-500" />
-                  <span>Basic stealth mode</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-red-500" />
-                  <span>No file system access</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Compact Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-medium">Browser Automation</h3>
+            <p className="text-sm text-muted-foreground">
+              {settings.backend === 'builtin' && 'Built-in CDP Engine'}
+              {settings.backend === 'browser-use-cloud' && 'Cloud-Powered Automation'}
+              {settings.backend === 'browser-use-native' && 'Local Python Backend'}
+            </p>
+          </div>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <HugeiconsIcon 
+                icon={isExpanded ? ArrowUp01Icon : ArrowDown01Icon} 
+                className="h-4 w-4" 
+              />
+            </Button>
+          </CollapsibleTrigger>
+        </div>
 
-        {/* Browser-Use Cloud SDK */}
-        <Card className={settings.backend === 'browser-use-cloud' ? 'ring-2 ring-primary' : ''}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <HugeiconsIcon icon={AiCloud01Icon} className="h-5 w-5 text-blue-500" />
-                <CardTitle className="text-base">Cloud-Powered Automation</CardTitle>
-              </div>
-              <Button
-                variant={settings.backend === 'browser-use-cloud' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => updateSettings({ backend: 'browser-use-cloud' })}
-              >
-                {settings.backend === 'browser-use-cloud' ? 'Selected' : 'Select'}
-              </Button>
-            </div>
-            <CardDescription>
-              Powered by{' '}
-              <a
-                href="https://browser-use.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                browser-use.com ↗
-              </a>
-              . Advanced stealth browsers with anti-detection capabilities.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Advanced stealth mode</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Sandboxed execution</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>File system access</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Persistent sessions</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Structured output</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Streaming responses</span>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="cloud-api-key">API Key</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="cloud-api-key"
-                    type="password"
-                    placeholder="Enter your browser-use.com API key"
-                    value={settings.browserUseApiKey || ''}
-                    onChange={(e) => updateSettings({ browserUseApiKey: e.target.value })}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={testCloudConnection}
-                    disabled={cloudStatus === 'testing' || !settings.browserUseApiKey}
-                  >
-                    {cloudStatus === 'testing' ? 'Testing...' : 'Test'}
-                  </Button>
-                </div>
-              </div>
-
-              {cloudStatus === 'success' && (
-                <Alert>
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4" />
-                  <AlertDescription>
-                    API key is valid and connection successful.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {cloudStatus === 'error' && (
-                <Alert variant="destructive">
-                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
-                  <AlertDescription>
-                    {cloudError}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <div className="text-sm text-muted-foreground">
-                Get your API key from{' '}
-                <a
-                  href="https://cloud.browser-use.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  cloud.browser-use.com
-                </a>
-                . Pricing: ~$0.01-0.10 per task.
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Browser-Use Native Backend */}
-        <Card className={settings.backend === 'browser-use-native' ? 'ring-2 ring-primary' : ''}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <HugeiconsIcon icon={SourceCodeIcon} className="h-5 w-5 text-purple-500" />
-                <CardTitle className="text-base">Local Python Backend</CardTitle>
-              </div>
-              <Button
-                variant={settings.backend === 'browser-use-native' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => updateSettings({ backend: 'browser-use-native' })}
-              >
-                {settings.backend === 'browser-use-native' ? 'Selected' : 'Select'}
-              </Button>
-            </div>
-            <CardDescription>
-              Runs the full browser-use Python library on your machine. Maximum power with all features.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Full stealth mode</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>File system access</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Custom skills</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Headless/headed mode</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Browser profiles</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
-                  <span>Parallel execution</span>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              {/* Status Display */}
-              <div className="flex items-center justify-between">
-                <Label>Status</Label>
-                <div className="flex items-center space-x-2">
-                  {nativeStatus === 'connected' && (
-                    <Badge variant="default" className="bg-green-500">
-                      <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-3 w-3 mr-1" />
-                      Connected
-                    </Badge>
-                  )}
-                  {nativeStatus === 'not-installed' && (
-                    <Badge variant="destructive">
-                      <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 mr-1" />
-                      Setup Required
-                    </Badge>
-                  )}
-                  {nativeStatus === 'error' && (
-                    <Badge variant="destructive">
-                      <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 mr-1" />
-                      Error
-                    </Badge>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={checkNativeStatus}
-                    disabled={nativeStatus === 'checking'}
-                  >
-                    {nativeStatus === 'checking' ? 'Checking...' : 'Check Status'}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Connection Details */}
-              {nativeDetails && (
-                <div className="text-sm space-y-1">
-                  <div>Python: {nativeDetails.pythonPath} (v{nativeDetails.version})</div>
-                  {nativeDetails.browserUseVersion && (
-                    <div>browser-use: v{nativeDetails.browserUseVersion}</div>
-                  )}
-                </div>
-              )}
-
-              {/* Setup Actions */}
-              {nativeStatus === 'not-installed' && (
-                <div className="space-y-3">
-                  <Alert>
-                    <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4" />
-                    <AlertDescription>
-                      Python 3.11+ and browser-use library required. Choose setup method:
-                    </AlertDescription>
-                  </Alert>
-
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => window.open('https://docs.browser-use.com/quickstart', '_blank')}
-                    >
-                      Setup Guide ↗
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={downloadSetupScript}
-                    >
-                      <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" />
-                      Download Script
-                    </Button>
-                    {settings.autoInstall && (
-                      <Button
-                        onClick={installNative}
-                      >
-                        Auto Install
-                      </Button>
-                    )}
+        <CollapsibleContent className="space-y-4">
+          {/* Backend Selection */}
+          <div className="space-y-3">
+            {/* Built-in CDP Engine */}
+            <Card className={settings.backend === 'builtin' ? 'ring-2 ring-primary' : ''}>
+              <CardHeader className="py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <HugeiconsIcon icon={Rocket01Icon} className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm">Built-in CDP</CardTitle>
+                    <Badge variant="secondary" className="text-xs">Recommended</Badge>
                   </div>
+                  <Button
+                    variant={settings.backend === 'builtin' ? 'default' : 'outline'}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => updateSettings({ backend: 'builtin' })}
+                  >
+                    {settings.backend === 'builtin' ? 'Active' : 'Select'}
+                  </Button>
                 </div>
-              )}
+                <CardDescription className="text-xs mt-1">
+                  Chrome DevTools Protocol - No setup required
+                </CardDescription>
+              </CardHeader>
+            </Card>
 
-              {/* Error Display */}
-              {nativeStatus === 'error' && nativeError && (
-                <Alert variant="destructive">
-                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
-                  <AlertDescription>
-                    {nativeError}
-                  </AlertDescription>
-                </Alert>
-              )}
+            {/* Browser-Use Cloud SDK */}
+            <Card className={settings.backend === 'browser-use-cloud' ? 'ring-2 ring-primary' : ''}>
+              <CardHeader className="py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <HugeiconsIcon icon={AiCloud01Icon} className="h-4 w-4 text-blue-500" />
+                    <CardTitle className="text-sm">Cloud SDK</CardTitle>
+                  </div>
+                  <Button
+                    variant={settings.backend === 'browser-use-cloud' ? 'default' : 'outline'}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => updateSettings({ backend: 'browser-use-cloud' })}
+                  >
+                    {settings.backend === 'browser-use-cloud' ? 'Active' : 'Select'}
+                  </Button>
+                </div>
+                <CardDescription className="text-xs mt-1">
+                  Advanced stealth browsers via{' '}
+                  <a
+                    href="https://browser-use.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    browser-use.com ↗
+                  </a>
+                </CardDescription>
+              </CardHeader>
+              {settings.backend === 'browser-use-cloud' && (
+                <CardContent className="pt-0 space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="cloud-api-key" className="text-xs">API Key</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="cloud-api-key"
+                        type="password"
+                        placeholder="Enter API key"
+                        className="h-8 text-xs"
+                        value={settings.browserUseApiKey || ''}
+                        onChange={(e) => updateSettings({ browserUseApiKey: e.target.value })}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs"
+                        onClick={testCloudConnection}
+                        disabled={cloudStatus === 'testing' || !settings.browserUseApiKey}
+                      >
+                        {cloudStatus === 'testing' ? 'Testing...' : 'Test'}
+                      </Button>
+                    </div>
+                  </div>
 
-              {/* Python Path Configuration */}
-              <div className="space-y-2">
-                <Label htmlFor="python-path">Python Path (optional)</Label>
-                <Input
-                  id="python-path"
-                  placeholder="/usr/bin/python3 or C:\\Python311\\python.exe"
-                  value={settings.pythonPath || ''}
-                  onChange={(e) => updateSettings({ pythonPath: e.target.value })}
+                  {cloudStatus === 'success' && (
+                    <Alert className="py-2">
+                      <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-3 w-3" />
+                      <AlertDescription className="text-xs">Connection successful</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {cloudStatus === 'error' && (
+                    <Alert variant="destructive" className="py-2">
+                      <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3" />
+                      <AlertDescription className="text-xs">{cloudError}</AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              )}
+            </Card>
+
+            {/* Browser-Use Native Backend */}
+            <Card className={settings.backend === 'browser-use-native' ? 'ring-2 ring-primary' : ''}>
+              <CardHeader className="py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <HugeiconsIcon icon={SourceCodeIcon} className="h-4 w-4 text-purple-500" />
+                    <CardTitle className="text-sm">Native Python</CardTitle>
+                  </div>
+                  <Button
+                    variant={settings.backend === 'browser-use-native' ? 'default' : 'outline'}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => updateSettings({ backend: 'browser-use-native' })}
+                  >
+                    {settings.backend === 'browser-use-native' ? 'Active' : 'Select'}
+                  </Button>
+                </div>
+                <CardDescription className="text-xs mt-1">
+                  Full browser-use Python library locally
+                </CardDescription>
+              </CardHeader>
+              {settings.backend === 'browser-use-native' && (
+                <CardContent className="pt-0 space-y-3">
+                  {/* Status Display */}
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Status</Label>
+                    <div className="flex items-center gap-2">
+                      {nativeStatus === 'connected' && (
+                        <Badge variant="default" className="bg-green-500 text-xs h-5">
+                          <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-3 w-3 mr-1" />
+                          Connected
+                        </Badge>
+                      )}
+                      {nativeStatus === 'not-installed' && (
+                        <Badge variant="destructive" className="text-xs h-5">
+                          <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 mr-1" />
+                          Setup Required
+                        </Badge>
+                      )}
+                      {nativeStatus === 'error' && (
+                        <Badge variant="destructive" className="text-xs h-5">
+                          <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 mr-1" />
+                          Error
+                        </Badge>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={checkNativeStatus}
+                        disabled={nativeStatus === 'checking'}
+                      >
+                        {nativeStatus === 'checking' ? 'Checking...' : 'Check'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Connection Details */}
+                  {nativeDetails && (
+                    <div className="text-xs space-y-1 text-muted-foreground">
+                      <div>Python: {nativeDetails.pythonPath} (v{nativeDetails.version})</div>
+                      {nativeDetails.browserUseVersion && (
+                        <div>browser-use: v{nativeDetails.browserUseVersion}</div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Setup Actions */}
+                  {nativeStatus === 'not-installed' && (
+                    <div className="space-y-2">
+                      <Alert className="py-2">
+                        <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3" />
+                        <AlertDescription className="text-xs">
+                          Python 3.11+ and browser-use required
+                        </AlertDescription>
+                      </Alert>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs flex-1"
+                          onClick={() => window.open('https://docs.browser-use.com/quickstart', '_blank')}
+                        >
+                          Setup Guide ↗
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs flex-1"
+                          onClick={downloadSetupScript}
+                        >
+                          <HugeiconsIcon icon={Download01Icon} className="h-3 w-3 mr-1" />
+                          Script
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Error Display */}
+                  {nativeStatus === 'error' && nativeError && (
+                    <Alert variant="destructive" className="py-2">
+                      <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3" />
+                      <AlertDescription className="text-xs">{nativeError}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Python Path Configuration */}
+                  <div className="space-y-2">
+                    <Label htmlFor="python-path" className="text-xs">Python Path (optional)</Label>
+                    <Input
+                      id="python-path"
+                      placeholder="/usr/bin/python3"
+                      className="h-8 text-xs"
+                      value={settings.pythonPath || ''}
+                      onChange={(e) => updateSettings({ pythonPath: e.target.value })}
+                    />
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          </div>
+
+          {/* Behavior Settings */}
+          <Separator />
+          
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium">Behavior Settings</h4>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="human-delays" className="text-xs">Human-like delays</Label>
+                <Switch
+                  id="human-delays"
+                  checked={settings.humanLikeDelays}
+                  onCheckedChange={(checked: boolean) => updateSettings({ humanLikeDelays: checked })}
                 />
               </div>
 
-              {/* Auto Install Toggle */}
               <div className="flex items-center justify-between">
-                <Label htmlFor="auto-install">Enable auto-install</Label>
+                <Label htmlFor="stealth-mode" className="text-xs">Stealth mode</Label>
                 <Switch
-                  id="auto-install"
-                  checked={settings.autoInstall || false}
-                  onCheckedChange={(checked: boolean) => updateSettings({ autoInstall: checked })}
+                  id="stealth-mode"
+                  checked={settings.stealthMode}
+                  onCheckedChange={(checked: boolean) => updateSettings({ stealthMode: checked })}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="screenshot-annotations" className="text-xs">Screenshot annotations</Label>
+                <Switch
+                  id="screenshot-annotations"
+                  checked={settings.screenshotAnnotations}
+                  onCheckedChange={(checked: boolean) => updateSettings({ screenshotAnnotations: checked })}
                 />
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="max-width" className="text-xs">Max width</Label>
+                <Input
+                  id="max-width"
+                  type="number"
+                  className="h-8 text-xs"
+                  value={settings.maxScreenshotWidth}
+                  onChange={(e) => updateSettings({ maxScreenshotWidth: parseInt(e.target.value) || 1920 })}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="max-height" className="text-xs">Max height</Label>
+                <Input
+                  id="max-height"
+                  type="number"
+                  className="h-8 text-xs"
+                  value={settings.maxScreenshotHeight}
+                  onChange={(e) => updateSettings({ maxScreenshotHeight: parseInt(e.target.value) || 1080 })}
+                />
+              </div>
+            </div>
+          </div>
+        </CollapsibleContent>
       </div>
-
-      {/* Behavior Settings */}
-      <div className="space-y-4">
-        <h4 className="text-base font-medium">Behavior Settings</h4>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="human-delays">Human-like delays</Label>
-            <Switch
-              id="human-delays"
-              checked={settings.humanLikeDelays}
-              onCheckedChange={(checked: boolean) => updateSettings({ humanLikeDelays: checked })}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="stealth-mode">Stealth mode</Label>
-            <Switch
-              id="stealth-mode"
-              checked={settings.stealthMode}
-              onCheckedChange={(checked: boolean) => updateSettings({ stealthMode: checked })}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="screenshot-annotations">Screenshot annotations</Label>
-            <Switch
-              id="screenshot-annotations"
-              checked={settings.screenshotAnnotations}
-              onCheckedChange={(checked: boolean) => updateSettings({ screenshotAnnotations: checked })}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="max-width">Max screenshot width</Label>
-            <Input
-              id="max-width"
-              type="number"
-              value={settings.maxScreenshotWidth}
-              onChange={(e) => updateSettings({ maxScreenshotWidth: parseInt(e.target.value) || 1920 })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="max-height">Max screenshot height</Label>
-            <Input
-              id="max-height"
-              type="number"
-              value={settings.maxScreenshotHeight}
-              onChange={(e) => updateSettings({ maxScreenshotHeight: parseInt(e.target.value) || 1080 })}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    </Collapsible>
   );
 }
