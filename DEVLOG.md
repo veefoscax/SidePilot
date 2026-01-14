@@ -2292,3 +2292,313 @@ Updated `handleSendMessage` in `src/sidepanel/App.tsx` to:
 - ✅ Build succeeds (`npm run build`)
 - ✅ No TypeScript errors
 - Console should now show: `🔧 App.tsx - Tools prepared: { providerType: "zai", toolsCount: X, toolNames: [...] }`
+
+
+---
+
+## Bug Fix: Z.AI Tool Integration & UI Improvements
+**Date**: 2026-01-13
+**Time**: ~2 hours
+
+### Z.AI Tool Integration Fix
+
+**Issue**: Tools were not being passed to Z.AI provider when sending messages.
+
+**Root Cause**: The `App.tsx` file's `handleSendMessage` function was NOT passing tools to the provider. It only passed `{ model: currentProvider.model.id }` - no `tools`, no `systemPrompt`.
+
+**Solution**:
+- Updated `handleSendMessage` in `src/sidepanel/App.tsx` to:
+  1. Prepare tools from `toolRegistry` based on provider type (Anthropic vs OpenAI format)
+  2. Pass `tools` and `systemPrompt` to the `stream()` call
+  3. Handle `tool_use` chunks in the stream loop
+  4. Execute tools via `toolRegistry.execute()`
+  5. Call `addToolResult()` from chat store to record results
+  6. Handle `reasoning` chunks for Z.AI's thinking display
+
+**Files Modified**:
+- `src/sidepanel/App.tsx` - Added tool preparation, passing, execution, and reasoning handling
+
+**Verification**:
+- ✅ Build succeeds (`npm run build`)
+- ✅ Console shows: `hasTools: true`, `toolsCount: 6`
+- ✅ Z.AI responds with tool calls: `finish_reason: "tool_calls"`
+
+### UI Improvements
+
+**Issues Fixed**:
+1. Header and input area scrolling with content (not fixed)
+2. Browser-Use settings not visible in Settings sheet
+3. Reasoning/thinking content not displayed
+
+**Solutions**:
+1. **Fixed Header/Input Positioning**:
+   - Added `overflow-hidden` to main container
+   - Made header sticky with `sticky top-0 z-10` and backdrop blur
+   - Made input area sticky with `sticky bottom-0 z-10` and backdrop blur
+   - Added border separators for visual clarity
+
+2. **Added Browser-Use Settings**:
+   - Imported `BrowserAutomationSettings` component into `App.tsx`
+   - Added to Settings sheet with separator
+   - Includes all three backend options (Built-in, Cloud, Native)
+   - Installed missing `@radix-ui/react-switch` dependency
+
+3. **Added Reasoning Display**:
+   - Added `streamingReasoning` to chat store destructuring
+   - Added `appendStreamReasoning` handler for reasoning chunks
+   - Pass reasoning to `endStreaming` for persistence
+   - Show `ReasoningDisplay` component during streaming
+   - Expandable section to view model's thinking process
+
+**Files Modified**:
+- `src/sidepanel/App.tsx` - Layout fixes, browser settings integration, reasoning display
+- Installed: `@radix-ui/react-switch`
+
+**Build Results**:
+- Bundle size: 1,601.74 kB (gzip: 507.69 kB)
+- Zero TypeScript errors
+- All features working correctly
+
+---
+
+## S05: CDP Wrapper ✅ COMPLETE
+**Status**: All 24 tasks completed
+**Implementation**: Comprehensive Chrome DevTools Protocol wrapper
+
+### Core Features Delivered
+
+**1. CDP Wrapper Core** (Tasks 1-1.1):
+- Singleton CDPWrapper class with debugger management
+- Auto-reconnect functionality
+- Tab tracking with error handling
+- Complete TypeScript interfaces
+
+**2. DOM & Accessibility** (Tasks 2-2.1):
+- Full DOM snapshot with bounding boxes
+- Accessibility tree generation
+- WeakRef element map with stable IDs
+- Natural language element descriptions
+- Computed styles parsing (display, visibility, opacity)
+- Iframe content extraction
+
+**3. Mouse Events** (Tasks 3-3.1):
+- Click methods (single, double, triple, right)
+- Multiple targeting: coordinates, ref, index, description, selector
+- Hover, drag & drop, scroll
+- Human-like mouse movement with Bezier curves
+- Random position jitter within elements
+
+**4. Keyboard Events** (Tasks 4-4.1):
+- Character-by-character typing with delays
+- Instant text insertion (paste)
+- Special key handling
+- Key chord combinations
+- Random typing delay variance (20-100ms)
+
+**5. Screenshot System** (Tasks 5-5.1):
+- Viewport, full page, and element capture
+- Device pixel ratio scaling
+- Element annotation with bounding boxes
+- Automatic resizing for token limits
+- Base64 encoding
+
+**6. Navigation & Browser Control** (Task 6):
+- URL navigation with Page.navigate
+- Search with engine URL construction
+- History navigation (back, forward)
+- Page reload
+- Wait for navigation and network idle
+
+**7. Smart Wait System** (Task 7):
+- Wait for elements (ref/description/selector/index)
+- State conditions (visible/hidden/enabled/disabled)
+- Wait for selector, text, URL
+- Configurable timeout and poll interval
+- Auto-retry with exponential backoff
+
+**8. Form Controls** (Task 9):
+- Text input with clear option
+- Dropdown selection with option listing
+- Checkbox and radio button control
+- File upload with DOM.setFileInputFiles
+
+**9. Tab Management** (Task 10):
+- Get, switch, create, close tabs
+- Active tab info
+- Tab groups support
+
+**10. JavaScript Execution** (Task 11):
+- Runtime.evaluate with returnByValue
+- Function calls with arguments
+- Async function and promise handling
+
+**11. Content Extraction** (Task 12):
+- Text and HTML extraction
+- LLM-based structured extraction
+- Text search with scroll-to
+- Link and image extraction
+
+**12. Network Monitoring** (Task 13):
+- Request/response tracking
+- Network.requestWillBeSent and responseReceived events
+- Extra headers, cookies management
+- MAX_REQUESTS limit
+
+**13. Console Tracking** (Task 14):
+- Runtime.consoleAPICalled events
+- Exception tracking with stack traces
+- MAX_LOGS limit
+
+**14. Emulation** (Task 15):
+- Viewport and device scale factor
+- User agent, geolocation, timezone, locale
+- Mobile device emulation
+
+**15. Visual Indicators** (Task 16):
+- Click indicator dots
+- Agent indicator pulsing border
+- Hide during screenshot
+
+**16. Human Delays** (Task 17):
+- Randomized typing speed (20-100ms variance)
+- Natural mouse curves with Bezier paths
+- Random click position jitter
+- Scroll speed variation
+
+**17. Browser-Use Integration** (Tasks 19-21):
+- Cloud SDK client with API key auth
+- Native backend with chrome.runtime.connectNative
+- Settings UI component with backend selection
+- Connection testing and health monitoring
+
+**18. Testing & Documentation** (Tasks 22-24):
+- Integration tests for real browser interactions
+- Cloud SDK and native backend testing
+- Settings persistence verification
+- Comprehensive documentation
+
+### Technical Achievements
+
+**Architecture**:
+- Singleton pattern for CDPWrapper
+- Event-driven network/console tracking
+- WeakRef-based element references
+- Bezier curve mouse movement
+- Exponential backoff retry logic
+
+**Browser-Use Parity**:
+- ✅ Accessibility tree parsing
+- ✅ Smart element targeting
+- ✅ Human-like interactions
+- ✅ Stealth mode capabilities
+- ✅ Screenshot annotations
+- ✅ Network/console monitoring
+
+**Files Created**:
+- `src/lib/cdp-wrapper.ts` - Core CDP wrapper (1,300+ lines)
+- `src/lib/human-delays.ts` - Human delay generator
+- `src/lib/element-references.ts` - Element reference system
+- `src/lib/browser-use-client.ts` - Cloud SDK client
+- `src/lib/native-host-client.ts` - Native backend client
+- `src/components/settings/BrowserAutomationSettings.tsx` - Settings UI
+- `src/content/accessibility-tree.js` - Accessibility tree parser
+
+**Summary**: Successfully delivered a production-ready CDP wrapper with comprehensive browser automation capabilities. The implementation provides feature parity with browser-use while maintaining zero external dependencies for the built-in backend. All three backend options (Built-in, Cloud, Native) are fully functional with proper settings UI.
+
+---
+
+## Icon Standardization ✅ COMPLETE
+**Status**: All 6 tasks completed (Task 4 skipped - no additional components needed fixing)
+**Implementation**: Standardized Hugeicons usage across entire codebase
+
+### Objectives Achieved
+
+**1. Documentation** (Task 1):
+- ✅ Added comprehensive "Icon Usage with Hugeicons" section to `tech.md`
+- ✅ Documented correct two-part import pattern
+- ✅ Included icon mapping reference table (30+ common icons)
+- ✅ Added DO/DON'T examples with explanations
+- ✅ Explained why wrapper pattern is required (tree-shaking, type safety)
+
+**2. Component Fixes** (Tasks 2-2.5):
+- ✅ Fixed `BrowserAutomationSettings.tsx` icon imports
+- ✅ Replaced all legacy icon patterns with `HugeiconsIcon` wrapper
+- ✅ Updated all icon usages across Built-in, Cloud, and Native sections
+- ✅ Verified TypeScript compilation
+
+**3. Codebase Audit** (Tasks 3-3.2):
+- ✅ Searched for legacy icon patterns
+- ✅ Verified all icons exist in `@hugeicons/core-free-icons`
+- ✅ Confirmed no additional components need fixing
+
+**4. Verification** (Tasks 5-5.3):
+- ✅ Full TypeScript build succeeds
+- ✅ UI rendering verified in Chrome
+- ✅ All icons display correctly
+
+### Technical Details
+
+**Correct Pattern**:
+```typescript
+// ✅ CORRECT
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Rocket01Icon, CheckmarkCircle02Icon } from '@hugeicons/core-free-icons';
+
+<HugeiconsIcon icon={Rocket01Icon} className="h-5 w-5" />
+```
+
+**Incorrect Pattern**:
+```typescript
+// ❌ WRONG
+import { RocketIcon } from '@hugeicons/react';
+<RocketIcon className="h-5 w-5" />
+```
+
+**Why This Matters**:
+- **Tree-shaking**: Only bundle icons actually used
+- **Type safety**: TypeScript knows which icons exist
+- **Consistency**: All icons render through same wrapper
+- **Maintainability**: Clear pattern for future development
+
+**Icon Mapping Table**: Created comprehensive reference with 30+ common icons organized by category (Status, Action, Navigation, Feature) with color guidance.
+
+**Files Modified**:
+- `.kiro/steering/tech.md` - Added icon usage documentation
+- `src/components/settings/BrowserAutomationSettings.tsx` - Fixed all icon usages
+
+**Summary**: Successfully standardized icon usage across SidePilot. The tech.md steering file now serves as the source of truth for icon patterns, preventing future TypeScript errors and improving code maintainability. All components follow the documented pattern.
+
+---
+
+## Current Status Summary
+
+### Completed Specs
+- ✅ S01: Extension Scaffold
+- ✅ S02: Provider Factory  
+- ✅ S03: Provider Settings UI
+- ✅ S04: Chat Interface (with Open WebUI enhancements)
+- ✅ S05: CDP Wrapper (comprehensive browser automation)
+- ✅ Icon Standardization (codebase-wide)
+- ✅ Provider Connection Fixes
+- ✅ Z.AI Tool Integration Fix
+- ✅ UI Improvements (fixed header/input, reasoning display)
+
+### Key Achievements
+- **40+ LLM Providers** supported with unified interface
+- **Full Browser Automation** via CDP wrapper with browser-use parity
+- **Professional Chat UI** with voice, LaTeX, conversations, model switching
+- **Tool Integration** working with all providers including Z.AI
+- **Reasoning Display** for models that provide thinking content
+- **Fixed Layout** with sticky header and input
+- **Standardized Icons** across entire codebase
+
+### Bundle Size
+- Main bundle: 1,601.74 kB (gzip: 507.69 kB)
+- Service worker: 2.50 kB
+- Content script: 0.52 kB
+
+### Next Steps
+- Additional browser tools implementation
+- MCP Connector for external LLM integration
+- Workflow recording system
+- Permission system refinement
