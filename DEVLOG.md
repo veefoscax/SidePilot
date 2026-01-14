@@ -2365,6 +2365,21 @@ Updated `handleSendMessage` in `src/sidepanel/App.tsx` to:
 **Status**: All 24 tasks completed
 **Implementation**: Comprehensive Chrome DevTools Protocol wrapper
 
+### Development Challenges
+
+**⚠️ Kiro Agent Limitations Encountered**:
+During S05 implementation, Kiro's autonomous agent frequently got stuck on complex refactoring tasks and struggled with:
+- Large file modifications (1,300+ line CDP wrapper)
+- Complex TypeScript type inference issues
+- Multi-step debugging workflows
+- Context management across multiple related files
+
+**Solution**: Switched to Claude Opus (via chat interface) for critical debugging and complex problem-solving that the autonomous tool couldn't resolve. This hybrid approach proved effective:
+- Kiro: Excellent for spec generation, documentation, and straightforward implementations
+- Claude Opus: Better for complex debugging, architectural decisions, and stuck situations
+
+**Lesson Learned**: For large-scale projects, having both autonomous agents (Kiro) and direct LLM access (Claude) provides the best development experience. Use Kiro for routine tasks and Claude for complex problem-solving.
+
 ### Core Features Delivered
 
 **1. CDP Wrapper Core** (Tasks 1-1.1):
