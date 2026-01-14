@@ -2694,3 +2694,121 @@ Completely refactored `BrowserAutomationSettings` component to be compact and co
 
 **Summary**: Successfully transformed BrowserAutomationSettings from a large, always-expanded component into a compact, collapsible interface that follows Nova design principles. The refactoring reduces visual clutter while preserving all functionality, making the settings panel more user-friendly and space-efficient.
 
+---
+
+## Kiro Workflow Optimization: Opus Pause Points
+**Date**: 2026-01-14
+**Time Spent**: ~20 minutes
+
+### Problem
+Using Kiro auto mode (simpler Claude models) was inefficient for complex architectural tasks. Credits were being wasted on repeated attempts at problems that required deeper reasoning.
+
+### Solution
+Created a workflow pause system to switch to Opus for critical sections:
+
+1. **Created `.kiro/steering/workflow.md`**
+   - Task execution order guidelines
+   - Three marker types: `OPUS-PAUSE`, `OPUS-RECOMMENDED`, `AUTO-OK`
+   - Master pause point list by spec
+
+2. **Added Markers to 5 Critical Specs**:
+   - **S02 Provider Factory**: Types (PAUSE), Base Provider (PAUSE)
+   - **S05 CDP Wrapper**: Class, Debugger, Mouse (PAUSE x3)
+   - **S06 Permissions**: Types, Manager (PAUSE x2)
+   - **S07 Browser Tools**: Types, Registry, Computer (PAUSE x3)
+   - **S13 MCP Integration**: Types, Client, Tool Integration (PAUSE x3)
+
+### Marker System
+| Marker | When to Use | Action |
+|--------|-------------|--------|
+| `<!-- OPUS-PAUSE -->` | Architecture, protocols | Stop, enable Opus |
+| `<!-- OPUS-RECOMMENDED -->` | Complex logic | Warn, continue if no response |
+| `<!-- AUTO-OK -->` | Routine implementation | Continue with auto |
+
+### Benefits
+- **Cost efficiency**: Use Opus only when needed
+- **Quality**: Critical code gets maximum reasoning
+- **Speed**: Routine tasks use faster auto models
+- **Visibility**: Clear markers show complexity level
+
+### Files Modified
+- `.kiro/steering/workflow.md` (NEW)
+- `.kiro/specs/S02-provider-factory/tasks.md`
+- `.kiro/specs/S05-cdp-wrapper/tasks.md`
+- `.kiro/specs/S06-permissions/tasks.md`
+- `.kiro/specs/S07-browser-tools/tasks.md`
+- `.kiro/specs/S13-mcp-integration/tasks.md`
+
+
+
+---
+
+## 2026-01-14: S06 Permission System - Integration Testing Complete
+**Time Spent**: ~2 hours
+
+### Completed
+- ✅ Completed integration testing for permission system (Task 9)
+- ✅ Created comprehensive integration test suite
+- ✅ All unit tests passing (70 tests)
+- ✅ All component tests passing (32 tests)
+- ✅ Final checkpoint completed (Task 10)
+
+### Test Coverage Summary
+
+**Unit Tests (70 tests)** - `src/lib/__tests__/permissions.test.ts`
+- Permission type validation and utilities (extractDomain, isValidPermissionMode, etc.)
+- PermissionManager singleton pattern
+- Permission checking logic for all modes (always_allow, deny, ask_once, ask_always)
+- Session-only approvals (memory-only, not persisted)
+- Domain permission persistence with chrome.storage
+- Tool-specific overrides for fine-grained control
+- Storage integration with debouncing
+- Error handling and edge cases
+
+**Component Tests (32 tests)** - `src/components/__tests__/PermissionDialog.test.tsx`
+- Dialog rendering with different action types (click, type, navigate)
+- Screenshot display with click indicators for mouse actions
+- Text preview display for type actions
+- "Remember for this domain" checkbox functionality
+- Approve/Deny button interactions
+- Keyboard shortcuts (Enter to approve, Escape to deny)
+- Edge cases (empty text, long text, coordinates at (0,0))
+
+**Integration Tests (9 tests)** - `src/lib/__tests__/permissions-integration.test.ts`
+- Complete permission approval flow with remember
+- Permission denial flow with remember
+- Session-only approval flow (ask_once mode)
+- Tool-specific permission overrides
+- Permission request creation and validation
+- Domain extraction from various URL formats
+- Permission persistence across manager restarts
+- Session approvals not persisting across restarts
+- Permission mode transitions
+
+### Requirements Validated
+
+All acceptance criteria from `.kiro/specs/S06-permissions/requirements.md` are covered:
+- ✅ AC1-AC4: Permission modes (always_allow, ask_once, ask_always, deny)
+- ✅ AC5-AC6: Session approvals and persistence
+- ✅ AC7: Storage integration with chrome.storage.local
+- ✅ AC8: Zustand store integration
+- ✅ AC9-AC12: Permission dialog UI with screenshot/text preview
+- ✅ AC13-AC14: Tool execution integration
+- ✅ AC15-AC16: Settings page permissions management
+
+### Test Results
+```
+Test Files  6 passed
+Tests       138 passed (102 permission tests + 36 provider tests)
+Duration    ~6s
+```
+
+### Files Modified
+- `src/lib/__tests__/permissions-integration.test.ts` - Created integration test suite
+- `.kiro/specs/S06-permissions/tasks.md` - Marked tasks 9 and 10 as complete
+
+### Next Steps
+- S06 Permission System is now fully tested and complete
+- Ready to integrate with browser automation tools
+- Can proceed to next spec implementation
+

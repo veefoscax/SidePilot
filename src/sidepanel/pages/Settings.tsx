@@ -15,6 +15,7 @@ import {
   BrowserAutomationSettings as BrowserAutomationSettingsComponent,
   type BrowserAutomationSettings as BrowserAutomationSettingsConfig
 } from '@/components/settings/BrowserAutomationSettings';
+import { PermissionsManager } from '@/components/settings/PermissionsManager';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -72,6 +73,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           settings={browserSettings}
           onSettingsChange={handleSettingsChange}
         />
+        <PermissionsManager />
       </div>
     </div>
   );

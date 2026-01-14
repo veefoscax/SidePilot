@@ -37,7 +37,6 @@ export interface BrowserAutomationSettings {
   browserUseApiKey?: string;
   pythonPath?: string;
   browserUsePath?: string;
-  autoInstall?: boolean;
   humanLikeDelays: boolean;
   stealthMode: boolean;
   screenshotAnnotations: boolean;
@@ -189,9 +188,9 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
           </div>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm">
-              <HugeiconsIcon 
-                icon={isExpanded ? ArrowUp01Icon : ArrowDown01Icon} 
-                className="h-4 w-4" 
+              <HugeiconsIcon
+                icon={isExpanded ? ArrowUp01Icon : ArrowDown01Icon}
+                className="h-4 w-4"
               />
             </Button>
           </CollapsibleTrigger>
@@ -420,7 +419,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
 
           {/* Behavior Settings */}
           <Separator />
-          
+
           <div className="space-y-3">
             <h4 className="text-sm font-medium">Behavior Settings</h4>
 

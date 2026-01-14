@@ -4,6 +4,11 @@ import path from 'path';
 import { copyFileSync, mkdirSync } from 'fs';
 
 export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test-setup.ts'],
+  },
   plugins: [
     react(),
     {

@@ -24,6 +24,8 @@ import { ModelSelectorDropdown } from '@/components/chat/ModelSelectorDropdown';
 import { ConversationManager } from '@/components/chat/ConversationManager';
 import { MultiProviderManager } from '@/components/settings/MultiProviderManager';
 import { BrowserAutomationSettings, type BrowserAutomationSettings as BrowserSettingsType } from '@/components/settings/BrowserAutomationSettings';
+import { PermissionsManager } from '@/components/settings/PermissionsManager';
+import { ConnectedPermissionDialog } from '@/components/PermissionDialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Toaster } from 'sonner';
 
@@ -231,6 +233,7 @@ Always use tools when appropriate instead of just describing how to do something
   return (
     <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden">
       <Toaster position="top-center" richColors />
+      <ConnectedPermissionDialog />
       
       {/* Header - Fixed */}
       <div className="h-12 flex items-center justify-between px-4 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
@@ -284,6 +287,8 @@ Always use tools when appropriate instead of just describing how to do something
                   settings={browserSettings}
                   onSettingsChange={setBrowserSettings}
                 />
+                <Separator />
+                <PermissionsManager />
               </div>
             </SheetContent>
           </Sheet>
