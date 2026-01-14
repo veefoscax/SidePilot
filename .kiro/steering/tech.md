@@ -29,6 +29,154 @@ shadcn/ui v4 introduced 5 new visual styles beyond the classic "default" and "ne
 - **hugeicons** – Alternative icon library ✅ (USING THIS)
 - **radix-icons** – Used with new-york style
 
+## Icon Usage with Hugeicons
+
+### Correct Pattern (ALWAYS USE THIS)
+
+Hugeicons requires a two-part import pattern:
+1. Import the `HugeiconsIcon` wrapper component from `@hugeicons/react`
+2. Import icon definitions from `@hugeicons/core-free-icons`
+3. Render using the wrapper with the icon definition
+
+```typescript
+// ✅ CORRECT - Import wrapper and definitions separately
+import { HugeiconsIcon } from '@hugeicons/react';
+import { 
+  Rocket01Icon, 
+  CheckmarkCircle02Icon,
+  Alert02Icon 
+} from '@hugeicons/core-free-icons';
+
+// ✅ CORRECT - Use wrapper with icon definition
+function MyComponent() {
+  return (
+    <div>
+      <HugeiconsIcon icon={Rocket01Icon} className="h-5 w-5 text-primary" />
+      <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
+    </div>
+  );
+}
+```
+
+### Incorrect Patterns (NEVER USE THESE)
+
+```typescript
+// ❌ WRONG - Direct icon imports don't exist in the package
+import { RocketIcon, CheckCircleIcon } from '@hugeicons/react';
+
+// ❌ WRONG - Direct usage will cause TypeScript errors
+<RocketIcon className="h-5 w-5" />
+<CheckCircleIcon className="h-4 w-4" />
+```
+
+### Why This Pattern?
+
+The `@hugeicons/react` package only exports the `HugeiconsIcon` wrapper component. The actual icon definitions (SVG paths) are in `@hugeicons/core-free-icons`. This separation allows:
+- Tree-shaking: Only bundle icons you actually use
+- Type safety: TypeScript knows which icons exist
+- Consistency: All icons render through the same wrapper
+
+### Common Icon Mappings
+
+Use this reference when you need an icon for a specific purpose:
+
+| Use Case | Icon Name | Import | Color Guidance |
+|----------|-----------|--------|----------------|
+| **Status Icons** |
+| Success, Completed | `CheckmarkCircle02Icon` | `@hugeicons/core-free-icons` | `text-green-500` |
+| Error, Failed | `Alert02Icon` | `@hugeicons/core-free-icons` | `text-red-500` |
+| Warning, Caution | `Alert02Icon` | `@hugeicons/core-free-icons` | `text-yellow-500` |
+| Info, Help | `InformationCircleIcon` | `@hugeicons/core-free-icons` | `text-blue-500` |
+| Loading, Processing | `Loading01Icon` | `@hugeicons/core-free-icons` | `animate-spin` |
+| Connected | `CheckmarkCircle01Icon` | `@hugeicons/core-free-icons` | `text-green-500` |
+| Disconnected | `Cancel01Icon` | `@hugeicons/core-free-icons` | `text-red-500` |
+| **Action Icons** |
+| Add, Create | `Add01Icon` | `@hugeicons/core-free-icons` | - |
+| Edit, Modify | `Edit02Icon` | `@hugeicons/core-free-icons` | - |
+| Delete, Remove | `Delete01Icon` | `@hugeicons/core-free-icons` | `text-destructive` |
+| Save | `Save` | `@hugeicons/core-free-icons` | - |
+| Download | `Download01Icon` | `@hugeicons/core-free-icons` | - |
+| **Navigation Icons** |
+| External Link | `LinkExternal02Icon` | `@hugeicons/core-free-icons` | `text-primary` |
+| Drag Handle | `DragDropVerticalIcon` | `@hugeicons/core-free-icons` | `text-muted-foreground` |
+| **Feature Icons** |
+| Rocket, Launch | `Rocket01Icon` | `@hugeicons/core-free-icons` | `text-primary` |
+| Cloud, AI | `AiCloud01Icon` | `@hugeicons/core-free-icons` | `text-blue-500` |
+| Code, Development | `SourceCodeIcon` | `@hugeicons/core-free-icons` | `text-purple-500` |
+
+### Finding Icons
+
+1. **Check the mapping table above** for common use cases
+2. **Browse the package**: Look at `node_modules/@hugeicons/core-free-icons/dist/index.d.ts`
+3. **Hugeicons website**: https://hugeicons.com (search and copy icon names)
+4. **Naming pattern**: Icons typically end with `Icon` and may have numbers (e.g., `01`, `02`)
+
+### Example: Complete Component
+
+```typescript
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  CheckmarkCircle02Icon,
+  Alert02Icon,
+  Loading01Icon,
+  Rocket01Icon
+} from '@hugeicons/core-free-icons';
+
+export function StatusExample() {
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  return (
+    <div className="space-y-4">
+      <Button onClick={() => setStatus('loading')}>
+        <HugeiconsIcon icon={Rocket01Icon} className="h-4 w-4 mr-2" />
+        Launch
+      </Button>
+
+      {status === 'loading' && (
+        <Alert>
+          <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin" />
+          <AlertDescription>Processing...</AlertDescription>
+        </Alert>
+      )}
+
+      {status === 'success' && (
+        <Alert>
+          <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
+          <AlertDescription>Success!</AlertDescription>
+        </Alert>
+      )}
+
+      {status === 'error' && (
+        <Alert variant="destructive">
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
+          <AlertDescription>Something went wrong</AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+}
+```
+
+### Package Versions
+
+- `@hugeicons/react`: v1.1.4
+- `@hugeicons/core-free-icons`: v3.1.1
+
+### Troubleshooting
+
+**Error: "Module has no exported member 'XIcon'"**
+- Solution: Check the icon name in `@hugeicons/core-free-icons`. Icon names may differ from what you expect (e.g., `CheckmarkCircle02Icon` not `CheckCircleIcon`)
+
+**Error: "Cannot find name 'XIcon'"**
+- Solution: You're trying to use an icon directly. Use `<HugeiconsIcon icon={XIcon} />` instead
+
+**Icon not rendering**
+- Solution: Verify you imported both `HugeiconsIcon` and the icon definition
+- Check that you're using the wrapper pattern correctly
+
 ### Component Library Support
 v4 supports multiple component libraries:
 - **Radix UI** – Default (what we've been using)
@@ -147,6 +295,12 @@ class CDPWrapper {
 ```
 
 ## Development Guidelines
+
+### Documentation Rules
+- **DEVLOG.md is the single source of truth** - All development progress, fixes, and debugging sessions are documented in DEVLOG.md
+- **Do not create separate documentation files** - No standalone fix summaries, debugging guides, or status reports outside DEVLOG.md
+- **Document only after verification** - Do not add entries to DEVLOG.md until the fix is confirmed working through testing
+- **Exception**: Specs in `.kiro/specs/` are the only other documentation allowed (requirements, design, tasks)
 
 ### File Organization
 - `/src/sidepanel/` - Side panel React app

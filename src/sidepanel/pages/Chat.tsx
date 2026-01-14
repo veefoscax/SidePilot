@@ -16,8 +16,8 @@ import { CapabilityWarnings } from '@/components/chat/CapabilityWarnings';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { 
-  ArrowLeft01Icon, 
+import {
+  ArrowLeft01Icon,
   Settings02Icon,
   Delete01Icon,
   WifiOffIcon,
@@ -30,15 +30,15 @@ interface ChatPageProps {
 }
 
 export function ChatPage({ onBack, onSettings }: ChatPageProps) {
-  const { 
-    messages, 
-    isStreaming, 
+  const {
+    messages,
+    isStreaming,
     messageQueue,
-    addUserMessage, 
-    startStreaming, 
-    appendStreamContent, 
+    addUserMessage,
+    startStreaming,
+    appendStreamContent,
     appendStreamReasoning,
-    endStreaming, 
+    endStreaming,
     setError,
     clearMessages,
     addToolResult,
@@ -46,7 +46,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
     processNextQueuedMessage
   } = useChatStore();
 
-  const { 
+  const {
     getCurrentProvider,
     getCurrentProviderInstance,
     selectedModels
@@ -69,7 +69,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
   const handleSendMessage = async (content: string) => {
     const currentProvider = getCurrentProvider();
     const activeProviderInstance = getCurrentProviderInstance();
-    
+
     if (!currentProvider || !activeProviderInstance) {
       setError('No active model selected. Please select a model from the dropdown or configure a provider in Settings.');
       return;
@@ -89,21 +89,52 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
       ];
 
       // Stream response from provider using the current model
-      const tools = activeProviderInstance.type === 'anthropic' 
+      const tools = activeProviderInstance.type === 'anthropic'
         ? toolRegistry.getAnthropicTools().map(tool => ({
-            name: tool.name,
-            description: tool.description,
-            inputSchema: tool.input_schema
-          }))
+          name: tool.name,
+          description: tool.description,
+          inputSchema: tool.input_schema
+        }))
         : toolRegistry.getOpenAITools().map(tool => ({
-            name: tool.function.name,
-            description: tool.function.description,
-            inputSchema: tool.function.parameters
-          }));
+          name: tool.function.name,
+          description: tool.function.description,
+          inputSchema: tool.function.parameters
+        }));
+
+      console.log('🔧 Chat.tsx - Tools prepared:', {
+        providerType: activeProviderInstance.type,
+        toolsCount: tools.length,
+        toolNames: tools.map(t => t.name),
+        firstTool: tools[0],
+        allTools: tools
+      });
+
+      console.log('🔧 Chat.tsx - About to call stream with options:', {
+        model: currentProvider.model.id,
+        hasTools: !!tools,
+        toolsCount: tools.length,
+        hasSystemPrompt: true
+      });
 
       const stream = activeProviderInstance.stream(allMessages, {
         model: currentProvider.model.id, // Use the selected model ID
-        tools, // Use correct tool format
+        tools, // Pass tools in unified format
+        systemPrompt: `You are SidePilot, an AI assistant with browser automation capabilities. You have access to the following tools:
+
+- screenshot: Capture and annotate web pages with element bounding boxes
+- click: Click on elements using coordinates, references, or natural language descriptions
+- type: Type text into input fields with human-like delays
+- navigate: Navigate to URLs or perform web searches
+- wait: Wait for elements, page loads, or specific conditions
+- extract: Extract text, HTML, links, images, or structured data from pages
+
+When a user asks you to interact with a web page, USE THESE TOOLS. For example:
+- "Take a screenshot" → Use the screenshot tool
+- "Click the button" → Use the click tool
+- "Go to google.com" → Use the navigate tool
+- "Extract all links" → Use the extract tool
+
+Always use tools when appropriate instead of just describing how to do something manually.`,
       });
       let fullContent = '';
       const toolCalls: any[] = [];
@@ -126,7 +157,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
             input: chunk.toolCall.input,
             status: 'pending'
           });
-          
+
           // Execute the tool
           try {
             const result = await toolRegistry.execute(chunk.toolCall.name, chunk.toolCall.input);
@@ -147,17 +178,17 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
 
       // End streaming and add assistant message
       const finalReasoning = useChatStore.getState().streamingReasoning;
-      
+
       // Debug logging
-      console.log('Stream ended:', { 
-        fullContent, 
-        contentLength: fullContent.length, 
+      console.log('Stream ended:', {
+        fullContent,
+        contentLength: fullContent.length,
         toolCallsCount: toolCalls.length,
         finalReasoning: finalReasoning?.substring(0, 100) + '...'
       });
-      
+
       endStreaming(
-        fullContent || 'No response received', 
+        fullContent || 'No response received',
         toolCalls.length > 0 ? toolCalls : undefined,
         finalReasoning || undefined
       );
@@ -176,7 +207,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur">
+      <div className="shrink-0 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Button
             variant="ghost"
@@ -186,7 +217,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
           </Button>
-          
+
           <div className="min-w-0 flex-1">
             <h1 className="font-semibold">Chat</h1>
             <ModelSelectorDropdown className="mt-1" />
@@ -259,7 +290,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
 
       {/* Model capability warnings */}
       {currentProvider && (
-        <CapabilityWarnings 
+        <CapabilityWarnings
           model={currentProvider.model}
           requirements={{ tools: true }} // Chat interface requires tools
           className="p-4 border-b"
@@ -270,19 +301,21 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
       <MessageList />
 
       {/* Input area */}
-      <InputArea
-        onSend={handleSendMessage}
-        disabled={isStreaming || !hasActiveProvider}
-        placeholder={
-          !hasModelsAvailable 
-            ? "Select a model to start chatting..." 
-            : !hasActiveProvider
-              ? "Model not available..."
-              : isStreaming 
-                ? "AI is responding..." 
-                : "Message..."
-        }
-      />
+      <div className="shrink-0">
+        <InputArea
+          onSend={handleSendMessage}
+          disabled={isStreaming || !hasActiveProvider}
+          placeholder={
+            !hasModelsAvailable
+              ? "Select a model to start chatting..."
+              : !hasActiveProvider
+                ? "Model not available..."
+                : isStreaming
+                  ? "AI is responding..."
+                  : "Message..."
+          }
+        />
+      </div>
     </div>
   );
 }

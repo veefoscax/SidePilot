@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -24,9 +24,9 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { 
-  CheckmarkCircle01Icon, 
-  Cancel01Icon, 
+import {
+  CheckmarkCircle01Icon,
+  Cancel01Icon,
   Loading01Icon,
   Delete01Icon,
   Add01Icon,
@@ -63,7 +63,7 @@ interface ProviderDisplay {
 }
 export function MultiProviderManager() {
   const store = useMultiProviderStore();
-  
+
   // Only UI state - no data state
   const [uiState, setUIState] = useState<UIState>({
     expandedProviders: new Set(),
@@ -73,17 +73,24 @@ export function MultiProviderManager() {
     dragOverModel: null,
     testingProviders: new Set(),
   });
-  
+
   // Derive display state from store (re-computed on every store change)
   const displayProviders = useMemo(() => {
     const orderedProviders = store.getOrderedConfiguredProviders();
-    
+
     return orderedProviders.map(providerType => {
-      const providerConfig = store.providers[providerType];
+      // Fallback config for providers not yet in store (just added via Add Provider)
+      const providerConfig = store.providers[providerType] || {
+        type: providerType,
+        apiKey: '',
+        baseUrl: '',
+        isConfigured: false,
+        isConnected: false,
+      };
       const selectedModels = store.getSelectedModelsByProvider(providerType);
       const availableModels = store.availableModelsByProvider[providerType] || [];
       const isLoadingModels = store.loadingProviders.includes(providerType);
-      
+
       return {
         type: providerType,
         config: providerConfig,
@@ -95,32 +102,32 @@ export function MultiProviderManager() {
       };
     });
   }, [
-    store.providers, 
-    store.selectedModels, 
-    store.providerOrder, 
-    store.availableModelsByProvider, 
+    store.providers,
+    store.selectedModels,
+    store.providerOrder,
+    store.availableModelsByProvider,
     store.loadingProviders,
     uiState.expandedProviders,
     uiState.testingProviders
   ]);
-  
+
   // Initialize store on mount
   useMemo(() => {
     store.initializeStore();
   }, []);
-  
+
   const updateUIState = (updates: Partial<UIState>) => {
     setUIState(prev => ({ ...prev, ...updates }));
   };
   const addNewProvider = () => {
     // Find first unconfigured provider to add
     const supportedProviders = getSupportedProviders();
-    const configuredTypes = new Set(Object.keys(store.providers).filter(type => 
+    const configuredTypes = new Set(Object.keys(store.providers).filter(type =>
       store.providers[type as ProviderType].isConfigured
     ));
-    
+
     const availableProvider = supportedProviders.find(type => !configuredTypes.has(type));
-    
+
     if (availableProvider) {
       // Add to provider order and expand it
       store.addProviderToOrder(availableProvider);
@@ -131,11 +138,15 @@ export function MultiProviderManager() {
       toast.info('All supported providers are already configured');
     }
   };
-  
+
   const removeProvider = (providerType: ProviderType) => {
+    console.log('🗑️ removeProvider called for:', providerType);
+    console.log('  - Current providerOrder BEFORE:', store.providerOrder);
+
     // Remove from store
     store.removeProviderFromOrder(providerType);
-    
+    console.log('  - providerOrder AFTER removeProviderFromOrder:', store.providerOrder);
+
     // Clear provider configuration
     store.setProviderConfig(providerType, {
       apiKey: '',
@@ -144,19 +155,24 @@ export function MultiProviderManager() {
       isConfigured: false,
       isConnected: false,
     });
-    
+    console.log('  - Provider config cleared, isConfigured set to false');
+
     // Remove all selected models for this provider
     const selectedModels = store.getSelectedModelsByProvider(providerType);
     selectedModels.forEach(model => {
       store.removeSelectedModel(model.fullId);
     });
-    
+    console.log('  - Removed', selectedModels.length, 'selected models');
+
     // Update UI state
     updateUIState({
       expandedProviders: new Set([...uiState.expandedProviders].filter(p => p !== providerType))
     });
+
+    // Debug: check final state
+    console.log('  - Final getOrderedConfiguredProviders():', store.getOrderedConfiguredProviders());
   };
-  
+
   const toggleExpanded = (providerType: ProviderType) => {
     const newExpanded = new Set(uiState.expandedProviders);
     if (newExpanded.has(providerType)) {
@@ -171,32 +187,32 @@ export function MultiProviderManager() {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', providerType);
   };
-  
+
   const handleProviderDrop = (e: React.DragEvent, targetProvider: ProviderType) => {
     e.preventDefault();
-    
+
     const draggedProvider = uiState.draggedProvider;
     if (!draggedProvider || draggedProvider === targetProvider) return;
-    
+
     // Reorder providers in store
     const currentOrder = store.providerOrder;
     const draggedIndex = currentOrder.indexOf(draggedProvider);
     const targetIndex = currentOrder.indexOf(targetProvider);
-    
+
     if (draggedIndex === -1 || targetIndex === -1) return;
-    
+
     const newOrder = [...currentOrder];
     const [draggedItem] = newOrder.splice(draggedIndex, 1);
     newOrder.splice(targetIndex, 0, draggedItem);
-    
+
     store.setProviderOrder(newOrder);
-    
-    updateUIState({ 
-      draggedProvider: null, 
-      dragOverProvider: null 
+
+    updateUIState({
+      draggedProvider: null,
+      dragOverProvider: null
     });
   };
-  
+
   const handleDragEnd = () => {
     updateUIState({
       draggedProvider: null,
@@ -227,14 +243,14 @@ export function MultiProviderManager() {
           displayProviders.map((provider) => (
             <div key={provider.type} className="relative">
               {/* Drop zone indicator */}
-              {uiState.dragOverProvider === provider.type && 
-               uiState.draggedProvider !== provider.type && 
-               !uiState.draggedModel && (
-                <div className="h-4 flex items-center justify-center mb-2">
-                  <div className="w-full h-1 bg-primary rounded-full" />
-                </div>
-              )}
-              
+              {uiState.dragOverProvider === provider.type &&
+                uiState.draggedProvider !== provider.type &&
+                !uiState.draggedModel && (
+                  <div className="h-4 flex items-center justify-center mb-2">
+                    <div className="w-full h-1 bg-primary rounded-full" />
+                  </div>
+                )}
+
               <ProviderConfigCard
                 provider={provider}
                 store={store}
@@ -268,13 +284,13 @@ interface ProviderConfigCardProps {
   canRemove: boolean;
 }
 
-function ProviderConfigCard({ 
+function ProviderConfigCard({
   provider,
   store,
   uiState,
   onUpdateUIState,
-  onRemove, 
-  onToggleExpanded, 
+  onRemove,
+  onToggleExpanded,
   onDragStart,
   onDrop,
   onDragEnd,
@@ -282,15 +298,15 @@ function ProviderConfigCard({
 }: ProviderConfigCardProps) {
   const supportedProviders = getSupportedProviders();
   const providerInfo = getProviderInfo(provider.type);
-  
+
   const isDragging = uiState.draggedProvider === provider.type;
   const isDragOver = uiState.dragOverProvider === provider.type;
-  
+
   const handleProviderChange = (providerType: ProviderType) => {
     const providerInfo = getProviderInfo(providerType);
     let defaultBaseUrl = '';
     let defaultPlanType = undefined;
-    
+
     // Set default URLs for local providers
     if (!providerInfo.requiresApiKey) {
       if (providerType === 'ollama') {
@@ -299,7 +315,7 @@ function ProviderConfigCard({
         defaultBaseUrl = 'http://127.0.0.1:1234';
       }
     }
-    
+
     // Set default plan type for providers that support multiple plans
     if (supportsMultiplePlans(providerType)) {
       const planTypes = getProviderPlanTypes(providerType);
@@ -311,20 +327,20 @@ function ProviderConfigCard({
         }
       }
     }
-    
+
     // Update store directly
-    store.setProviderConfig(providerType, { 
-      apiKey: '', 
+    store.setProviderConfig(providerType, {
+      apiKey: '',
       baseUrl: defaultBaseUrl,
       planType: defaultPlanType,
     });
-    
+
     // Add to provider order if not already there
     store.addProviderToOrder(providerType);
   };
   const handlePlanTypeChange = (planType: string) => {
-    store.setProviderConfig(provider.type, { 
-      apiKey: provider.config.apiKey, 
+    store.setProviderConfig(provider.type, {
+      apiKey: provider.config.apiKey,
       baseUrl: provider.config.baseUrl,
       planType: planType
     });
@@ -333,8 +349,8 @@ function ProviderConfigCard({
   };
 
   const handleApiKeyChange = (apiKey: string) => {
-    store.setProviderConfig(provider.type, { 
-      apiKey, 
+    store.setProviderConfig(provider.type, {
+      apiKey,
       baseUrl: provider.config.baseUrl,
       planType: provider.config.planType
     });
@@ -344,8 +360,8 @@ function ProviderConfigCard({
   };
 
   const handleBaseUrlChange = (baseUrl: string) => {
-    store.setProviderConfig(provider.type, { 
-      apiKey: provider.config.apiKey, 
+    store.setProviderConfig(provider.type, {
+      apiKey: provider.config.apiKey,
       baseUrl,
       planType: provider.config.planType
     });
@@ -368,15 +384,15 @@ function ProviderConfigCard({
         return;
       }
     }
-    
+
     // Set testing state
     const newTesting = new Set(uiState.testingProviders);
     newTesting.add(provider.type);
     onUpdateUIState({ testingProviders: newTesting });
-    
+
     try {
       const success = await store.testProviderConnection(provider.type);
-      
+
       // Show toast notification
       if (success) {
         toast.success(`${providerInfo?.name || provider.type} connected successfully`);
@@ -398,7 +414,7 @@ function ProviderConfigCard({
   };
   const handleModelToggle = (modelId: string) => {
     const isCurrentlySelected = provider.selectedModels.includes(modelId);
-    
+
     if (isCurrentlySelected) {
       // Remove from store
       const model = provider.availableModels.find(m => m.id === modelId);
@@ -438,11 +454,9 @@ function ProviderConfigCard({
   };
   return (
     <div
-      className={`transition-all duration-200 ${
-        isDragging ? 'opacity-30 scale-95 rotate-2 z-50' : ''
-      } ${
-        isDragOver && !isDragging && !uiState.draggedModel ? 'scale-105 shadow-lg border-primary border-2' : ''
-      }`}
+      className={`transition-all duration-200 ${isDragging ? 'opacity-30 scale-95 rotate-2 z-50' : ''
+        } ${isDragOver && !isDragging && !uiState.draggedModel ? 'scale-105 shadow-lg border-primary border-2' : ''
+        }`}
       onDragOver={(e) => {
         // Only handle if not dragging a model
         if (!uiState.draggedModel) {
@@ -473,7 +487,7 @@ function ProviderConfigCard({
         <CardHeader className="pb-2 pt-3">
           <div className="flex items-center gap-2">
             {/* Drag Handle - Only for provider drag */}
-            <div 
+            <div
               className="cursor-move p-1 hover:bg-muted rounded -ml-2"
               draggable={true}
               onDragStart={(e) => {
@@ -484,11 +498,11 @@ function ProviderConfigCard({
             >
               <HugeiconsIcon icon={DragDropVerticalIcon} className="h-4 w-4 text-muted-foreground" />
             </div>
-            
+
             {/* Provider Title and Info */}
             <div className="flex-1 flex items-center justify-between">
               <CardTitle className="text-sm">{getCardTitle()}</CardTitle>
-              
+
               <div className="flex items-center gap-2">
                 {/* Model Count - Right Justified */}
                 {getModelCount() && (
@@ -496,15 +510,15 @@ function ProviderConfigCard({
                     {getModelCount()}
                   </Badge>
                 )}
-                
+
                 {/* Connection Status */}
                 {provider.config && (
                   <>
                     {provider.config.isConnected ? (
                       <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 text-green-500" />
                     ) : provider.config.error ? (
-                      <div 
-                        className="h-3 w-3 text-red-500 cursor-help" 
+                      <div
+                        className="h-3 w-3 text-red-500 cursor-help"
                         title={provider.config.error}
                       >
                         <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" />
@@ -512,7 +526,7 @@ function ProviderConfigCard({
                     ) : null}
                   </>
                 )}
-                
+
                 {/* Action Icons */}
                 <div className="flex items-center">
                   <Button
@@ -554,7 +568,7 @@ function ProviderConfigCard({
           </div>
         </CardHeader>
         {provider.isExpanded && (
-          <CardContent 
+          <CardContent
             className="pt-0 pb-3 space-y-3"
             onDragStart={(e) => e.stopPropagation()}
             onDragOver={(e) => e.stopPropagation()}
@@ -677,71 +691,104 @@ function ProviderConfigCard({
               </div>
             )}
             {/* Model Selection */}
-            {((providerInfo?.requiresApiKey && provider.config.apiKey?.trim()) || 
+            {((providerInfo?.requiresApiKey && provider.config.apiKey?.trim()) ||
               (!providerInfo?.requiresApiKey && provider.config.baseUrl?.trim())) && (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium">Models</label>
-                  {provider.availableModels.length > 0 && (
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleSelectAll}
-                        className="h-5 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        All
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleSelectNone}
-                        className="h-5 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        None
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                
-                {provider.isLoadingModels ? (
-                  <div className="space-y-1">
-                    {[1, 2].map(i => (
-                      <div key={i} className="h-8 bg-muted rounded animate-pulse" />
-                    ))}
-                  </div>
-                ) : provider.availableModels.length === 0 ? (
-                  <div className="p-2 text-center border rounded text-xs">
-                    {provider.config.error ? (
-                      <div className="text-red-500">
-                        <div className="font-medium">Failed to load models</div>
-                        <div className="text-xs mt-1 text-muted-foreground">{provider.config.error}</div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium">Models</label>
+                    {provider.availableModels.length > 0 && (
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleSelectAll}
+                          className="h-5 px-2 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          All
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleSelectNone}
+                          className="h-5 px-2 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          None
+                        </Button>
                       </div>
-                    ) : (
-                      <div className="text-muted-foreground">No models available</div>
                     )}
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    {/* Selected Models - Top Section */}
-                    {provider.selectedModels.length > 0 && (
+
+                  {provider.isLoadingModels ? (
+                    <div className="space-y-1">
+                      {[1, 2].map(i => (
+                        <div key={i} className="h-8 bg-muted rounded animate-pulse" />
+                      ))}
+                    </div>
+                  ) : provider.availableModels.length === 0 ? (
+                    <div className="p-2 text-center border rounded text-xs">
+                      {provider.config.error ? (
+                        <div className="text-red-500">
+                          <div className="font-medium">Failed to load models</div>
+                          <div className="text-xs mt-1 text-muted-foreground">{provider.config.error}</div>
+                        </div>
+                      ) : (
+                        <div className="text-muted-foreground">No models available</div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {/* Selected Models - Top Section */}
+                      {provider.selectedModels.length > 0 && (
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground font-medium">Selected ({provider.selectedModels.length})</div>
+                          <div className="space-y-1 max-h-48 overflow-y-auto bg-muted/30 rounded p-3">
+                            {provider.selectedModels.map((modelId, index) => {
+                              const model = provider.availableModels.find(m => m.id === modelId);
+                              if (!model) return null;
+
+                              return (
+                                <div
+                                  key={modelId}
+                                  className="flex items-center gap-2 p-3 bg-background border rounded text-xs hover:bg-muted/50 transition-colors"
+                                >
+                                  <Checkbox
+                                    checked={true}
+                                    onCheckedChange={(checked) => {
+                                      if (!checked) handleModelToggle(modelId);
+                                    }}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium">{model.name}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {(model.capabilities.contextWindow / 1000).toFixed(0)}K context
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className="text-xs px-1">
+                                    #{index + 1}
+                                  </Badge>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {/* Available Models - Bottom Section */}
                       <div className="space-y-1">
-                        <div className="text-xs text-muted-foreground font-medium">Selected ({provider.selectedModels.length})</div>
-                        <div className="space-y-1 max-h-48 overflow-y-auto bg-muted/30 rounded p-3">
-                          {provider.selectedModels.map((modelId, index) => {
-                            const model = provider.availableModels.find(m => m.id === modelId);
-                            if (!model) return null;
-                            
-                            return (
-                              <div 
-                                key={modelId} 
-                                className="flex items-center gap-2 p-3 bg-background border rounded text-xs hover:bg-muted/50 transition-colors"
+                        <div className="text-xs text-muted-foreground font-medium">
+                          Available ({provider.availableModels.filter(m => !provider.selectedModels.includes(m.id)).length})
+                        </div>
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {provider.availableModels
+                            .filter(model => !provider.selectedModels.includes(model.id))
+                            .map((model) => (
+                              <div
+                                key={model.id}
+                                className="flex items-center gap-2 p-3 border rounded text-xs hover:bg-muted/50 transition-colors cursor-pointer"
+                                onClick={() => handleModelToggle(model.id)}
                               >
                                 <Checkbox
-                                  checked={true}
-                                  onCheckedChange={(checked) => {
-                                    if (!checked) handleModelToggle(modelId);
-                                  }}
+                                  checked={false}
+                                  onCheckedChange={() => handleModelToggle(model.id)}
                                 />
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium">{model.name}</div>
@@ -749,54 +796,21 @@ function ProviderConfigCard({
                                     {(model.capabilities.contextWindow / 1000).toFixed(0)}K context
                                   </div>
                                 </div>
-                                <Badge variant="outline" className="text-xs px-1">
-                                  #{index + 1}
-                                </Badge>
                               </div>
-                            );
-                          })}
+                            ))}
                         </div>
                       </div>
-                    )}
-                    {/* Available Models - Bottom Section */}
-                    <div className="space-y-1">
-                      <div className="text-xs text-muted-foreground font-medium">
-                        Available ({provider.availableModels.filter(m => !provider.selectedModels.includes(m.id)).length})
-                      </div>
-                      <div className="space-y-1 max-h-40 overflow-y-auto">
-                        {provider.availableModels
-                          .filter(model => !provider.selectedModels.includes(model.id))
-                          .map((model) => (
-                            <div 
-                              key={model.id} 
-                              className="flex items-center gap-2 p-3 border rounded text-xs hover:bg-muted/50 transition-colors cursor-pointer"
-                              onClick={() => handleModelToggle(model.id)}
-                            >
-                              <Checkbox
-                                checked={false}
-                                onCheckedChange={() => handleModelToggle(model.id)}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium">{model.name}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {(model.capabilities.contextWindow / 1000).toFixed(0)}K context
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-            
+                  )}
+                </div>
+              )}
+
             {/* Save Button */}
             <div className="pt-2 border-t">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={onToggleExpanded} 
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onToggleExpanded}
                 className="w-full"
               >
                 <HugeiconsIcon icon={Save} className="h-3 w-3 mr-1" />

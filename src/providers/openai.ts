@@ -10,11 +10,11 @@
  */
 
 import { BaseProvider } from './base-provider';
-import { 
-  ChatMessage, 
-  ChatOptions, 
-  LLMResponse, 
-  StreamChunk, 
+import {
+  ChatMessage,
+  ChatOptions,
+  LLMResponse,
+  StreamChunk,
   ContentPart,
   ToolCall,
   ModelInfo
@@ -63,6 +63,7 @@ interface OpenAIRequest {
   temperature?: number;
   tools?: OpenAITool[];
   tool_choice?: 'auto' | 'none' | { type: 'function'; function: { name: string } };
+  tool_stream?: boolean; // Z.AI specific: enable streaming tool calls
   stream?: boolean;
 }
 
@@ -120,7 +121,7 @@ interface OpenAIStreamChunk {
 export class OpenAIProvider extends BaseProvider {
   async chat(messages: ChatMessage[], options: ChatOptions = {}): Promise<LLMResponse> {
     const request = this.buildRequest(messages, options);
-    
+
     const response = await this.makeRequest('/chat/completions', {
       method: 'POST',
       body: JSON.stringify(request),
@@ -132,13 +133,17 @@ export class OpenAIProvider extends BaseProvider {
 
   async *stream(messages: ChatMessage[], options: ChatOptions = {}): AsyncIterable<StreamChunk> {
     const request = this.buildRequest(messages, { ...options, stream: true });
-    
-    console.log('ZAI Stream request:', { 
-      url: this.config.baseUrl + '/chat/completions',
+
+    console.log('🔥 ZAI Stream request:', {
+      baseUrl: this.config.baseUrl,
+      fullUrl: this.config.baseUrl + '/chat/completions',
       model: request.model,
-      messagesCount: request.messages.length 
+      messagesCount: request.messages.length,
+      toolsCount: request.tools?.length || 0,
+      hasTools: !!request.tools,
+      tools: request.tools // Log full tools array
     });
-    
+
     const response = await this.makeRequest('/chat/completions', {
       method: 'POST',
       body: JSON.stringify(request),
@@ -161,11 +166,25 @@ export class OpenAIProvider extends BaseProvider {
     let hasReasoning = false;
 
     try {
+      let fullBuffer = ''; // Accumulate entire response for non-SSE detection
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk;
+        fullBuffer += chunk;
+
+        console.log('📦 ZAI Raw buffer received:', buffer.substring(0, 500));
+
+        // Check if this is a non-SSE JSON response (no data: prefix)
+        // ZAI sometimes returns complete JSON instead of SSE stream
+        if (buffer.startsWith('{') && !buffer.includes('data:')) {
+          // This is a direct JSON response, not SSE - accumulate and parse at end
+          continue;
+        }
+
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
@@ -182,14 +201,14 @@ export class OpenAIProvider extends BaseProvider {
 
             try {
               const chunk: OpenAIStreamChunk = JSON.parse(data);
-              console.log('ZAI Stream chunk:', { 
-                type: chunk.choices?.[0]?.delta?.reasoning_content ? 'reasoning' : 
-                      chunk.choices?.[0]?.delta?.content ? 'content' : 'other',
+              console.log('ZAI Stream chunk:', {
+                type: chunk.choices?.[0]?.delta?.reasoning_content ? 'reasoning' :
+                  chunk.choices?.[0]?.delta?.content ? 'content' : 'other',
                 hasContent: !!chunk.choices?.[0]?.delta?.content,
                 hasReasoning: !!chunk.choices?.[0]?.delta?.reasoning_content,
                 finishReason: chunk.choices?.[0]?.finish_reason
               });
-              
+
               const streamChunk = this.parseStreamChunk(chunk);
               if (streamChunk) {
                 // Handle reasoning content directly from GLM-4.7
@@ -198,7 +217,7 @@ export class OpenAIProvider extends BaseProvider {
                   yield streamChunk;
                 } else if (streamChunk.type === 'text' && streamChunk.text) {
                   const text = streamChunk.text;
-                  
+
                   // Regular content - any text counts as content
                   if (text.trim()) { // Only count non-empty text as content
                     hasContent = true;
@@ -221,14 +240,46 @@ export class OpenAIProvider extends BaseProvider {
           }
         }
       }
-      
+
+      // Handle non-SSE JSON response (ZAI sometimes returns complete JSON instead of SSE)
+      if (!hasContent && !hasReasoning && fullBuffer.startsWith('{')) {
+        try {
+          console.log('🔄 Parsing non-SSE JSON response from ZAI');
+          const jsonResponse = JSON.parse(fullBuffer);
+
+          if (jsonResponse.choices?.[0]?.message) {
+            const message = jsonResponse.choices[0].message;
+
+            // Yield reasoning content first if present
+            if (message.reasoning_content) {
+              console.log('✅ Found reasoning_content in non-SSE response');
+              hasReasoning = true;
+              yield { type: 'reasoning', text: message.reasoning_content };
+            }
+
+            // Yield main content
+            if (message.content) {
+              console.log('✅ Found content in non-SSE response');
+              hasContent = true;
+              yield { type: 'text', text: message.content };
+            }
+
+            // Yield done
+            yield { type: 'done' };
+            return;
+          }
+        } catch (parseError) {
+          console.warn('Failed to parse non-SSE JSON response:', parseError);
+        }
+      }
+
       // If we reach here without any content or reasoning, yield a fallback message
       if (!hasContent && !hasReasoning) {
         console.warn('ZAI stream ended without content or reasoning - yielding fallback');
         hasContent = true; // Mark as having content to prevent infinite loop
-        yield { 
-          type: 'text', 
-          text: 'Response completed. The model may have provided reasoning without visible content.' 
+        yield {
+          type: 'text',
+          text: 'Response completed. The model may have provided reasoning without visible content.'
         };
       } else {
         console.log('ZAI stream completed successfully:', { hasContent, hasReasoning });
@@ -243,7 +294,7 @@ export class OpenAIProvider extends BaseProvider {
       // Try to fetch models from the /models endpoint
       const response = await this.makeRequest('/models');
       const data = await response.json();
-      
+
       if (data.data && Array.isArray(data.data)) {
         return data.data.map((model: any) => ({
           id: model.id,
@@ -271,7 +322,7 @@ export class OpenAIProvider extends BaseProvider {
   protected getDefaultModels(): ModelInfo[] {
     const providerConfig = getProviderConfig(this.type);
     const defaultModelIds = providerConfig?.defaultModels || [];
-    
+
     return defaultModelIds.map(modelId => ({
       id: modelId,
       name: this.getModelDisplayName(modelId),
@@ -306,7 +357,7 @@ export class OpenAIProvider extends BaseProvider {
       'deepseek-chat': 'DeepSeek Chat',
       'deepseek-reasoner': 'DeepSeek Reasoner',
     };
-    
+
     return displayNames[modelId] || modelId;
   }
 
@@ -324,13 +375,22 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   private buildRequest(messages: ChatMessage[], options: ChatOptions): OpenAIRequest {
-    const { 
-      model = this.getDefaultModel(), 
-      maxTokens, 
-      temperature, 
-      tools, 
-      systemPrompt 
+    const {
+      model = this.getDefaultModel(),
+      maxTokens,
+      temperature,
+      tools,
+      systemPrompt
     } = options;
+
+    console.log('🔧 buildRequest called:', {
+      providerType: this.type,
+      model,
+      toolsFromOptions: tools,
+      toolsCount: tools?.length || 0,
+      hasTools: !!tools,
+      optionsKeys: Object.keys(options)
+    });
 
     // Convert messages to OpenAI format
     const openaiMessages: OpenAIMessage[] = [];
@@ -347,7 +407,7 @@ export class OpenAIProvider extends BaseProvider {
       if (message.role === 'system' && !systemPrompt) {
         openaiMessages.push({
           role: 'system',
-          content: typeof message.content === 'string' ? message.content : 
+          content: typeof message.content === 'string' ? message.content :
             message.content.find(part => part.type === 'text')?.text || '',
         });
       } else if (message.role === 'user' || message.role === 'assistant') {
@@ -381,7 +441,35 @@ export class OpenAIProvider extends BaseProvider {
         },
       }));
       request.tool_choice = 'auto';
+      
+      // Z.AI specific: enable streaming tool calls
+      if (this.type === 'zai' && options.stream) {
+        request.tool_stream = true;
+      }
+
+      console.log('🔧 Tools added to request:', {
+        providerType: this.type,
+        toolsCount: request.tools.length,
+        toolNames: request.tools.map(t => t.function.name),
+        tool_choice: request.tool_choice,
+        tool_stream: request.tool_stream
+      });
+    } else {
+      console.log('⚠️ No tools to add:', {
+        providerType: this.type,
+        toolsProvided: !!tools,
+        toolsLength: tools?.length || 0
+      });
     }
+
+    console.log('🔧 Final request object:', {
+      model: request.model,
+      messagesCount: request.messages.length,
+      hasTools: !!request.tools,
+      toolsCount: request.tools?.length || 0,
+      hasMaxTokens: !!request.max_tokens,
+      hasTemperature: request.temperature !== undefined
+    });
 
     return request;
   }

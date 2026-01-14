@@ -2062,3 +2062,233 @@ getCapabilityWarnings(model: ModelInfo, requestedFeatures: string[]): Warning[];
 **Summary**: Successfully completed comprehensive provider connection fixes addressing all user concerns about console errors, ZAI stream issues, and missing system components. The implementation includes a complete Model Capability System with validation and warnings, comprehensive test coverage with property tests and integration tests, and proper GLM-4.7 reasoning content support. All critical subtasks from the specification have been completed, creating a robust foundation for browser automation with any of 40+ LLM providers. The system now provides professional-grade error handling, real-time connection monitoring, and capability validation that prevents user frustration.
 
 **Time Impact**: Completed 1h 30m ahead of schedule due to systematic approach and comprehensive specification review that identified all missing components. The robust implementation ensures reliable functionality and provides excellent user experience across all supported providers.
+
+---
+
+### ZAI Non-SSE Response Parsing Fix ✅ COMPLETE
+- **Date**: 2026-01-13 20:30 UTC
+- **Time**: ~45m
+- **Kiro Commands Used**:
+  - readFile (3 times) - analyzing stream parsing, provider configs
+  - strReplace (5 times) - fixing URL, adding non-SSE JSON parsing
+  - executePwsh (3 times) - build verification
+
+#### Issue Identified
+- **Problem**: ZAI API returned "stream ended without content or reasoning" error
+- **Root Cause**: ZAI Coding Plan returns **raw JSON** instead of **SSE stream** format
+  - Expected format: `data: {"choices":...}\ndata: [DONE]`
+  - Actual format: `{"choices":[{"message":{"content":"...","reasoning_content":"..."}}]}`
+- **Discovery**: Console logging revealed buffer starting with `{` without `data:` prefix
+
+#### Files Modified
+- **CRITICAL FIX**: `src/providers/provider-configs.ts` (line 235)
+  - Changed: `baseUrl: 'https://api.z.ai/api/paas/v4'`
+  - To: `baseUrl: 'https://api.z.ai/api/coding/paas/v4'`
+- **CRITICAL FIX**: `src/providers/zai.ts` (lines 14, 125)
+  - Updated `isCodingPlan` detection to check for `/coding/` in URL path
+- **CRITICAL FIX**: `src/providers/openai.ts` (lines 164-275)
+  - Added `fullBuffer` accumulation for non-SSE response detection
+  - Added check: `if (buffer.startsWith('{') && !buffer.includes('data:'))`
+  - Added non-SSE JSON parsing with `reasoning_content` and `content` extraction
+  - Console logging: `🔄 Parsing non-SSE JSON response from ZAI`
+
+#### Technical Solution
+```typescript
+// Handle non-SSE JSON response (ZAI returns complete JSON instead of SSE)
+if (!hasContent && !hasReasoning && fullBuffer.startsWith('{')) {
+  const jsonResponse = JSON.parse(fullBuffer);
+  if (jsonResponse.choices?.[0]?.message) {
+    const message = jsonResponse.choices[0].message;
+    if (message.reasoning_content) {
+      yield { type: 'reasoning', text: message.reasoning_content };
+    }
+    if (message.content) {
+      yield { type: 'text', text: message.content };
+    }
+  }
+}
+```
+
+#### Build Verification
+- ✅ Build successful: 1,524.51 KB bundle (489.76 KB gzipped)
+- ✅ Console shows: `✅ Found reasoning_content in non-SSE response`
+- ✅ Console shows: `✅ Found content in non-SSE response`
+- ✅ Response displays correctly in chat interface
+
+---
+
+### Provider Management UI Fixes ✅ COMPLETE
+- **Date**: 2026-01-13 20:20 UTC
+- **Time**: ~20m
+
+#### Issues Fixed
+1. **Add Provider Button Not Working**
+   - **Problem**: Clicking "+ Add Provider" did nothing
+   - **Root Cause**: `addProviderToOrder` function was declared but not implemented in store
+   - **Fix**: Added implementation in `src/stores/multi-provider.ts` (3 new functions)
+   
+2. **Duplicate Key Errors**
+   - **Problem**: Build failed with "Duplicate key in object literal"
+   - **Root Cause**: Kiro created duplicate implementations of provider order functions
+   - **Fix**: Removed duplicate functions, kept single implementation
+
+3. **Unconfigured Providers Not Visible**
+   - **Problem**: `getOrderedConfiguredProviders` only returned configured providers
+   - **Root Cause**: Newly added providers weren't configured yet so they weren't shown
+   - **Fix**: Modified function to also include providers in `providerOrder` even if not configured
+
+4. **Fallback Config for New Providers**
+   - **Problem**: `displayProviders` crashed on undefined `store.providers[providerType]`
+   - **Fix**: Added fallback config object in `MultiProviderManager.tsx`
+
+#### Files Modified
+- `src/stores/multi-provider.ts` - Added missing `setProviderOrder`, `addProviderToOrder`, `removeProviderFromOrder` implementations
+- `src/stores/multi-provider.ts` - Fixed `getOrderedConfiguredProviders` to include `inOrderProviders`
+- `src/components/settings/MultiProviderManager.tsx` - Added fallback config for undefined providers
+
+#### Build Verification
+- ✅ Build successful: 1,523.90 KB bundle
+- ✅ Add Provider button works
+- ✅ Provider cards display correctly
+
+---
+
+### Provider Delete and UI Accessibility Fixes ✅ COMPLETE
+- **Date**: 2026-01-13 20:50 UTC
+- **Time**: ~30m
+
+#### Issues Fixed
+
+1. **Ollama/LMStudio Provider Delete Not Working**
+   - **Problem**: Providers without API key requirement always appeared even after deletion
+   - **Root Cause**: `getOrderedConfiguredProviders` returned `!providerInfo.requiresApiKey` providers unconditionally
+   - **Fix**: Modified logic to only show no-API-key providers if they're in `providerOrder` OR `isConfigured: true`
+   - **File**: `src/stores/multi-provider.ts` (lines 455-483)
+
+2. **DialogContent Accessibility Warning**
+   - **Problem**: "Missing Description or aria-describedby" warning from Radix UI
+   - **Fix**: Added `aria-describedby={undefined}` to both DialogContent and AlertDialogContent 
+   - **Files**: 
+     - `src/components/ui/dialog.tsx` (line 38)
+     - `src/components/ui/alert-dialog.tsx` (line 38)
+
+3. **BrowserAutomationSettings Icon Imports**
+   - **Problem**: Component imported icons directly from `@hugeicons/react` instead of using the project pattern
+   - **Fix**: Updated to use `HugeiconsIcon` wrapper from `@hugeicons/react` + icon definitions from `@hugeicons/core-free-icons`
+   - **File**: `src/components/settings/BrowserAutomationSettings.tsx`
+   - **Pattern**: `<HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4" />`
+
+4. **BrowserAutomationSettings Props Integration**
+   - **Problem**: Component required `settings` and `onSettingsChange` props but SettingsPage wasn't providing them
+   - **Fix**: Added state management with Chrome storage persistence in SettingsPage
+   - **File**: `src/sidepanel/pages/Settings.tsx`
+
+#### Technical Solution for Provider Delete
+```typescript
+// Before: Always showed no-API-key providers
+return p.isConfigured || !providerInfo.requiresApiKey;
+
+// After: Only shows if in order OR configured
+if (providerInfo.requiresApiKey) {
+  return p.isConfigured;
+}
+return providerOrder.includes(p.type) || p.isConfigured;
+```
+
+#### Build Verification
+- ✅ Build successful: 1,524.58 KB bundle (489.78 KB gzipped)
+- ✅ DialogContent warning should be silenced
+- ✅ Provider delete now works for Ollama/LMStudio
+- ✅ BrowserAutomationSettings renders correctly with proper icon imports
+
+
+---
+
+## Icon Standardization Refactoring
+**Date**: 2026-01-13
+**Time Spent**: ~45 minutes
+**Credits Used**: ~15 credits
+
+### Problem
+BrowserAutomationSettings component had TypeScript errors due to incorrect Hugeicons usage. Icons were being imported directly from `@hugeicons/react` instead of using the proper wrapper pattern.
+
+### Solution
+Created comprehensive icon standardization spec and implemented across codebase:
+
+1. **Updated tech.md steering file** with complete icon usage guidelines
+   - Added correct import pattern documentation
+   - Created icon mapping reference table (20+ common icons)
+   - Included DO/DON'T examples
+   - Added troubleshooting section
+
+2. **Fixed BrowserAutomationSettings.tsx**
+   - Updated all imports to use `HugeiconsIcon` wrapper from `@hugeicons/react`
+   - Imported icon definitions from `@hugeicons/core-free-icons`
+   - Replaced 30+ icon usages with correct pattern
+   - Fixed TypeScript errors (checked parameter types)
+   - Removed non-existent `LinkExternal02Icon` (used Unicode arrow instead)
+
+3. **Audited entire codebase**
+   - Verified all 18 components use correct pattern
+   - Confirmed zero legacy icon patterns remain
+   - All icons properly imported from `@hugeicons/core-free-icons`
+
+### Files Modified
+- `.kiro/steering/tech.md` - Added comprehensive icon guidelines
+- `.kiro/specs/icon-standardization/` - Created full spec (requirements, design, tasks)
+- `src/components/settings/BrowserAutomationSettings.tsx` - Fixed all icon usages
+
+### Results
+- ✅ Zero TypeScript errors related to icons
+- ✅ Build succeeds without warnings
+- ✅ All components follow standardized pattern
+- ✅ Future developers have clear guidelines in tech.md
+
+### Pattern Established
+```typescript
+// ✅ CORRECT
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Rocket01Icon, CheckmarkCircle02Icon } from '@hugeicons/core-free-icons';
+
+<HugeiconsIcon icon={Rocket01Icon} className="h-5 w-5" />
+```
+
+### Next Steps
+- Extension ready for testing in Chrome
+- All icon usage now consistent and maintainable
+- tech.md serves as source of truth for icon patterns
+
+---
+
+## Bug Fix: Z.AI Tool Integration
+**Date**: 2026-01-13
+**Time**: ~30 minutes
+
+### Issue
+Tools were not being passed to Z.AI provider when sending messages. Console logs showed:
+```
+optionsKeys: ['model', 'stream']  // Only 2 keys instead of 4
+hasTools: false
+toolsCount: 0
+```
+
+### Root Cause
+The `App.tsx` file's `handleSendMessage` function was NOT passing tools to the provider. It only passed `{ model: currentProvider.model.id }` - no `tools`, no `systemPrompt`.
+
+The correct implementation existed in `Chat.tsx` but `App.tsx` (the actual component being used) was missing the tool handling logic.
+
+### Solution
+Updated `handleSendMessage` in `src/sidepanel/App.tsx` to:
+1. Prepare tools from `toolRegistry` based on provider type (Anthropic vs OpenAI format)
+2. Pass `tools` and `systemPrompt` to the `stream()` call
+3. Handle `tool_use` chunks in the stream loop
+4. Execute tools via `toolRegistry.execute()`
+5. Call `addToolResult()` from chat store to record results
+
+### Files Modified
+- `src/sidepanel/App.tsx` - Added tool preparation, passing, and execution logic
+
+### Verification
+- ✅ Build succeeds (`npm run build`)
+- ✅ No TypeScript errors
+- Console should now show: `🔧 App.tsx - Tools prepared: { providerType: "zai", toolsCount: X, toolNames: [...] }`

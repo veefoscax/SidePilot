@@ -5,18 +5,48 @@
  * and managing a unified collection of models from all providers.
  */
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 
 import { MultiProviderManager } from '@/components/settings/MultiProviderManager';
-import { BrowserAutomationSettings } from '@/components/settings/BrowserAutomationSettings';
+import {
+  BrowserAutomationSettings as BrowserAutomationSettingsComponent,
+  type BrowserAutomationSettings as BrowserAutomationSettingsConfig
+} from '@/components/settings/BrowserAutomationSettings';
 
 interface SettingsPageProps {
   onBack?: () => void;
 }
 
+const DEFAULT_BROWSER_SETTINGS: BrowserAutomationSettingsConfig = {
+  backend: 'builtin',
+  humanLikeDelays: true,
+  stealthMode: false,
+  screenshotAnnotations: true,
+  maxScreenshotWidth: 1920,
+  maxScreenshotHeight: 1080,
+};
+
 export function SettingsPage({ onBack }: SettingsPageProps) {
+  const [browserSettings, setBrowserSettings] = useState<BrowserAutomationSettingsConfig>(DEFAULT_BROWSER_SETTINGS);
+
+  // Load settings from Chrome storage on mount
+  useEffect(() => {
+    chrome.storage.local.get(['browserAutomationSettings'], (result) => {
+      if (result.browserAutomationSettings) {
+        setBrowserSettings({ ...DEFAULT_BROWSER_SETTINGS, ...result.browserAutomationSettings });
+      }
+    });
+  }, []);
+
+  // Save settings to Chrome storage when they change
+  const handleSettingsChange = (newSettings: BrowserAutomationSettingsConfig) => {
+    setBrowserSettings(newSettings);
+    chrome.storage.local.set({ browserAutomationSettings: newSettings });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -35,10 +65,13 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           </div>
         </div>
       </div>
-      
+
       <div className="p-4 space-y-6">
         <MultiProviderManager />
-        <BrowserAutomationSettings />
+        <BrowserAutomationSettingsComponent
+          settings={browserSettings}
+          onSettingsChange={handleSettingsChange}
+        />
       </div>
     </div>
   );

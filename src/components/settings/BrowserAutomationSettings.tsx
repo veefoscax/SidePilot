@@ -7,7 +7,7 @@
  * - Browser-Use Native Backend
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,16 +16,16 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  RocketIcon, 
-  CloudIcon, 
-  CodeIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  InfoIcon,
-  DownloadIcon,
-  ExternalLinkIcon
-} from '@hugeicons/react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  Rocket01Icon,
+  AiCloud01Icon,
+  SourceCodeIcon,
+  CheckmarkCircle02Icon,
+  Alert02Icon,
+  InformationCircleIcon,
+  Download01Icon
+} from '@hugeicons/core-free-icons';
 import { BrowserUseClient } from '@/lib/browser-use-client';
 import { NativeHostClient } from '@/lib/native-host-client';
 
@@ -68,7 +68,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
     try {
       const client = new BrowserUseClient({ apiKey: settings.browserUseApiKey });
       const isValid = await client.validateApiKey();
-      
+
       if (isValid) {
         setCloudStatus('success');
       } else {
@@ -93,7 +93,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
       });
 
       const result = await client.testConnection();
-      
+
       if (result.success) {
         setNativeStatus('connected');
         setNativeDetails(result.details);
@@ -121,7 +121,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
       });
 
       const success = await client.installBrowserUse();
-      
+
       if (success) {
         await checkNativeStatus();
       } else {
@@ -136,7 +136,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
   const downloadSetupScript = () => {
     const platform = navigator.platform.toLowerCase();
     let scriptPlatform: 'windows' | 'macos' | 'linux';
-    
+
     if (platform.includes('win')) {
       scriptPlatform = 'windows';
     } else if (platform.includes('mac')) {
@@ -148,7 +148,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
     const script = NativeHostClient.createInstallScript(scriptPlatform);
     const blob = new Blob([script], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    
+
     const a = document.createElement('a');
     a.href = url;
     a.download = `sidepilot-install.${scriptPlatform === 'windows' ? 'bat' : 'sh'}`;
@@ -186,7 +186,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <RocketIcon className="h-5 w-5 text-primary" />
+                <HugeiconsIcon icon={Rocket01Icon} className="h-5 w-5 text-primary" />
                 <CardTitle className="text-base">Built-in Browser Control</CardTitle>
                 <Badge variant="secondary">Recommended</Badge>
               </div>
@@ -206,37 +206,37 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Click, type, scroll, navigate</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Screenshots with annotations</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Smart element targeting</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Works offline</span>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Human-like interactions</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Network monitoring</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-yellow-500" />
                   <span>Basic stealth mode</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-red-500" />
                   <span>No file system access</span>
                 </div>
               </div>
@@ -249,7 +249,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <CloudIcon className="h-5 w-5 text-blue-500" />
+                <HugeiconsIcon icon={AiCloud01Icon} className="h-5 w-5 text-blue-500" />
                 <CardTitle className="text-base">Cloud-Powered Automation</CardTitle>
               </div>
               <Button
@@ -262,14 +262,13 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
             </div>
             <CardDescription>
               Powered by{' '}
-              <a 
-                href="https://browser-use.com" 
-                target="_blank" 
+              <a
+                href="https://browser-use.com"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline inline-flex items-center"
+                className="text-primary hover:underline"
               >
-                browser-use.com
-                <ExternalLinkIcon className="h-3 w-3 ml-1" />
+                browser-use.com ↗
               </a>
               . Advanced stealth browsers with anti-detection capabilities.
             </CardDescription>
@@ -278,29 +277,29 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Advanced stealth mode</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Sandboxed execution</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>File system access</span>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Persistent sessions</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Structured output</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Streaming responses</span>
                 </div>
               </div>
@@ -331,7 +330,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
 
               {cloudStatus === 'success' && (
                 <Alert>
-                  <CheckCircleIcon className="h-4 w-4" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4" />
                   <AlertDescription>
                     API key is valid and connection successful.
                   </AlertDescription>
@@ -340,7 +339,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
 
               {cloudStatus === 'error' && (
                 <Alert variant="destructive">
-                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
                   <AlertDescription>
                     {cloudError}
                   </AlertDescription>
@@ -349,9 +348,9 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
 
               <div className="text-sm text-muted-foreground">
                 Get your API key from{' '}
-                <a 
-                  href="https://cloud.browser-use.com" 
-                  target="_blank" 
+                <a
+                  href="https://cloud.browser-use.com"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
@@ -368,7 +367,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <CodeIcon className="h-5 w-5 text-purple-500" />
+                <HugeiconsIcon icon={SourceCodeIcon} className="h-5 w-5 text-purple-500" />
                 <CardTitle className="text-base">Local Python Backend</CardTitle>
               </div>
               <Button
@@ -387,29 +386,29 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Full stealth mode</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>File system access</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Custom skills</span>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Headless/headed mode</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Browser profiles</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                   <span>Parallel execution</span>
                 </div>
               </div>
@@ -424,19 +423,19 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
                 <div className="flex items-center space-x-2">
                   {nativeStatus === 'connected' && (
                     <Badge variant="default" className="bg-green-500">
-                      <CheckCircleIcon className="h-3 w-3 mr-1" />
+                      <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-3 w-3 mr-1" />
                       Connected
                     </Badge>
                   )}
                   {nativeStatus === 'not-installed' && (
                     <Badge variant="destructive">
-                      <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
+                      <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 mr-1" />
                       Setup Required
                     </Badge>
                   )}
                   {nativeStatus === 'error' && (
                     <Badge variant="destructive">
-                      <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
+                      <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 mr-1" />
                       Error
                     </Badge>
                   )}
@@ -465,7 +464,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
               {nativeStatus === 'not-installed' && (
                 <div className="space-y-3">
                   <Alert>
-                    <InfoIcon className="h-4 w-4" />
+                    <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4" />
                     <AlertDescription>
                       Python 3.11+ and browser-use library required. Choose setup method:
                     </AlertDescription>
@@ -476,20 +475,18 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
                       variant="outline"
                       onClick={() => window.open('https://docs.browser-use.com/quickstart', '_blank')}
                     >
-                      <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                      Setup Guide
+                      Setup Guide ↗
                     </Button>
                     <Button
                       variant="outline"
                       onClick={downloadSetupScript}
                     >
-                      <DownloadIcon className="h-4 w-4 mr-2" />
+                      <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" />
                       Download Script
                     </Button>
                     {settings.autoInstall && (
                       <Button
                         onClick={installNative}
-                        disabled={nativeStatus === 'checking'}
                       >
                         Auto Install
                       </Button>
@@ -501,7 +498,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
               {/* Error Display */}
               {nativeStatus === 'error' && nativeError && (
                 <Alert variant="destructive">
-                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
                   <AlertDescription>
                     {nativeError}
                   </AlertDescription>
@@ -525,7 +522,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
                 <Switch
                   id="auto-install"
                   checked={settings.autoInstall || false}
-                  onCheckedChange={(checked) => updateSettings({ autoInstall: checked })}
+                  onCheckedChange={(checked: boolean) => updateSettings({ autoInstall: checked })}
                 />
               </div>
             </div>
@@ -543,7 +540,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
             <Switch
               id="human-delays"
               checked={settings.humanLikeDelays}
-              onCheckedChange={(checked) => updateSettings({ humanLikeDelays: checked })}
+              onCheckedChange={(checked: boolean) => updateSettings({ humanLikeDelays: checked })}
             />
           </div>
 
@@ -552,7 +549,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
             <Switch
               id="stealth-mode"
               checked={settings.stealthMode}
-              onCheckedChange={(checked) => updateSettings({ stealthMode: checked })}
+              onCheckedChange={(checked: boolean) => updateSettings({ stealthMode: checked })}
             />
           </div>
 
@@ -561,7 +558,7 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
             <Switch
               id="screenshot-annotations"
               checked={settings.screenshotAnnotations}
-              onCheckedChange={(checked) => updateSettings({ screenshotAnnotations: checked })}
+              onCheckedChange={(checked: boolean) => updateSettings({ screenshotAnnotations: checked })}
             />
           </div>
         </div>

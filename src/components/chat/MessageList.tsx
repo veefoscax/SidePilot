@@ -19,31 +19,31 @@ import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
 // Helper function to determine if messages should be grouped
 function shouldGroupMessages(current: Message, previous: Message): boolean {
   if (!previous) return false;
-  
+
   // Same sender
   if (current.role !== previous.role) return false;
-  
+
   // Within 2 minutes of each other
   const timeDiff = current.timestamp - previous.timestamp;
   if (timeDiff > 2 * 60 * 1000) return false; // 2 minutes
-  
+
   return true;
 }
 
 // Helper function to determine if timestamp should be shown
 function shouldShowTimestamp(current: Message, previous: Message, next: Message): boolean {
   if (!previous) return true; // First message
-  
+
   // Show timestamp if significant time gap (>5 minutes)
   const timeDiff = current.timestamp - previous.timestamp;
   if (timeDiff > 5 * 60 * 1000) return true;
-  
+
   // Show timestamp if sender changes
   if (current.role !== previous.role) return true;
-  
+
   // Show timestamp if it's the last message in a group
   if (!next || !shouldGroupMessages(next, current)) return true;
-  
+
   return false;
 }
 
@@ -64,10 +64,10 @@ export function MessageList() {
   // Check if user has scrolled away from bottom
   const handleScroll = () => {
     if (!containerRef.current) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
     const isAtBottom = scrollHeight - scrollTop - clientHeight < 50; // 50px threshold
-    
+
     setIsPinnedToBottom(isAtBottom);
     setShowScrollButton(!isAtBottom && messages.length > 0);
   };
@@ -81,7 +81,7 @@ export function MessageList() {
   };
 
   return (
-    <div className="flex-1 relative">
+    <div className="flex-1 min-h-0 relative overflow-hidden">
       <div
         ref={containerRef}
         onScroll={handleScroll}
@@ -106,20 +106,20 @@ export function MessageList() {
         {messages.map((message, index) => {
           const previousMessage = messages[index - 1];
           const nextMessage = messages[index + 1];
-          
+
           const isGrouped = shouldGroupMessages(message, previousMessage);
           const showTimestamp = shouldShowTimestamp(message, previousMessage, nextMessage);
 
           return (
             <div key={message.id}>
               {message.role === 'user' ? (
-                <UserMessage 
-                  message={message} 
+                <UserMessage
+                  message={message}
                   isGrouped={isGrouped}
                   showTimestamp={showTimestamp}
                 />
               ) : (
-                <AssistantMessage 
+                <AssistantMessage
                   message={message}
                   isGrouped={isGrouped}
                   showTimestamp={showTimestamp}
