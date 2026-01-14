@@ -22,27 +22,27 @@ Domain-based permission system to control which tools can execute on which websi
 
 ## Acceptance Criteria
 
-### AC1: Permission Modes
-- [ ] `always_allow` - Auto-approve all actions
-- [ ] `ask_once` - Ask first time, remember choice
-- [ ] `ask_always` - Ask every time
-- [ ] `deny` - Block all actions
+### AC1: Permission Modes ✅
+- [x] `always_allow` - Auto-approve all actions
+- [x] `ask_once` - Ask first time, remember choice
+- [x] `ask_always` - Ask every time
+- [x] `deny` - Block all actions
 
-### AC2: Permission Request
-- [ ] Show tool name being requested
-- [ ] Show action details (coordinates, text)
-- [ ] Include screenshot for click actions
-- [ ] Approve/Deny buttons
-- [ ] "Remember for this domain" checkbox
+### AC2: Permission Request ✅
+- [x] Show tool name being requested
+- [x] Show action details (coordinates, text)
+- [x] Include screenshot for click actions
+- [x] Approve/Deny buttons
+- [x] "Remember for this domain" checkbox
 
-### AC3: Domain Management
-- [ ] List all domains with rules
-- [ ] Edit/delete domain rules
-- [ ] Reset all permissions
+### AC3: Domain Management ✅
+- [x] List all domains with rules
+- [x] Edit/delete domain rules
+- [x] Reset all permissions
 
-### AC4: Storage
-- [ ] Persist permissions in chrome.storage
-- [ ] Track last used timestamp
+### AC4: Storage ✅
+- [x] Persist permissions in chrome.storage
+- [x] Track last used timestamp
 
 ## Dependencies
 - S01: Extension scaffold
