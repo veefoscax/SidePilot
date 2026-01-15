@@ -75,14 +75,14 @@ This implementation plan creates a workflow recording system that captures user 
   - Connect to shortcuts store
   - _Requirements: AC8, AC9_
 
-- [ ] 9. Integration Testing
+- [x] 9. Integration Testing
   - Test complete workflow recording flow
   - Test step editing and deletion
   - Test saving as shortcut
   - Test prompt generation quality
   - _Requirements: All_
 
-- [ ] 10. Final Checkpoint
+- [x] 10. Final Checkpoint
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
