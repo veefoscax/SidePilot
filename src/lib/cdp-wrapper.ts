@@ -352,7 +352,7 @@ export class CDPWrapper {
       for (let i = 0; i < clickCount; i++) {
         // Add slight jitter for human-like behavior
         const jitteredCoords = this.humanDelays.addJitter(x, y, 1);
-        
+
         // Mouse down
         await this.sendCommand(tabId, 'Input.dispatchMouseEvent', {
           type: 'mousePressed',
@@ -400,7 +400,7 @@ export class CDPWrapper {
         func: (elementRef) => {
           const element = window.__claudeAccessibilityTree?.getElementByRef(elementRef);
           if (!element) return null;
-          
+
           const rect = element.getBoundingClientRect();
           return {
             x: rect.left + rect.width / 2,
@@ -477,7 +477,7 @@ export class CDPWrapper {
         func: (elementRef) => {
           const element = window.__claudeAccessibilityTree?.getElementByRef(elementRef);
           if (!element) return null;
-          
+
           const rect = element.getBoundingClientRect();
           return {
             x: rect.left + rect.width / 2,
@@ -521,8 +521,8 @@ export class CDPWrapper {
 
       // Generate path for smooth drag
       const path = this.humanDelays.generateMousePath(
-        startCoords.x, startCoords.y, 
-        endCoords.x, endCoords.y, 
+        startCoords.x, startCoords.y,
+        endCoords.x, endCoords.y,
         15
       );
 
@@ -533,7 +533,7 @@ export class CDPWrapper {
           x: path[i].x,
           y: path[i].y
         });
-        
+
         // Small delay between movements
         await this.humanDelays.wait(this.humanDelays.getMouseMovementDelay());
       }
@@ -571,7 +571,7 @@ export class CDPWrapper {
           x: point.x,
           y: point.y
         });
-        
+
         await this.humanDelays.wait(this.humanDelays.getMouseMovementDelay());
       }
     } catch (error) {
@@ -599,8 +599,8 @@ export class CDPWrapper {
       // Type each character with realistic delays
       for (const char of text) {
         // Get delay for this character
-        const charDelay = typeof delay === 'number' 
-          ? delay 
+        const charDelay = typeof delay === 'number'
+          ? delay
           : this.humanDelays.getTypingDelay(char, delay);
 
         // Send the character
@@ -688,10 +688,10 @@ export class CDPWrapper {
       const modifierOrder = ['ctrlKey', 'shiftKey', 'altKey', 'metaKey'];
       for (const mod of modifierOrder) {
         if (modifiers[mod]) {
-          const keyName = mod === 'ctrlKey' ? 'Control' : 
-                         mod === 'shiftKey' ? 'Shift' :
-                         mod === 'altKey' ? 'Alt' : 'Meta';
-          
+          const keyName = mod === 'ctrlKey' ? 'Control' :
+            mod === 'shiftKey' ? 'Shift' :
+              mod === 'altKey' ? 'Alt' : 'Meta';
+
           await this.sendCommand(tabId, 'Input.dispatchKeyEvent', {
             type: 'keyDown',
             key: keyName,
@@ -720,10 +720,10 @@ export class CDPWrapper {
       // Release modifier keys (in reverse order)
       for (const mod of modifierOrder.reverse()) {
         if (modifiers[mod]) {
-          const keyName = mod === 'ctrlKey' ? 'Control' : 
-                         mod === 'shiftKey' ? 'Shift' :
-                         mod === 'altKey' ? 'Alt' : 'Meta';
-          
+          const keyName = mod === 'ctrlKey' ? 'Control' :
+            mod === 'shiftKey' ? 'Shift' :
+              mod === 'altKey' ? 'Alt' : 'Meta';
+
           await this.sendCommand(tabId, 'Input.dispatchKeyEvent', {
             type: 'keyUp',
             key: keyName
@@ -820,7 +820,7 @@ export class CDPWrapper {
       // Highlight all interactive elements
       const highlightPromises = tree.elements
         .filter((el: any) => el.ref && el.bounds)
-        .map((el: any) => 
+        .map((el: any) =>
           this.elementRefs.highlightElement(tabId, el.ref, {
             color: '#00ff00',
             width: 2,
@@ -981,7 +981,7 @@ export class CDPWrapper {
       try {
         // Check if it's a ref ID or description
         const isRef = refOrDescription.startsWith('element_');
-        
+
         if (isRef) {
           // Check by reference ID
           const element = this.elementRefs.getElement(tabId, refOrDescription);
@@ -992,15 +992,15 @@ export class CDPWrapper {
               func: (elementRef) => {
                 const el = window.__claudeAccessibilityTree?.getElementByRef(elementRef);
                 if (!el) return false;
-                
+
                 const rect = el.getBoundingClientRect();
                 const style = window.getComputedStyle(el);
-                
-                return rect.width > 0 && 
-                       rect.height > 0 && 
-                       style.visibility !== 'hidden' && 
-                       style.display !== 'none' &&
-                       parseFloat(style.opacity) > 0;
+
+                return rect.width > 0 &&
+                  rect.height > 0 &&
+                  style.visibility !== 'hidden' &&
+                  style.display !== 'none' &&
+                  parseFloat(style.opacity) > 0;
               },
               args: [refOrDescription]
             });
@@ -1082,7 +1082,7 @@ export class CDPWrapper {
       // Listen for network events
       const handleNetworkEvent = (source: any, method: string, params: any) => {
         if (source.tabId === tabId && (
-          method === 'Network.requestWillBeSent' || 
+          method === 'Network.requestWillBeSent' ||
           method === 'Network.responseReceived'
         )) {
           lastNetworkActivity = Date.now();
@@ -1131,11 +1131,11 @@ export class CDPWrapper {
 
             const rect = element.getBoundingClientRect();
             const style = window.getComputedStyle(element);
-            
-            return rect.width > 0 && 
-                   rect.height > 0 && 
-                   style.visibility !== 'hidden' && 
-                   style.display !== 'none';
+
+            return rect.width > 0 &&
+              rect.height > 0 &&
+              style.visibility !== 'hidden' &&
+              style.display !== 'none';
           },
           args: [selector]
         });
@@ -1260,60 +1260,6 @@ export class CDPWrapper {
   }
 
   /**
-   * Insert text instantly (like paste)
-   */
-  async insertText(tabId: number, text: string): Promise<void> {
-    try {
-      await this.sendCommand(tabId, 'Input.insertText', {
-        text
-      });
-    } catch (error) {
-      console.error(`Failed to insert text "${text}" on tab ${tabId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Scroll to top of page
-   */
-  async scrollToTop(tabId: number): Promise<void> {
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        func: () => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      });
-
-      // Wait for scroll to complete
-      await this.humanDelays.wait(500);
-    } catch (error) {
-      console.error(`Failed to scroll to top on tab ${tabId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Scroll to bottom of page
-   */
-  async scrollToBottom(tabId: number): Promise<void> {
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        func: () => {
-          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
-      });
-
-      // Wait for scroll to complete
-      await this.humanDelays.wait(500);
-    } catch (error) {
-      console.error(`Failed to scroll to bottom on tab ${tabId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
    * Wait for text to appear on page
    */
   async waitForText(tabId: number, text: string, options: WaitOptions = {}): Promise<void> {
@@ -1381,7 +1327,7 @@ export class CDPWrapper {
   async setExtraHeaders(tabId: number, headers: Record<string, string>): Promise<void> {
     try {
       await this.ensureAttached(tabId);
-      
+
       await this.sendCommand(tabId, 'Network.setExtraHTTPHeaders', {
         headers
       });
@@ -1406,7 +1352,7 @@ export class CDPWrapper {
   }): Promise<void> {
     try {
       await this.ensureAttached(tabId);
-      
+
       await this.sendCommand(tabId, 'Network.setCookie', cookie);
 
     } catch (error) {
@@ -1421,7 +1367,7 @@ export class CDPWrapper {
   async getCookies(tabId: number): Promise<any[]> {
     try {
       await this.ensureAttached(tabId);
-      
+
       const result = await this.sendCommand(tabId, 'Network.getCookies');
       return result.cookies || [];
 
@@ -1437,7 +1383,7 @@ export class CDPWrapper {
   async clearCookies(tabId: number): Promise<void> {
     try {
       await this.ensureAttached(tabId);
-      
+
       await this.sendCommand(tabId, 'Network.clearBrowserCookies');
 
     } catch (error) {
@@ -1529,7 +1475,7 @@ export class CDPWrapper {
     try {
       // Click on the input to focus it
       await this.clickElement(tabId, ref);
-      
+
       // Clear existing text if requested
       if (options.clear) {
         await this.pressKeyChord(tabId, 'Ctrl+A');
@@ -1589,7 +1535,7 @@ export class CDPWrapper {
           }
 
           const select = element as HTMLSelectElement;
-          
+
           // Try to select by value first, then by text
           if (typeof optionValue === 'string') {
             // Select by value
@@ -1810,7 +1756,7 @@ export class CDPWrapper {
   async evaluate(tabId: number, code: string, options: { returnByValue?: boolean } = {}): Promise<any> {
     try {
       await this.ensureAttached(tabId);
-      
+
       const result = await this.sendCommand(tabId, 'Runtime.evaluate', {
         expression: code,
         returnByValue: options.returnByValue || false,
@@ -1837,7 +1783,7 @@ export class CDPWrapper {
       const functionString = func.toString();
       const argsString = JSON.stringify(args);
       const code = `(${functionString}).apply(null, ${argsString})`;
-      
+
       return await this.evaluate(tabId, code, { returnByValue: true });
 
     } catch (error) {
@@ -2003,7 +1949,7 @@ export class CDPWrapper {
   async setViewport(tabId: number, width: number, height: number, deviceScaleFactor: number = 1): Promise<void> {
     try {
       await this.ensureAttached(tabId);
-      
+
       await this.sendCommand(tabId, 'Emulation.setDeviceMetricsOverride', {
         width,
         height,
@@ -2023,7 +1969,7 @@ export class CDPWrapper {
   async setUserAgent(tabId: number, userAgent: string): Promise<void> {
     try {
       await this.ensureAttached(tabId);
-      
+
       await this.sendCommand(tabId, 'Emulation.setUserAgentOverride', {
         userAgent
       });
@@ -2040,7 +1986,7 @@ export class CDPWrapper {
   async setGeolocation(tabId: number, latitude: number, longitude: number): Promise<void> {
     try {
       await this.ensureAttached(tabId);
-      
+
       await this.sendCommand(tabId, 'Emulation.setGeolocationOverride', {
         latitude,
         longitude,
@@ -2059,7 +2005,7 @@ export class CDPWrapper {
   async setTimezone(tabId: number, timezoneId: string): Promise<void> {
     try {
       await this.ensureAttached(tabId);
-      
+
       await this.sendCommand(tabId, 'Emulation.setTimezoneOverride', {
         timezoneId
       });
@@ -2076,7 +2022,7 @@ export class CDPWrapper {
   async setLocale(tabId: number, locale: string): Promise<void> {
     try {
       await this.ensureAttached(tabId);
-      
+
       await this.sendCommand(tabId, 'Emulation.setLocaleOverride', {
         locale
       });

@@ -13,6 +13,7 @@ import { MessageList } from '@/components/chat/MessageList';
 import { InputArea } from '@/components/chat/InputArea';
 import { ModelSelectorDropdown } from '@/components/chat/ModelSelectorDropdown';
 import { CapabilityWarnings } from '@/components/chat/CapabilityWarnings';
+import { RecordingBar } from '@/components/RecordingBar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -244,6 +245,9 @@ Always use tools when appropriate instead of just describing how to do something
 
   return (
     <div className="flex flex-col h-screen bg-background">
+      {/* Recording Bar - appears at top when recording */}
+      <RecordingBar />
+      
       {/* Header */}
       <div className="shrink-0 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur">
         <div className="flex items-center gap-3 min-w-0 flex-1">

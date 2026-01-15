@@ -23,25 +23,25 @@ Saved prompts system with / command menu, shortcut chips, and optional schedulin
 ## Acceptance Criteria
 
 ### AC1: Shortcut CRUD
-- [ ] Create shortcut with name, command, prompt
-- [ ] Edit existing shortcuts
-- [ ] Delete shortcuts
-- [ ] List all shortcuts
+- [x] Create shortcut with name, command, prompt
+- [x] Edit existing shortcuts
+- [x] Delete shortcuts
+- [x] List all shortcuts
 
 ### AC2: / Command Menu
-- [ ] Type / to trigger menu
-- [ ] Autocomplete filtering
-- [ ] Groups: system, shortcuts, actions
-- [ ] Keyboard navigation
+- [x] Type / to trigger menu
+- [x] Autocomplete filtering
+- [x] Groups: system, shortcuts, actions
+- [x] Keyboard navigation
 
 ### AC3: Shortcut Chips
-- [ ] Syntax: `[[shortcut:id:name]]`
-- [ ] Render as clickable chip in chat
-- [ ] Click to expand prompt content
+- [x] Syntax: `[[shortcut:id:name]]`
+- [x] Render as clickable chip in chat
+- [x] Click to expand prompt content
 
 ### AC4: Usage Tracking
-- [ ] Count uses per shortcut
-- [ ] Sort by most used
+- [x] Count uses per shortcut
+- [x] Sort by most used
 
 ## Dependencies
 - S04: Chat interface

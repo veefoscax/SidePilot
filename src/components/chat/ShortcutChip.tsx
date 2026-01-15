@@ -25,7 +25,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Code01Icon } from '@hugeicons/core-free-icons';
+import { SourceCodeIcon } from '@hugeicons/core-free-icons';
 import { useShortcutsStore } from '@/stores/shortcuts';
 import { SHORTCUT_CHIP_REGEX } from '@/lib/shortcuts';
 import {
@@ -62,7 +62,7 @@ export function ShortcutChip({ id, name }: ShortcutChipProps) {
             onClick={() => setIsOpen(!isOpen)}
             data-testid={`shortcut-chip-${id}`}
           >
-            <HugeiconsIcon icon={Code01Icon} className="w-3 h-3" />
+            <HugeiconsIcon icon={SourceCodeIcon} className="w-3 h-3" />
             /{name}
           </span>
         </TooltipTrigger>
@@ -108,33 +108,33 @@ export function ShortcutChip({ id, name }: ShortcutChipProps) {
 export function parseShortcutChips(content: string): ReactNode[] {
   const parts: ReactNode[] = [];
   let lastIndex = 0;
-  
+
   // Use replace to iterate through all matches
   content.replace(SHORTCUT_CHIP_REGEX, (match, id, name, offset) => {
     // Add text before the match
     if (offset > lastIndex) {
       parts.push(content.slice(lastIndex, offset));
     }
-    
+
     // Add the ShortcutChip component
     parts.push(<ShortcutChip key={`${id}-${offset}`} id={id} name={name} />);
-    
+
     // Update lastIndex to after this match
     lastIndex = offset + match.length;
-    
+
     return match;
   });
-  
+
   // Add any remaining text after the last match
   if (lastIndex < content.length) {
     parts.push(content.slice(lastIndex));
   }
-  
+
   // If no matches were found, return the original content
   if (parts.length === 0) {
     parts.push(content);
   }
-  
+
   return parts;
 }
 

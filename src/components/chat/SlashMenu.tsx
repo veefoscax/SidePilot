@@ -12,7 +12,6 @@ import {
   Camera01Icon,
   Navigation01Icon,
   FileSearchIcon,
-  Code01Icon,
   Bug01Icon,
   Analytics01Icon,
   Add01Icon,
@@ -54,7 +53,7 @@ const SYSTEM_ICONS: Record<string, any> = {
 export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProps) {
   const { shortcuts } = useShortcutsStore();
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-  
+
   // Build menu items from system commands, user shortcuts, and actions
   const items: SlashMenuItem[] = React.useMemo(() => {
     const systemItems: SlashMenuItem[] = [
@@ -107,7 +106,7 @@ export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProp
         keywords: 'analyze analysis performance',
       },
     ];
-    
+
     // User shortcuts
     const shortcutItems: SlashMenuItem[] = shortcuts.map(s => ({
       id: s.id,
@@ -116,7 +115,7 @@ export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProp
       groupId: 'shortcuts' as const,
       keywords: `${s.command} ${s.name || ''} ${s.prompt}`.toLowerCase(),
     }));
-    
+
     // Action items
     const actionItems: SlashMenuItem[] = [
       {
@@ -144,16 +143,16 @@ export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProp
         keywords: 'manage settings shortcuts',
       },
     ];
-    
+
     return [...systemItems, ...shortcutItems, ...actionItems];
   }, [shortcuts]);
-  
+
   // Filter items based on query
   const filteredItems = React.useMemo(() => {
     if (!query.trim()) {
       return items;
     }
-    
+
     const lowerQuery = query.toLowerCase();
     return items.filter(item => {
       const nameMatch = item.name.toLowerCase().includes(lowerQuery);
@@ -161,7 +160,7 @@ export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProp
       return nameMatch || keywordsMatch;
     });
   }, [items, query]);
-  
+
   // Group filtered items
   const groupedItems = React.useMemo(() => {
     const groups: Record<string, SlashMenuItem[]> = {
@@ -169,25 +168,25 @@ export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProp
       shortcuts: [],
       actions: [],
     };
-    
+
     filteredItems.forEach(item => {
       groups[item.groupId].push(item);
     });
-    
+
     return groups;
   }, [filteredItems]);
-  
+
   // Reset selected index when filtered items change
   React.useEffect(() => {
     setSelectedIndex(0);
   }, [filteredItems]);
-  
+
   // Keyboard navigation
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setSelectedIndex(prev =>
           prev < filteredItems.length - 1 ? prev + 1 : prev
         );
       } else if (e.key === 'ArrowUp') {
@@ -203,27 +202,27 @@ export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProp
         onClose();
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [filteredItems, selectedIndex, onSelect, onClose]);
-  
+
   // Handle item selection
   const handleSelect = (item: SlashMenuItem) => {
     onSelect(item);
   };
-  
+
   return (
     <Command className={className}>
       <CommandList>
         <CommandEmpty>No commands found.</CommandEmpty>
-        
+
         {groupedItems.system.length > 0 && (
           <CommandGroup heading="System">
             {groupedItems.system.map((item, index) => {
               const globalIndex = filteredItems.indexOf(item);
               const Icon = item.icon;
-              
+
               return (
                 <CommandItem
                   key={item.id}
@@ -239,13 +238,13 @@ export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProp
             })}
           </CommandGroup>
         )}
-        
+
         {groupedItems.shortcuts.length > 0 && (
           <CommandGroup heading="Shortcuts">
             {groupedItems.shortcuts.map((item, index) => {
               const globalIndex = filteredItems.indexOf(item);
               const shortcut = shortcuts.find(s => s.id === item.id);
-              
+
               return (
                 <CommandItem
                   key={item.id}
@@ -265,13 +264,13 @@ export function SlashMenu({ query, onSelect, onClose, className }: SlashMenuProp
             })}
           </CommandGroup>
         )}
-        
+
         {groupedItems.actions.length > 0 && (
           <CommandGroup heading="Actions">
             {groupedItems.actions.map((item, index) => {
               const globalIndex = filteredItems.indexOf(item);
               const Icon = item.icon;
-              
+
               return (
                 <CommandItem
                   key={item.id}
