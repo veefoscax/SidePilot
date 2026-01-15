@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { type Message } from '@/stores/chat';
 import { cn } from '@/lib/utils';
+import { parseShortcutChips } from './ShortcutChip';
 
 interface UserMessageProps {
   message: Message;
@@ -43,7 +44,7 @@ export function UserMessage({ message, isGrouped = false, showTimestamp = false 
           onMouseLeave={() => setIsHovered(false)}
         >
           <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-            {message.content || 'No content'}
+            {parseShortcutChips(message.content || 'No content')}
           </div>
         </div>
       </div>

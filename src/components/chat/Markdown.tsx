@@ -3,6 +3,7 @@
  * 
  * Renders markdown content with syntax highlighting for code blocks.
  * Styled for both light and dark themes with proper link handling.
+ * Supports shortcut chip rendering via [[shortcut:id:name]] syntax.
  */
 
 import ReactMarkdown from 'react-markdown';
@@ -14,6 +15,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Copy01Icon, Tick01Icon } from '@hugeicons/core-free-icons';
+import { parseShortcutChips, SHORTCUT_CHIP_REGEX } from './ShortcutChip';
 import 'katex/dist/katex.min.css';
 
 interface MarkdownProps {
@@ -58,17 +60,61 @@ export function Markdown({ content }: MarkdownProps) {
     return <div className="text-muted-foreground italic">No content</div>;
   }
 
+  // Check if content contains shortcut chips
+  const hasShortcutChips = SHORTCUT_CHIP_REGEX.test(content);
+  
+  // If content has shortcut chips, parse them and render as mixed content
+  if (hasShortcutChips) {
+    const parsedContent = parseShortcutChips(content);
+    
+    return (
+      <div className="space-y-2">
+        {parsedContent.map((part, index) => {
+          // If part is a string, render as markdown
+          if (typeof part === 'string') {
+            return (
+              <ReactMarkdown
+                key={index}
+                remarkPlugins={[remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+                components={getMarkdownComponents(isDark, copiedCode, copyToClipboard)}
+              >
+                {part}
+              </ReactMarkdown>
+            );
+          }
+          // If part is a React element (ShortcutChip), render directly
+          return <span key={index}>{part}</span>;
+        })}
+      </div>
+    );
+  }
+
+  // For content without shortcut chips, render normally
   return (
     <ReactMarkdown
       remarkPlugins={[remarkMath]}
       rehypePlugins={[rehypeKatex]}
-      components={{
+      components={getMarkdownComponents(isDark, copiedCode, copyToClipboard)}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+}
+
+// Extract markdown components configuration for reuse
+function getMarkdownComponents(
+  isDark: boolean, 
+  copiedCode: string | null, 
+  copyToClipboard: (text: string, codeId: string) => Promise<void>
+) {
+  return {
         // Code blocks with syntax highlighting and copy button
         code({ node, inline, className, children, ...props }: any) {
           const match = /language-(\w+)/.exec(className || '');
           const language = match ? match[1] : '';
           const codeContent = String(children).replace(/\n$/, '');
-          const codeId = `code-${Math.random().toString(36).substr(2, 9)}`;
+          const codeId = `code-${Math.random().toString(36).substring(2, 11)}`;
 
           if (!inline && language) {
             return (
@@ -197,9 +243,5 @@ export function Markdown({ content }: MarkdownProps) {
             {children}
           </td>
         ),
-      }}
-    >
-      {content}
-    </ReactMarkdown>
-  );
+    };
 }

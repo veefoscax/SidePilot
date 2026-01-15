@@ -15,6 +15,7 @@ import {
 import { initializeTheme } from '@/lib/theme';
 import { useChatStore } from '@/stores/chat';
 import { useMultiProviderStore } from '@/stores/multi-provider';
+import { useShortcutsStore } from '@/stores/shortcuts';
 import { toolRegistry } from '@/tools/registry';
 import { UserMessage } from '@/components/chat/UserMessage';
 import { AssistantMessage } from '@/components/chat/AssistantMessage';
@@ -65,22 +66,42 @@ function App() {
     selectedModels
   } = useMultiProviderStore();
 
+  const { 
+    loadShortcuts, 
+    initializeDefaults, 
+    isLoaded: shortcutsLoaded 
+  } = useShortcutsStore();
+
   useEffect(() => {
-    // Initialize theme detection
-    initializeTheme().then((detectedTheme) => {
-      setIsLoading(false);
-      
-      // Notify service worker of the detected theme to update icons
-      if (typeof chrome !== 'undefined' && chrome.runtime) {
-        chrome.runtime.sendMessage({
-          type: 'THEME_CHANGED',
-          payload: { theme: detectedTheme }
-        }).catch(() => {
-          // Ignore if service worker is not available
-        });
+    // Initialize theme detection and shortcuts store
+    const initializeApp = async () => {
+      try {
+        // Initialize theme detection
+        const detectedTheme = await initializeTheme();
+        
+        // Initialize shortcuts store
+        await loadShortcuts();
+        await initializeDefaults();
+        
+        setIsLoading(false);
+        
+        // Notify service worker of the detected theme to update icons
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+          chrome.runtime.sendMessage({
+            type: 'THEME_CHANGED',
+            payload: { theme: detectedTheme }
+          }).catch(() => {
+            // Ignore if service worker is not available
+          });
+        }
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+        setIsLoading(false);
       }
-    });
-  }, []);
+    };
+
+    initializeApp();
+  }, [loadShortcuts, initializeDefaults]);
 
   // Handle sending a message
   const handleSendMessage = async (content: string) => {
@@ -221,11 +242,6 @@ Always use tools when appropriate instead of just describing how to do something
             }
           })();
         }
-              toolUseId: chunk.toolCall.id,
-              error: toolError instanceof Error ? toolError.message : 'Tool execution failed',
-            });
-          }
-        }
       }
 
       // Get final reasoning from store
@@ -263,9 +279,9 @@ Always use tools when appropriate instead of just describing how to do something
   };
 
   const hasModelsAvailable = selectedModels.length > 0;
-  const canSend = input.trim().length > 0 && !isStreaming;
+  const canSend = input.trim().length > 0 && !isStreaming && shortcutsLoaded;
 
-  if (isLoading) {
+  if (isLoading || !shortcutsLoaded) {
     return (
       <div className="h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-muted-foreground">Loading SidePilot...</div>

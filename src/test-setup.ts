@@ -52,6 +52,16 @@ global.chrome = {
   }
 } as any;
 
+// Mock ResizeObserver for cmdk component
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock scrollIntoView for cmdk component
+Element.prototype.scrollIntoView = vi.fn();
+
 // Cleanup after each test
 afterEach(() => {
   cleanup();

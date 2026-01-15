@@ -6,14 +6,14 @@ This implementation plan creates a workflow recording system that captures user 
 
 ## Tasks
 
-- [ ] 1. Types and Core Definitions
+- [x] 1. Types and Core Definitions
   - Create src/lib/workflow.ts with core types
   - Define WorkflowStep interface (id, action, params, screenshot, description)
   - Define WorkflowRecording interface (id, name, steps, createdAt)
   - Define WorkflowState enum (idle, recording, editing)
   - _Requirements: AC1_
 
-- [ ] 2. Workflow Store Implementation
+- [x] 2. Workflow Store Implementation
   - Create src/stores/workflow.ts with Zustand
   - Implement startRecording to begin capture
   - Implement captureStep with automatic screenshot
@@ -24,13 +24,13 @@ This implementation plan creates a workflow recording system that captures user 
   - Add persistence to chrome.storage.local
   - _Requirements: AC2, AC3_
 
-- [ ] 2.1 Write tests for workflow store
+- [x] 2.1 Write tests for workflow store
   - Test recording lifecycle
   - Test step capture and modification
   - Test persistence
   - _Requirements: AC2_
 
-- [ ] 3. Recording Bar Component
+- [~] 3. Recording Bar Component
   - Create src/components/RecordingBar.tsx
   - Show pulsing recording indicator
   - Display current step count
@@ -39,10 +39,10 @@ This implementation plan creates a workflow recording system that captures user 
   - Position at top of side panel
   - _Requirements: AC4_
 
-- [ ] 4. Checkpoint - Test Core Recording
+- [~] 4. Checkpoint - Test Core Recording
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Step Preview Component
+- [~] 5. Step Preview Component
   - Create src/components/WorkflowStepCard.tsx
   - Show screenshot thumbnail (resized)
   - Display action description
@@ -51,7 +51,7 @@ This implementation plan creates a workflow recording system that captures user 
   - Add drag handle for reordering
   - _Requirements: AC5_
 
-- [ ] 6. Workflow Editor Modal
+- [~] 6. Workflow Editor Modal
   - Create src/components/WorkflowEditor.tsx
   - Add workflow name input
   - Display scrollable steps list
@@ -60,14 +60,14 @@ This implementation plan creates a workflow recording system that captures user 
   - Show total steps count and estimated time
   - _Requirements: AC6_
 
-- [ ] 7. Prompt Generation
+- [~] 7. Prompt Generation
   - Implement generateWorkflowPrompt utility
   - Include all step descriptions in order
   - Format for AI understanding with numbered steps
   - Add context about starting URL
   - _Requirements: AC7_
 
-- [ ] 8. Integration with System
+- [~] 8. Integration with System
   - Add "Record Workflow" to slash menu
   - Hook step capture to CDP action completions
   - Auto-capture screenshot after each action
@@ -75,14 +75,14 @@ This implementation plan creates a workflow recording system that captures user 
   - Connect to shortcuts store
   - _Requirements: AC8, AC9_
 
-- [ ] 9. Integration Testing
+- [~] 9. Integration Testing
   - Test complete workflow recording flow
   - Test step editing and deletion
   - Test saving as shortcut
   - Test prompt generation quality
   - _Requirements: All_
 
-- [ ] 10. Final Checkpoint
+- [~] 10. Final Checkpoint
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
