@@ -25,22 +25,22 @@ interface InputAreaProps {
   placeholder?: string;
 }
 
-export function InputArea({ 
-  onSend, 
-  disabled = false, 
-  placeholder = "Message..." 
+export function InputArea({
+  onSend,
+  disabled = false,
+  placeholder = "Message..."
 }: InputAreaProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { messageQueue, queueMessage, isStreaming } = useChatStore();
   const { recordUsage, getById } = useShortcutsStore();
-  
+
   // Slash menu state
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [slashQuery, setSlashQuery] = useState('');
   const [slashPosition, setSlashPosition] = useState(0);
-  
+
   // Shortcut editor state
   const [showShortcutEditor, setShowShortcutEditor] = useState(false);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
@@ -52,7 +52,7 @@ export function InputArea({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [input]);
-  
+
   // Close slash menu on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -66,31 +66,34 @@ export function InputArea({
         setShowSlashMenu(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showSlashMenu]);
-  
+
   // Detect "/" in input to show slash menu
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     const cursorPosition = e.target.selectionStart;
-    
+
     setInput(newValue);
-    
+
     // Check if user just typed "/" at the start or after a space
     if (cursorPosition > 0) {
       const charBeforeCursor = newValue[cursorPosition - 1];
       const charBeforeSlash = cursorPosition > 1 ? newValue[cursorPosition - 2] : '';
-      
+
+      console.log('[SlashMenu Debug] char:', charBeforeCursor, 'prev:', charBeforeSlash, 'pos:', cursorPosition);
+
       if (charBeforeCursor === '/' && (cursorPosition === 1 || charBeforeSlash === ' ' || charBeforeSlash === '\n')) {
+        console.log('[SlashMenu Debug] TRIGGER! Showing slash menu');
         setShowSlashMenu(true);
         setSlashPosition(cursorPosition - 1);
         setSlashQuery('');
       } else if (showSlashMenu) {
         // Update query if slash menu is open
         const textAfterSlash = newValue.slice(slashPosition + 1, cursorPosition);
-        
+
         // Close menu if user moved cursor away or deleted the slash
         if (cursorPosition <= slashPosition || newValue[slashPosition] !== '/') {
           setShowSlashMenu(false);
@@ -109,12 +112,12 @@ export function InputArea({
     if (trimmedInput) {
       // Expand shortcut chips before sending
       const expandedInput = expandShortcutChips(trimmedInput);
-      
+
       if (isStreaming) {
         // Queue the message if currently streaming
         queueMessage(expandedInput);
         setInput('');
-        
+
         // Reset textarea height
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto';
@@ -123,7 +126,7 @@ export function InputArea({
         // Send immediately if not streaming
         onSend(expandedInput);
         setInput('');
-        
+
         // Reset textarea height
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto';
@@ -131,7 +134,7 @@ export function InputArea({
       }
     }
   };
-  
+
   // Expand shortcut chips in the message
   const expandShortcutChips = (message: string): string => {
     // Replace [[shortcut:id:name]] with the actual prompt
@@ -151,31 +154,31 @@ export function InputArea({
     if (showSlashMenu && (e.key === 'Enter' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Escape')) {
       return;
     }
-    
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
-  
+
   // Handle slash menu item selection
   const handleSlashMenuSelect = (item: SlashMenuItem) => {
     if (item.action === 'chip') {
       // Insert chip at slash position
       const before = input.slice(0, slashPosition);
       const after = input.slice(textareaRef.current?.selectionStart || slashPosition);
-      
+
       // For system commands, use the item id; for shortcuts, use the shortcut id
       const shortcut = item.groupId === 'shortcuts' ? getById(item.id) : null;
       const chipId = shortcut?.id || item.id;
       const chipName = shortcut?.command || item.name.toLowerCase();
-      
+
       const chip = `[[shortcut:${chipId}:${chipName}]]`;
       const newInput = before + chip + ' ' + after;
-      
+
       setInput(newInput);
       setShowSlashMenu(false);
-      
+
       // Focus textarea and move cursor after the chip
       setTimeout(() => {
         if (textareaRef.current) {
@@ -187,7 +190,7 @@ export function InputArea({
     } else if (item.action === 'open-modal') {
       // Handle modal actions
       setShowSlashMenu(false);
-      
+
       if (item.id === 'create-shortcut') {
         setEditorMode('create');
         setShowShortcutEditor(true);
@@ -200,7 +203,7 @@ export function InputArea({
       }
     }
   };
-  
+
   // Handle slash menu close
   const handleSlashMenuClose = () => {
     setShowSlashMenu(false);
@@ -209,7 +212,7 @@ export function InputArea({
   const handleVoiceTranscript = (transcript: string) => {
     // Append voice transcript to current input
     setInput(prev => prev + (prev ? ' ' : '') + transcript);
-    
+
     // Focus textarea after voice input
     if (textareaRef.current) {
       textareaRef.current.focus();
@@ -229,9 +232,10 @@ export function InputArea({
           </Badge>
         </div>
       )}
-      
+
       <div className="relative max-w-4xl mx-auto">
         {/* Slash Menu - positioned above input */}
+        {console.log('[SlashMenu Render] showSlashMenu:', showSlashMenu, 'query:', slashQuery)}
         {showSlashMenu && (
           <div
             ref={menuRef}
@@ -244,7 +248,7 @@ export function InputArea({
             />
           </div>
         )}
-        
+
         <div className="flex gap-2 items-end">
           {/* Textarea */}
           <div className="flex-1 relative">
@@ -254,17 +258,17 @@ export function InputArea({
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder={
-                isStreaming 
-                  ? "Type to queue next message..." 
-                  : disabled 
-                    ? "AI is responding..." 
+                isStreaming
+                  ? "Type to queue next message..."
+                  : disabled
+                    ? "AI is responding..."
                     : placeholder
               }
               disabled={disabled && !isStreaming}
               className="min-h-[44px] max-h-32 resize-none pr-20"
               rows={1}
             />
-            
+
             {/* Voice controls in textarea */}
             <div className="absolute bottom-2 right-2 flex items-center gap-1">
               <VoiceControls
@@ -272,7 +276,7 @@ export function InputArea({
                 disabled={disabled && !isStreaming}
                 className="mr-1"
               />
-              
+
               {/* Character count (optional, for very long messages) */}
               {input.length > 500 && (
                 <div className="text-xs text-muted-foreground bg-background/80 px-1 rounded">
@@ -296,16 +300,16 @@ export function InputArea({
         {/* Keyboard shortcut hint */}
         <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
           <span>
-            Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to {isStreaming ? 'queue' : 'send'}, 
+            Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to {isStreaming ? 'queue' : 'send'},
             <kbd className="px-1 py-0.5 bg-muted rounded text-xs ml-1">Shift + Enter</kbd> for new line
           </span>
-          
+
           {isStreaming && (
             <span className="text-primary">AI is typing...</span>
           )}
         </div>
       </div>
-      
+
       {/* Shortcut Editor Modal */}
       <ShortcutEditor
         open={showShortcutEditor}

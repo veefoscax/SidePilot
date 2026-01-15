@@ -4,7 +4,7 @@
  * Modal dialog for editing and saving workflow recordings.
  * Displays workflow steps, allows naming, and provides options to save as shortcut or discard.
  * 
- * Validates: AC6 - Workflow editor with save/discard functionality
+ * Validates: AC6 - Workflow editor with name input, steps list, and save/discard actions
  */
 
 import * as React from 'react';
@@ -20,13 +20,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { 
+  Alert02Icon,
+  Cancel01Icon,
+  Save,
+} from '@hugeicons/core-free-icons';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { WorkflowRecording, generateWorkflowPrompt, estimateWorkflowDuration } from '@/lib/workflow';
 import { WorkflowStepCard } from '@/components/WorkflowStepCard';
 import { useWorkflowStore } from '@/stores/workflow';
 import { useShortcutsStore } from '@/stores/shortcuts';
-import { WorkflowRecording, estimateWorkflowDuration } from '@/lib/workflow';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { Alert02Icon, Save01Icon, Cancel01Icon } from '@hugeicons/core-free-icons';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface WorkflowEditorProps {
   /** Whether the dialog is open */
@@ -40,6 +44,9 @@ interface WorkflowEditorProps {
   
   /** Callback when workflow is successfully saved */
   onSuccess?: (workflowId: string) => void;
+  
+  /** Callback when workflow is discarded */
+  onDiscard?: () => void;
 }
 
 /**
@@ -50,74 +57,92 @@ function formatDuration(ms: number): string {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   
-  if (minutes > 0) {
-    return `${minutes}m ${remainingSeconds}s`;
+  if (minutes === 0) {
+    return `${seconds}s`;
   }
-  return `${seconds}s`;
+  
+  return `${minutes}m ${remainingSeconds}s`;
 }
 
 /**
- * WorkflowEditor modal component for editing and saving workflows
+ * WorkflowEditor modal component for editing and saving workflow recordings
  */
 export function WorkflowEditor({
   open,
   onOpenChange,
   workflow,
   onSuccess,
+  onDiscard,
 }: WorkflowEditorProps) {
-  const { saveWorkflow, generatePrompt } = useWorkflowStore();
+  const { saveWorkflow } = useWorkflowStore();
   const { createShortcut } = useShortcutsStore();
   
   // Form state
   const [workflowName, setWorkflowName] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
-  const [isSaving, setIsSaving] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   
   // Initialize form when workflow changes or dialog opens
   React.useEffect(() => {
     if (open && workflow) {
       setWorkflowName(workflow.name || '');
       setError(null);
-      setIsSaving(false);
+      setIsSubmitting(false);
     }
   }, [open, workflow]);
   
-  // Calculate workflow stats
-  const stepCount = workflow?.steps.length || 0;
-  const estimatedDuration = workflow ? estimateWorkflowDuration(workflow) : 0;
-  
-  /**
-   * Handle saving workflow as a shortcut
-   */
+  // Handle save as shortcut
   const handleSaveAsShortcut = async () => {
     if (!workflow) return;
     
     setError(null);
-    setIsSaving(true);
+    setIsSubmitting(true);
     
     try {
       // Validate workflow name
-      const finalName = workflowName.trim() || `Workflow ${new Date().toLocaleDateString()}`;
+      const trimmedName = workflowName.trim();
+      if (!trimmedName) {
+        setError('Please enter a workflow name');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Validate workflow has steps
+      if (workflow.steps.length === 0) {
+        setError('Cannot save workflow with no steps');
+        setIsSubmitting(false);
+        return;
+      }
       
       // Save the workflow first
-      await saveWorkflow(workflow, finalName);
+      await saveWorkflow(workflow, trimmedName);
       
-      // Generate prompt from workflow
-      const prompt = generatePrompt(workflow.id);
+      // Generate workflow prompt
+      const workflowPrompt = generateWorkflowPrompt({
+        ...workflow,
+        name: trimmedName,
+      });
       
-      // Create a shortcut command from the workflow name
-      // Convert to lowercase, replace spaces with hyphens, remove special chars
-      const command = finalName
+      // Create a shortcut with the workflow prompt
+      // Generate a command from the workflow name (lowercase, replace spaces with hyphens)
+      const command = trimmedName
         .toLowerCase()
-        .replace(/[^a-z0-9\s-_]/g, '')
-        .replace(/\s+/g, '-')
-        .substring(0, 50); // Limit length
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
       
-      // Create shortcut with the workflow prompt
+      // Ensure command is unique by appending a number if needed
+      let finalCommand = command;
+      let counter = 1;
+      const { shortcuts } = useShortcutsStore.getState();
+      while (shortcuts.some(s => s.command === finalCommand)) {
+        finalCommand = `${command}-${counter}`;
+        counter++;
+      }
+      
       await createShortcut({
-        command,
-        name: finalName,
-        prompt,
+        command: finalCommand,
+        name: trimmedName,
+        prompt: workflowPrompt,
       });
       
       // Call success callback
@@ -126,36 +151,33 @@ export function WorkflowEditor({
       // Close dialog
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save workflow');
-      console.error('Failed to save workflow as shortcut:', err);
+      console.error('Failed to save workflow:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save workflow. Please try again.');
     } finally {
-      setIsSaving(false);
+      setIsSubmitting(false);
     }
   };
   
-  /**
-   * Handle discarding the workflow
-   */
+  // Handle discard
   const handleDiscard = () => {
+    onDiscard?.();
     onOpenChange(false);
   };
   
-  // Don't render if no workflow
-  if (!workflow) {
-    return null;
-  }
+  // Calculate estimated duration
+  const estimatedDuration = workflow ? estimateWorkflowDuration(workflow) : 0;
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Edit Workflow</DialogTitle>
+          <DialogTitle>Save Workflow</DialogTitle>
           <DialogDescription>
-            Review and save your recorded workflow as a reusable shortcut.
+            Review your workflow and save it as a shortcut for easy replay.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 space-y-4 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden flex flex-col space-y-4">
           {error && (
             <Alert variant="destructive">
               <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
@@ -171,47 +193,53 @@ export function WorkflowEditor({
             <Input
               id="workflow-name"
               value={workflowName}
-              onChange={(e) => setWorkflowName(e.target.value)}
-              placeholder="Enter a name for this workflow"
-              disabled={isSaving}
+              onChange={(e) => {
+                setWorkflowName(e.target.value);
+                setError(null);
+              }}
+              placeholder="e.g., Login to Dashboard"
+              disabled={isSubmitting}
               autoComplete="off"
+              autoFocus
             />
             <p className="text-xs text-muted-foreground">
-              This name will be used for the shortcut command.
+              Give your workflow a descriptive name.
             </p>
           </div>
           
           {/* Workflow stats */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div>
-              <span className="font-medium">{stepCount}</span> step{stepCount !== 1 ? 's' : ''}
+          {workflow && (
+            <div className="flex items-center gap-4 text-sm text-muted-foreground border-y py-3">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground">{workflow.steps.length}</span>
+                <span>step{workflow.steps.length !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground">{formatDuration(estimatedDuration)}</span>
+                <span>estimated duration</span>
+              </div>
             </div>
-            <div className="h-4 w-px bg-border" />
-            <div>
-              Estimated duration: <span className="font-medium">{formatDuration(estimatedDuration)}</span>
-            </div>
-          </div>
+          )}
           
           {/* Steps list */}
-          <div className="flex-1 min-h-0">
-            <Label className="mb-2 block">Workflow Steps</Label>
-            {stepCount === 0 ? (
-              <div className="flex items-center justify-center h-32 border rounded-md bg-muted/50">
-                <p className="text-sm text-muted-foreground">No steps recorded</p>
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <Label className="mb-2">Workflow Steps</Label>
+            <ScrollArea className="flex-1 pr-4">
+              <div className="space-y-3">
+                {workflow?.steps.map((step) => (
+                  <WorkflowStepCard
+                    key={step.id}
+                    step={step}
+                    showDragHandle={false}
+                  />
+                ))}
+                {(!workflow || workflow.steps.length === 0) && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No steps recorded in this workflow.
+                  </div>
+                )}
               </div>
-            ) : (
-              <ScrollArea className="h-[400px] pr-4">
-                <div className="space-y-3">
-                  {workflow.steps.map((step) => (
-                    <WorkflowStepCard
-                      key={step.id}
-                      step={step}
-                      showDragHandle={false}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
+            </ScrollArea>
           </div>
         </div>
         
@@ -220,7 +248,7 @@ export function WorkflowEditor({
             type="button"
             variant="outline"
             onClick={handleDiscard}
-            disabled={isSaving}
+            disabled={isSubmitting}
           >
             <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4 mr-2" />
             Discard
@@ -228,10 +256,10 @@ export function WorkflowEditor({
           <Button
             type="button"
             onClick={handleSaveAsShortcut}
-            disabled={isSaving || stepCount === 0}
+            disabled={isSubmitting || !workflowName.trim() || !workflow || workflow.steps.length === 0}
           >
-            <HugeiconsIcon icon={Save01Icon} className="h-4 w-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save as Shortcut'}
+            <HugeiconsIcon icon={Save} className="h-4 w-4 mr-2" />
+            {isSubmitting ? 'Saving...' : 'Save as Shortcut'}
           </Button>
         </DialogFooter>
       </DialogContent>

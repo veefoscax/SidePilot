@@ -51,7 +51,7 @@ This implementation plan creates a workflow recording system that captures user 
   - Add drag handle for reordering
   - _Requirements: AC5_
 
-- [ ] 6. Workflow Editor Modal
+- [x] 6. Workflow Editor Modal
   - Create src/components/WorkflowEditor.tsx
   - Add workflow name input
   - Display scrollable steps list
@@ -60,14 +60,14 @@ This implementation plan creates a workflow recording system that captures user 
   - Show total steps count and estimated time
   - _Requirements: AC6_
 
-- [ ] 7. Prompt Generation
+- [x] 7. Prompt Generation
   - Implement generateWorkflowPrompt utility
   - Include all step descriptions in order
   - Format for AI understanding with numbered steps
   - Add context about starting URL
   - _Requirements: AC7_
 
-- [ ] 8. Integration with System
+- [-] 8. Integration with System
   - Add "Record Workflow" to slash menu
   - Hook step capture to CDP action completions
   - Auto-capture screenshot after each action

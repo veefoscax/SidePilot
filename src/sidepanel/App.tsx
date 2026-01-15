@@ -5,9 +5,9 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Card } from '@/components/ui/card';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { 
-  Settings01Icon, 
-  Add01Icon, 
+import {
+  Settings01Icon,
+  Add01Icon,
   ArrowUp02Icon,
   StopIcon,
   BookOpen01Icon
@@ -19,6 +19,7 @@ import { useShortcutsStore } from '@/stores/shortcuts';
 import { toolRegistry } from '@/tools/registry';
 import { UserMessage } from '@/components/chat/UserMessage';
 import { AssistantMessage } from '@/components/chat/AssistantMessage';
+import { InputArea } from '@/components/chat/InputArea';
 import { ThinkingIndicator } from '@/components/chat/ThinkingIndicator';
 import { ErrorCard } from '@/components/chat/ErrorCard';
 import { ModelSelectorDropdown } from '@/components/chat/ModelSelectorDropdown';
@@ -44,32 +45,32 @@ function App() {
     maxScreenshotHeight: 1080
   });
 
-  const { 
-    messages, 
-    isStreaming, 
+  const {
+    messages,
+    isStreaming,
     streamingContent,
     streamingReasoning,
     error,
-    addUserMessage, 
-    startStreaming, 
+    addUserMessage,
+    startStreaming,
     appendStreamContent,
     appendStreamReasoning,
-    endStreaming, 
+    endStreaming,
     setError,
     clearMessages,
     addToolResult
   } = useChatStore();
 
-  const { 
+  const {
     getCurrentProvider,
     getCurrentProviderInstance,
     selectedModels
   } = useMultiProviderStore();
 
-  const { 
-    loadShortcuts, 
-    initializeDefaults, 
-    isLoaded: shortcutsLoaded 
+  const {
+    loadShortcuts,
+    initializeDefaults,
+    isLoaded: shortcutsLoaded
   } = useShortcutsStore();
 
   useEffect(() => {
@@ -78,13 +79,13 @@ function App() {
       try {
         // Initialize theme detection
         const detectedTheme = await initializeTheme();
-        
+
         // Initialize shortcuts store
         await loadShortcuts();
         await initializeDefaults();
-        
+
         setIsLoading(false);
-        
+
         // Notify service worker of the detected theme to update icons
         if (typeof chrome !== 'undefined' && chrome.runtime) {
           chrome.runtime.sendMessage({
@@ -107,7 +108,7 @@ function App() {
   const handleSendMessage = async (content: string) => {
     const currentProvider = getCurrentProvider();
     const activeProviderInstance = getCurrentProviderInstance();
-    
+
     if (!currentProvider || !activeProviderInstance) {
       setError('No active model selected. Please configure a provider in Settings.');
       return;
@@ -181,7 +182,7 @@ Always use tools when appropriate instead of just describing how to do something
         } else if (chunk.type === 'tool_use' && chunk.toolCall) {
           // Handle tool calls
           console.log('🔧 Tool call received:', chunk.toolCall);
-          
+
           // Add tool call to the list with pending status
           const toolCall = {
             id: chunk.toolCall.id,
@@ -195,7 +196,7 @@ Always use tools when appropriate instead of just describing how to do something
           (async () => {
             try {
               console.log('🔧 Executing tool:', chunk.toolCall.name, 'with input:', chunk.toolCall.input);
-              
+
               // Update status to executing
               const toolCallIndex = toolCalls.findIndex(tc => tc.id === chunk.toolCall.id);
               if (toolCallIndex !== -1) {
@@ -204,7 +205,7 @@ Always use tools when appropriate instead of just describing how to do something
 
               // Execute the tool with current tab context
               const result = await toolRegistry.execute(chunk.toolCall.name, chunk.toolCall.input);
-              
+
               console.log('🔧 Tool execution result:', result);
 
               // Check if permission is required
@@ -293,7 +294,7 @@ Always use tools when appropriate instead of just describing how to do something
     <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden">
       <Toaster position="top-center" richColors />
       <ConnectedPermissionDialog />
-      
+
       {/* Header - Fixed */}
       <div className="h-12 flex items-center justify-between px-4 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         {/* Left: Model selector */}
@@ -328,7 +329,7 @@ Always use tools when appropriate instead of just describing how to do something
           >
             <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" />
           </Button>
-          
+
           <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -342,7 +343,7 @@ Always use tools when appropriate instead of just describing how to do something
               <div className="mt-6 space-y-6">
                 <MultiProviderManager />
                 <Separator />
-                <BrowserAutomationSettings 
+                <BrowserAutomationSettings
                   settings={browserSettings}
                   onSettingsChange={setBrowserSettings}
                 />
@@ -371,22 +372,22 @@ Always use tools when appropriate instead of just describing how to do something
                       Choose a suggestion below or type your own message
                     </p>
                   </div>
-                  
+
                   {/* Suggestion chips */}
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       "Summarize this page",
-                      "Find information", 
+                      "Find information",
                       "Extract data",
                       "Automate task"
                     ].map((suggestion) => (
-                      <Card 
+                      <Card
                         key={suggestion}
                         className="p-3 cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => handleSuggestionClick(suggestion)}
                       >
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="w-full h-auto p-0 border-none bg-transparent hover:bg-transparent text-sm"
                         >
                           {suggestion}
@@ -398,7 +399,7 @@ Always use tools when appropriate instead of just describing how to do something
                   {!hasModelsAvailable && (
                     <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
                       <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                        No models configured. 
+                        No models configured.
                         <Button
                           variant="link"
                           size="sm"
@@ -418,13 +419,13 @@ Always use tools when appropriate instead of just describing how to do something
             {messages.map((message, index) => {
               const previousMessage = messages[index - 1];
               const nextMessage = messages[index + 1];
-              
+
               // Simple grouping logic
-              const isGrouped = previousMessage && 
-                previousMessage.role === message.role && 
+              const isGrouped = previousMessage &&
+                previousMessage.role === message.role &&
                 (message.timestamp - previousMessage.timestamp) < 2 * 60 * 1000;
-              
-              const showTimestamp = !previousMessage || 
+
+              const showTimestamp = !previousMessage ||
                 previousMessage.role !== message.role ||
                 (message.timestamp - previousMessage.timestamp) > 5 * 60 * 1000 ||
                 (!nextMessage || nextMessage.role !== message.role);
@@ -432,13 +433,13 @@ Always use tools when appropriate instead of just describing how to do something
               return (
                 <div key={message.id} className="mb-4">
                   {message.role === 'user' ? (
-                    <UserMessage 
-                      message={message} 
+                    <UserMessage
+                      message={message}
                       isGrouped={isGrouped}
                       showTimestamp={showTimestamp}
                     />
                   ) : (
-                    <AssistantMessage 
+                    <AssistantMessage
                       message={message}
                       isGrouped={isGrouped}
                       showTimestamp={showTimestamp}
@@ -451,7 +452,7 @@ Always use tools when appropriate instead of just describing how to do something
             {/* Streaming message */}
             {isStreaming && streamingContent && (
               <div className="mb-4">
-                <AssistantMessage 
+                <AssistantMessage
                   message={{
                     id: 'streaming',
                     role: 'assistant',
@@ -470,7 +471,7 @@ Always use tools when appropriate instead of just describing how to do something
             {isStreaming && !streamingContent && (
               <div className="mb-4">
                 {streamingReasoning ? (
-                  <AssistantMessage 
+                  <AssistantMessage
                     message={{
                       id: 'thinking',
                       role: 'assistant',
@@ -499,38 +500,18 @@ Always use tools when appropriate instead of just describing how to do something
       </div>
 
       {/* Input Area - Fixed at bottom */}
-      <div className="p-4 shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky bottom-0 z-10">
-        <div className="flex gap-2 items-end">
-          <div className="flex-1">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                !hasModelsAvailable 
-                  ? "Configure a provider to start chatting..." 
-                  : isStreaming 
-                    ? "AI is responding..." 
-                    : "Message SidePilot..."
-              }
-              disabled={isStreaming || !hasModelsAvailable}
-              className="min-h-[44px] max-h-32 resize-none"
-              rows={1}
-            />
-          </div>
-          
-          <Button
-            size="icon"
-            onClick={isStreaming ? () => {} : handleSend}
-            disabled={!canSend && !isStreaming}
-            className="h-11 w-11 shrink-0"
-          >
-            <HugeiconsIcon 
-              icon={isStreaming ? StopIcon : ArrowUp02Icon} 
-              className="h-4 w-4" 
-            />
-          </Button>
-        </div>
+      <div className="shrink-0">
+        <InputArea
+          onSend={handleSendMessage}
+          disabled={isStreaming || !hasModelsAvailable}
+          placeholder={
+            !hasModelsAvailable
+              ? "Configure a provider to start chatting..."
+              : isStreaming
+                ? "AI is responding..."
+                : "Message SidePilot..."
+          }
+        />
       </div>
     </div>
   );
