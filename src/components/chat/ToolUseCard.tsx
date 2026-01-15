@@ -2,7 +2,7 @@
  * ToolUseCard Component
  * 
  * Displays tool usage information with expandable input/output details.
- * Shows status badges and screenshot results when available.
+ * Shows status badges, screenshot results, and retry option for errors.
  */
 
 import { useState } from 'react';
@@ -17,15 +17,17 @@ import {
   Settings02Icon,
   Loading03Icon,
   CheckmarkCircle01Icon,
-  Cancel01Icon
+  Cancel01Icon,
+  RefreshIcon
 } from '@hugeicons/core-free-icons';
 
 interface ToolUseCardProps {
   toolCall: ToolCall;
   result?: ToolResult;
+  onRetry?: () => void;
 }
 
-export function ToolUseCard({ toolCall, result }: ToolUseCardProps) {
+export function ToolUseCard({ toolCall, result, onRetry }: ToolUseCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Get status badge variant and icon
@@ -113,8 +115,24 @@ export function ToolUseCard({ toolCall, result }: ToolUseCardProps) {
               <h4 className="text-xs font-medium text-muted-foreground mb-2">Output</h4>
               
               {result.error ? (
-                <div className="text-xs bg-destructive/10 text-destructive rounded p-2">
-                  {result.error}
+                <div className="space-y-2">
+                  <div className="text-xs bg-destructive/10 text-destructive rounded p-2">
+                    {result.error}
+                  </div>
+                  {onRetry && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRetry();
+                      }}
+                      className="h-7 text-xs"
+                    >
+                      <HugeiconsIcon icon={RefreshIcon} className="h-3 w-3 mr-1" />
+                      Retry
+                    </Button>
+                  )}
                 </div>
               ) : result.output ? (
                 <pre className="text-xs bg-muted/50 rounded p-2 overflow-x-auto">

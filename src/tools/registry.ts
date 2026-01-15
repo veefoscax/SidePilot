@@ -1,235 +1,199 @@
 /**
  * Tool Registry
  * 
- * Central registry for all available tools with schema conversion utilities
+ * Central registry for all browser automation tools with schema conversion
+ * for both Anthropic (Claude) and OpenAI (GPT) formats.
  */
 
-import { Tool, AnthropicTool, OpenAITool, ToolParameter } from './types';
-import { browserTools } from './browser-tools';
-import { getPermissionManager, createPermissionRequest } from '@/lib/permissions';
-import { usePermissionStore } from '@/stores/permissions';
+import type {
+  ToolDefinition,
+  ToolContext,
+  ToolResult,
+  AnthropicToolSchema,
+  OpenAIToolSchema
+} from './types';
+import { computerTool } from './computer';
+import { navigationTool } from './navigation';
+import { tabsTool } from './tabs';
+import { tabGroupsTool } from './tab-groups';
+import { pageContentTool } from './page-content';
+import { executeScriptTool } from './execute-script';
+import { networkTool } from './network';
+import { consoleTool } from './console';
+import { accessibilityTool } from './accessibility';
+import { elementSnapshotTool } from './element-snapshot';
+import { webSearchTool } from './web-search';
+import { shortcutsListTool, shortcutsExecuteTool } from './shortcuts';
+import { clipboardTool } from './clipboard';
 
 /**
- * Convert internal tool parameter to JSON schema property
+ * Tool Registry - Singleton for managing all available tools
  */
-function parameterToJsonSchema(param: ToolParameter): any {
-  const schema: any = {
-    type: param.type,
-    description: param.description
-  };
-
-  if (param.type === 'object' && param.properties) {
-    schema.properties = {};
-    for (const [key, prop] of Object.entries(param.properties)) {
-      schema.properties[key] = parameterToJsonSchema(prop);
-    }
-  }
-
-  if (param.type === 'array' && param.items) {
-    schema.items = parameterToJsonSchema(param.items);
-  }
-
-  return schema;
-}
-
-/**
- * Convert internal tool to Anthropic tool schema
- */
-export function toAnthropicTool(tool: Tool): AnthropicTool {
-  const properties: Record<string, any> = {};
-  const required: string[] = [];
-
-  for (const param of tool.parameters) {
-    properties[param.name] = parameterToJsonSchema(param);
-    if (param.required) {
-      required.push(param.name);
-    }
-  }
-
-  return {
-    name: tool.name,
-    description: tool.description,
-    input_schema: {
-      type: 'object',
-      properties,
-      required
-    }
-  };
-}
-
-/**
- * Convert internal tool to OpenAI tool schema
- */
-export function toOpenAITool(tool: Tool): OpenAITool {
-  const properties: Record<string, any> = {};
-  const required: string[] = [];
-
-  for (const param of tool.parameters) {
-    properties[param.name] = parameterToJsonSchema(param);
-    if (param.required) {
-      required.push(param.name);
-    }
-  }
-
-  return {
-    type: 'function',
-    function: {
-      name: tool.name,
-      description: tool.description,
-      parameters: {
-        type: 'object',
-        properties,
-        required
-      }
-    }
-  };
-}
-
-/**
- * Tool Registry Class
- */
-export class ToolRegistry {
-  private tools: Map<string, Tool> = new Map();
+class ToolRegistry {
+  private tools: Map<string, ToolDefinition> = new Map();
 
   constructor() {
-    // Register browser tools
-    for (const tool of browserTools) {
-      this.register(tool);
-    }
+    // Register all tools on initialization
+    this.registerTool(computerTool);
+    this.registerTool(navigationTool);
+    this.registerTool(tabsTool);
+    this.registerTool(tabGroupsTool);
+    this.registerTool(pageContentTool);
+    this.registerTool(executeScriptTool);
+    this.registerTool(networkTool);
+    this.registerTool(consoleTool);
+    this.registerTool(accessibilityTool);
+    this.registerTool(elementSnapshotTool);
+    this.registerTool(webSearchTool);
+    this.registerTool(shortcutsListTool);
+    this.registerTool(shortcutsExecuteTool);
+    this.registerTool(clipboardTool);
   }
 
   /**
-   * Register a new tool
+   * Register a new tool dynamically
    */
-  register(tool: Tool): void {
+  registerTool(tool: ToolDefinition): void {
     this.tools.set(tool.name, tool);
-  }
-
-  /**
-   * Get a tool by name
-   */
-  get(name: string): Tool | undefined {
-    return this.tools.get(name);
   }
 
   /**
    * Get all registered tools
    */
-  getAll(): Tool[] {
+  getAllTools(): ToolDefinition[] {
     return Array.from(this.tools.values());
   }
 
   /**
-   * Execute a tool by name with permission checking
+   * Get a specific tool by name
+   */
+  getTool(name: string): ToolDefinition | undefined {
+    return this.tools.get(name);
+  }
+
+  /**
+   * Get all tools in Anthropic (Claude) schema format
+   */
+  getAnthropicSchemas(): AnthropicToolSchema[] {
+    return this.getAllTools().map(tool => tool.toAnthropicSchema());
+  }
+
+  /**
+   * Get all tools in OpenAI (GPT) schema format
+   */
+  getOpenAISchemas(): OpenAIToolSchema[] {
+    return this.getAllTools().map(tool => tool.toOpenAISchema());
+  }
+
+  /**
+   * Convenience method: Get Anthropic tools (alias for getAnthropicSchemas)
+   */
+  getAnthropicTools(): AnthropicToolSchema[] {
+    return this.getAnthropicSchemas();
+  }
+
+  /**
+   * Convenience method: Get OpenAI tools (alias for getOpenAISchemas)
+   */
+  getOpenAITools(): OpenAIToolSchema[] {
+    return this.getOpenAISchemas();
+  }
+
+  /**
+   * Convenience method: Execute a tool (alias for executeTool)
    * 
    * @param name - Tool name to execute
-   * @param params - Tool parameters
-   * @returns Promise that resolves when tool execution completes (or permission is granted)
-   * @throws Error if tool not found or permission denied
+   * @param input - Tool input parameters
+   * @param context - Optional execution context (if not provided, will use current tab)
+   * @returns Tool execution result
    */
-  async execute(name: string, params: Record<string, any>): Promise<any> {
-    const tool = this.tools.get(name);
+  async execute(
+    name: string,
+    input: any,
+    context?: Partial<ToolContext>
+  ): Promise<ToolResult> {
+    // If context is not provided, get current tab info
+    if (!context || !context.tabId || !context.url || !context.permissionManager) {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab || !tab.id || !tab.url) {
+          return { error: 'No active tab found' };
+        }
+
+        const { PermissionManager } = await import('@/lib/permissions');
+        const permissionManager = PermissionManager.getInstance();
+
+        const fullContext: ToolContext = {
+          tabId: tab.id,
+          url: tab.url,
+          permissionManager,
+          ...context
+        };
+
+        return this.executeTool(name, input, fullContext);
+      } catch (error) {
+        return {
+          error: error instanceof Error ? error.message : 'Failed to get tab context'
+        };
+      }
+    }
+
+    // Context provided, use it
+    return this.executeTool(name, input, context as ToolContext);
+  }
+
+  /**
+   * Execute a tool with permission checking
+   * 
+   * @param name - Tool name to execute
+   * @param input - Tool input parameters
+   * @param context - Execution context with tab info and permission manager
+   * @returns Tool execution result
+   */
+  async executeTool(
+    name: string,
+    input: any,
+    context: ToolContext
+  ): Promise<ToolResult> {
+    const tool = this.getTool(name);
+    
     if (!tool) {
-      throw new Error(`Tool not found: ${name}`);
+      return { error: `Unknown tool: ${name}` };
     }
 
-    // Get current tab URL for permission checking
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const currentTab = tabs[0];
-    
-    if (!currentTab?.url) {
-      throw new Error('No active tab found for permission check');
+    // Check permission before execution
+    const permission = await context.permissionManager.checkPermission(
+      context.url,
+      name
+    );
+
+    if (!permission.allowed && !permission.needsPrompt) {
+      return { error: 'Permission denied for this action' };
     }
 
-    // Check permission
-    const permissionManager = getPermissionManager();
-    const permissionResult = await permissionManager.checkPermission(currentTab.url, name);
-
-    if (permissionResult.allowed) {
-      // Permission granted, execute immediately
-      return await tool.execute(params);
+    if (permission.needsPrompt) {
+      // Return permission request for UI to handle
+      return {
+        error: 'PERMISSION_REQUIRED',
+        output: JSON.stringify({
+          type: 'permission_required',
+          tool: name,
+          url: context.url,
+          toolUseId: context.toolUseId
+        })
+      };
     }
 
-    if (!permissionResult.needsPrompt) {
-      // Permission explicitly denied
-      throw new Error(`Permission denied for tool "${name}" on this domain`);
+    // Permission granted, execute the tool
+    try {
+      return await tool.execute(input, context);
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
     }
-
-    // Need to prompt user for permission
-    // Create permission request with action data
-    const actionData: any = {};
-    
-    // Add action-specific data for display in dialog
-    if (name === 'computer' && params.action === 'mouse_move') {
-      // For click actions, include the coordinate
-      actionData.coordinate = [params.coordinate?.[0] || 0, params.coordinate?.[1] || 0];
-    } else if (name === 'computer' && params.action === 'type') {
-      // For type actions, include the text being typed
-      actionData.text = params.text || '';
-    }
-
-    const request = createPermissionRequest(name, currentTab.url, actionData);
-
-    // Show the permission dialog and wait for user response
-    const store = usePermissionStore.getState();
-    store.setPendingRequest(request);
-
-    // Wait for the user to approve or deny
-    return new Promise((resolve, reject) => {
-      // Set up an interval to check if the request has been resolved
-      const checkInterval = setInterval(() => {
-        const currentState = usePermissionStore.getState();
-        
-        // Check if the pending request has been cleared (approved or denied)
-        if (currentState.pendingRequest?.id !== request.id) {
-          clearInterval(checkInterval);
-          
-          // Check if there's an error (denial)
-          if (currentState.error) {
-            reject(new Error(`Permission denied for tool "${name}"`));
-            return;
-          }
-          
-          // Permission was approved, execute the tool
-          tool.execute(params).then(resolve).catch(reject);
-        }
-      }, 100);
-
-      // Set a timeout to prevent infinite waiting
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        const currentState = usePermissionStore.getState();
-        
-        // If still pending after timeout, reject
-        if (currentState.pendingRequest?.id === request.id) {
-          currentState.setPendingRequest(null);
-          reject(new Error('Permission request timed out'));
-        }
-      }, 60000); // 60 second timeout
-    });
-  }
-
-  /**
-   * Get tools in Anthropic format
-   */
-  getAnthropicTools(): AnthropicTool[] {
-    return this.getAll().map(toAnthropicTool);
-  }
-
-  /**
-   * Get tools in OpenAI format
-   */
-  getOpenAITools(): OpenAITool[] {
-    return this.getAll().map(toOpenAITool);
-  }
-
-  /**
-   * Get tool names
-   */
-  getToolNames(): string[] {
-    return Array.from(this.tools.keys());
   }
 }
 
-// Global tool registry instance
+// Export singleton instance
 export const toolRegistry = new ToolRegistry();

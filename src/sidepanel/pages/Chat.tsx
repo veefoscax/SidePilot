@@ -150,29 +150,67 @@ Always use tools when appropriate instead of just describing how to do something
           appendStreamReasoning(reasoningContent);
         } else if (chunk.type === 'tool_use' && chunk.toolCall) {
           // Handle tool calls
-          console.log('Tool call received:', chunk.toolCall);
-          toolCalls.push({
+          console.log('🔧 Tool call received:', chunk.toolCall);
+          
+          // Add tool call to the list with pending status
+          const toolCall = {
             id: chunk.toolCall.id,
             name: chunk.toolCall.name,
             input: chunk.toolCall.input,
-            status: 'pending'
-          });
+            status: 'pending' as const
+          };
+          toolCalls.push(toolCall);
 
-          // Execute the tool
-          try {
-            const result = await toolRegistry.execute(chunk.toolCall.name, chunk.toolCall.input);
-            addToolResult(chunk.toolCall.id, {
-              toolUseId: chunk.toolCall.id,
-              output: JSON.stringify(result.data),
-              screenshot: result.screenshot,
-            });
-          } catch (toolError) {
-            console.error('Tool execution error:', toolError);
-            addToolResult(chunk.toolCall.id, {
-              toolUseId: chunk.toolCall.id,
-              error: toolError instanceof Error ? toolError.message : 'Tool execution failed',
-            });
-          }
+          // Execute the tool asynchronously
+          (async () => {
+            try {
+              console.log('🔧 Executing tool:', chunk.toolCall.name, 'with input:', chunk.toolCall.input);
+              
+              // Update status to executing
+              const toolCallIndex = toolCalls.findIndex(tc => tc.id === chunk.toolCall.id);
+              if (toolCallIndex !== -1) {
+                toolCalls[toolCallIndex].status = 'executing';
+              }
+
+              // Execute the tool with current tab context
+              const result = await toolRegistry.execute(chunk.toolCall.name, chunk.toolCall.input);
+              
+              console.log('🔧 Tool execution result:', result);
+
+              // Check if permission is required
+              if (result.error === 'PERMISSION_REQUIRED') {
+                console.log('🔧 Permission required for tool:', chunk.toolCall.name);
+                addToolResult(chunk.toolCall.id, {
+                  toolUseId: chunk.toolCall.id,
+                  error: 'Permission required. Please grant permission in the dialog and retry.',
+                  output: result.output,
+                });
+                return;
+              }
+
+              // Add the tool result
+              if (result.error) {
+                console.error('🔧 Tool execution error:', result.error);
+                addToolResult(chunk.toolCall.id, {
+                  toolUseId: chunk.toolCall.id,
+                  error: result.error,
+                });
+              } else {
+                console.log('🔧 Tool execution successful');
+                addToolResult(chunk.toolCall.id, {
+                  toolUseId: chunk.toolCall.id,
+                  output: result.output || 'Tool executed successfully',
+                  screenshot: result.screenshot,
+                });
+              }
+            } catch (toolError) {
+              console.error('🔧 Tool execution exception:', toolError);
+              addToolResult(chunk.toolCall.id, {
+                toolUseId: chunk.toolCall.id,
+                error: toolError instanceof Error ? toolError.message : 'Tool execution failed',
+              });
+            }
+          })();
         }
       }
 

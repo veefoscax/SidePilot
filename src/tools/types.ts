@@ -1,34 +1,54 @@
 /**
- * Tool System Types
- * 
- * Defines the structure for browser automation tools that can be called by LLMs
+ * Core types for browser automation tools
+ * Supports both Anthropic and OpenAI tool schemas
  */
 
+import type { PermissionManager } from '@/lib/permissions';
+
+/**
+ * Parameter definition for tool inputs
+ */
 export interface ToolParameter {
-  name: string;
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
   description: string;
-  required: boolean;
-  properties?: Record<string, ToolParameter>; // For nested objects
-  items?: ToolParameter; // For arrays
+  required?: boolean;
+  enum?: string[];
+  items?: {
+    type: string;
+  };
 }
 
-export interface Tool {
-  name: string;
-  description: string;
-  parameters: ToolParameter[];
-  execute: (params: Record<string, any>) => Promise<any>;
+/**
+ * Collection of parameters for a tool
+ */
+export interface ToolParameters {
+  [key: string]: ToolParameter;
 }
 
+/**
+ * Context provided to tool execution
+ */
+export interface ToolContext {
+  tabId: number;
+  tabGroupId?: number;
+  url: string;
+  permissionManager: PermissionManager;
+  toolUseId?: string;
+}
+
+/**
+ * Result returned from tool execution
+ */
 export interface ToolResult {
-  success: boolean;
-  data?: any;
+  output?: string;
   error?: string;
-  screenshot?: string; // Base64 encoded screenshot
+  screenshot?: string;
 }
 
-// Anthropic-compatible tool schema
-export interface AnthropicTool {
+/**
+ * Anthropic (Claude) tool schema format
+ */
+export interface AnthropicToolSchema {
   name: string;
   description: string;
   input_schema: {
@@ -38,8 +58,10 @@ export interface AnthropicTool {
   };
 }
 
-// OpenAI-compatible tool schema
-export interface OpenAITool {
+/**
+ * OpenAI (GPT) tool schema format
+ */
+export interface OpenAIToolSchema {
   type: 'function';
   function: {
     name: string;
@@ -50,4 +72,16 @@ export interface OpenAITool {
       required: string[];
     };
   };
+}
+
+/**
+ * Core tool definition interface
+ */
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  parameters: ToolParameters;
+  execute: (input: any, context: ToolContext) => Promise<ToolResult>;
+  toAnthropicSchema: () => AnthropicToolSchema;
+  toOpenAISchema: () => OpenAIToolSchema;
 }

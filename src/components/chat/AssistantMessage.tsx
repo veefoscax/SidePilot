@@ -3,10 +3,13 @@
  * 
  * Displays assistant messages with premium minimal design.
  * Left-aligned with muted background and generous spacing.
+ * Supports tool execution retry on errors.
  */
 
 import { useState } from 'react';
 import { type Message } from '@/stores/chat';
+import { toolRegistry } from '@/tools/registry';
+import { useChatStore } from '@/stores/chat';
 import { Markdown } from './Markdown';
 import { ToolUseCard } from './ToolUseCard';
 import { VoiceControls } from './VoiceControls';
@@ -27,6 +30,7 @@ export function AssistantMessage({
   showTimestamp = false 
 }: AssistantMessageProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const { addToolResult } = useChatStore();
 
   console.log('💬 AssistantMessage render:', { 
     messageId: message.id, 
@@ -39,6 +43,38 @@ export function AssistantMessage({
     // Extract plain text from markdown content for TTS
     const plainText = message.content?.replace(/[#*`_~\[\]()]/g, '') || '';
     return plainText;
+  };
+
+  // Handle tool retry
+  const handleToolRetry = async (toolCallId: string, toolName: string, toolInput: any) => {
+    console.log('🔧 Retrying tool:', toolName, 'with input:', toolInput);
+    
+    try {
+      // Execute the tool
+      const result = await toolRegistry.execute(toolName, toolInput);
+      
+      console.log('🔧 Tool retry result:', result);
+
+      // Update the tool result
+      if (result.error) {
+        addToolResult(toolCallId, {
+          toolUseId: toolCallId,
+          error: result.error,
+        });
+      } else {
+        addToolResult(toolCallId, {
+          toolUseId: toolCallId,
+          output: result.output || 'Tool executed successfully',
+          screenshot: result.screenshot,
+        });
+      }
+    } catch (error) {
+      console.error('🔧 Tool retry exception:', error);
+      addToolResult(toolCallId, {
+        toolUseId: toolCallId,
+        error: error instanceof Error ? error.message : 'Tool retry failed',
+      });
+    }
   };
 
   return (
@@ -89,6 +125,7 @@ export function AssistantMessage({
                     key={toolCall.id}
                     toolCall={toolCall}
                     result={toolResult}
+                    onRetry={() => handleToolRetry(toolCall.id, toolCall.name, toolCall.input)}
                   />
                 );
               })}

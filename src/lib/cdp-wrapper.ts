@@ -142,6 +142,14 @@ export class CDPWrapper {
   }
 
   /**
+   * Send CDP command to a tab (public method for tools)
+   */
+  async executeCDPCommand(tabId: number, method: string, params?: any): Promise<any> {
+    await this.ensureAttached(tabId);
+    return this.sendCommand(tabId, method, params);
+  }
+
+  /**
    * Send CDP command to a tab
    */
   private async sendCommand(tabId: number, method: string, params?: any): Promise<any> {
