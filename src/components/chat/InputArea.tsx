@@ -13,11 +13,15 @@ import { Badge } from '@/components/ui/badge';
 import { VoiceControls } from './VoiceControls';
 import { SlashMenu } from './SlashMenu';
 import { ShortcutEditor } from './ShortcutEditor';
+import { WorkflowEditor } from '@/components/WorkflowEditor';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRight01Icon, Clock01Icon } from '@hugeicons/core-free-icons';
 import { useChatStore } from '@/stores/chat';
 import { useShortcutsStore } from '@/stores/shortcuts';
+import { useWorkflowStore } from '@/stores/workflow';
 import { SlashMenuItem } from '@/lib/shortcuts';
+import { WorkflowRecording } from '@/lib/workflow';
+import { toast } from 'sonner';
 
 interface InputAreaProps {
   onSend: (message: string) => void;
@@ -34,7 +38,8 @@ export function InputArea({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { messageQueue, queueMessage, isStreaming } = useChatStore();
-  const { recordUsage, getById } = useShortcutsStore();
+  const { recordUsage, getById, getByCommand } = useShortcutsStore();
+  const { startRecording, stopRecording, status: workflowStatus, currentRecording } = useWorkflowStore();
 
   // Slash menu state
   const [showSlashMenu, setShowSlashMenu] = useState(false);
@@ -44,6 +49,10 @@ export function InputArea({
   // Shortcut editor state
   const [showShortcutEditor, setShowShortcutEditor] = useState(false);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
+
+  // Workflow editor state
+  const [showWorkflowEditor, setShowWorkflowEditor] = useState(false);
+  const [completedWorkflow, setCompletedWorkflow] = useState<WorkflowRecording | null>(null);
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -83,10 +92,7 @@ export function InputArea({
       const charBeforeCursor = newValue[cursorPosition - 1];
       const charBeforeSlash = cursorPosition > 1 ? newValue[cursorPosition - 2] : '';
 
-      console.log('[SlashMenu Debug] char:', charBeforeCursor, 'prev:', charBeforeSlash, 'pos:', cursorPosition);
-
       if (charBeforeCursor === '/' && (cursorPosition === 1 || charBeforeSlash === ' ' || charBeforeSlash === '\n')) {
-        console.log('[SlashMenu Debug] TRIGGER! Showing slash menu');
         setShowSlashMenu(true);
         setSlashPosition(cursorPosition - 1);
         setSlashQuery('');
@@ -111,7 +117,7 @@ export function InputArea({
     const trimmedInput = input.trim();
     if (trimmedInput) {
       // Expand shortcut chips before sending
-      const expandedInput = expandShortcutChips(trimmedInput);
+      const expandedInput = expandShortcutCommands(trimmedInput);
 
       if (isStreaming) {
         // Queue the message if currently streaming
@@ -135,15 +141,18 @@ export function InputArea({
     }
   };
 
-  // Expand shortcut chips in the message
-  const expandShortcutChips = (message: string): string => {
-    // Replace [[shortcut:id:name]] with the actual prompt
-    return message.replace(/\[\[shortcut:([^:]+):([^\]]+)\]\]/g, (match, id, name) => {
-      const shortcut = getById(id);
+  // Expand shortcut commands in the message
+  const expandShortcutCommands = (message: string): string => {
+    // Replace /command with the actual prompt
+    // Matches /word at start of string or after whitespace
+    return message.replace(/(?:^|\s)(\/[a-z0-9_-]+)/gi, (match, command) => {
+      const cmdWithoutSlash = command.slice(1).toLowerCase();
+      const shortcut = getByCommand(cmdWithoutSlash);
       if (shortcut) {
         // Record usage
-        recordUsage(id);
-        return shortcut.prompt;
+        recordUsage(shortcut.id);
+        // Preserve leading whitespace from match, replace command with prompt
+        return match.replace(command, shortcut.prompt);
       }
       return match;
     });
@@ -164,25 +173,26 @@ export function InputArea({
   // Handle slash menu item selection
   const handleSlashMenuSelect = (item: SlashMenuItem) => {
     if (item.action === 'chip') {
-      // Insert chip at slash position
+      // Insert readable command at slash position
       const before = input.slice(0, slashPosition);
       const after = input.slice(textareaRef.current?.selectionStart || slashPosition);
 
-      // For system commands, use the item id; for shortcuts, use the shortcut id
+      // For system commands, use the item id; for shortcuts, use the shortcut command
       const shortcut = item.groupId === 'shortcuts' ? getById(item.id) : null;
-      const chipId = shortcut?.id || item.id;
-      const chipName = shortcut?.command || item.name.toLowerCase();
+      const command = shortcut?.command || item.name.toLowerCase();
 
-      const chip = `[[shortcut:${chipId}:${chipName}]]`;
-      const newInput = before + chip + ' ' + after;
+      // Insert /{command} (readable) instead of chip syntax
+      // The command will be expanded to the full prompt when sent
+      const commandText = `/${command}`;
+      const newInput = before + commandText + ' ' + after;
 
       setInput(newInput);
       setShowSlashMenu(false);
 
-      // Focus textarea and move cursor after the chip
+      // Focus textarea and move cursor after the command
       setTimeout(() => {
         if (textareaRef.current) {
-          const newCursorPos = before.length + chip.length + 1;
+          const newCursorPos = before.length + commandText.length + 1;
           textareaRef.current.focus();
           textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
         }
@@ -198,9 +208,42 @@ export function InputArea({
         // TODO: Open shortcuts management (could be a settings tab)
         console.log('Manage shortcuts - TODO');
       } else if (item.id === 'record-workflow') {
-        // TODO: Open workflow recorder
-        console.log('Record workflow - TODO');
+        // Start workflow recording
+        handleStartRecording();
       }
+    }
+  };
+
+  // Handle starting workflow recording
+  const handleStartRecording = async () => {
+    try {
+      // Get the active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab || !tab.id) {
+        toast.error('No active tab found');
+        return;
+      }
+
+      // Start recording
+      await startRecording(tab.id);
+      toast.success('Recording started! Perform actions in the browser.');
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to start recording');
+    }
+  };
+
+  // Handle stopping workflow recording and opening editor
+  const handleStopRecording = async () => {
+    try {
+      const workflow = await stopRecording();
+      if (workflow) {
+        setCompletedWorkflow(workflow);
+        setShowWorkflowEditor(true);
+      }
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to stop recording');
     }
   };
 
@@ -235,7 +278,6 @@ export function InputArea({
 
       <div className="relative max-w-4xl mx-auto">
         {/* Slash Menu - positioned above input */}
-        {console.log('[SlashMenu Render] showSlashMenu:', showSlashMenu, 'query:', slashQuery)}
         {showSlashMenu && (
           <div
             ref={menuRef}
@@ -318,6 +360,20 @@ export function InputArea({
         onSuccess={() => {
           // Optionally refresh shortcuts or show success message
           console.log('Shortcut saved successfully');
+        }}
+      />
+
+      {/* Workflow Editor Modal */}
+      <WorkflowEditor
+        open={showWorkflowEditor}
+        onOpenChange={setShowWorkflowEditor}
+        workflow={completedWorkflow}
+        onSuccess={(workflowId) => {
+          toast.success('Workflow saved as shortcut!');
+          setCompletedWorkflow(null);
+        }}
+        onDiscard={() => {
+          setCompletedWorkflow(null);
         }}
       />
     </div>

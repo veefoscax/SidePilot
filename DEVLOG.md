@@ -3605,3 +3605,178 @@ Implementing a workflow recording system that captures user actions as a series 
 
 **Estimated remaining**: ~1-2 hours for tasks 8-10
 
+
+---
+
+## 2026-01-15: S08 Shortcuts System - Critical Fixes 🔧
+**Time Spent**: ~45 minutes
+**Status**: Fixed and Verified
+
+### Overview
+Debugged and fixed multiple critical issues that were preventing the S08 Shortcuts System (SlashMenu) from functioning. The menu was not appearing when typing "/" despite the implementation being complete.
+
+### Issues Found and Fixed
+
+#### 🔴 Critical Issue 1: App.tsx Not Using InputArea Component
+**Problem**: `App.tsx` had its own inline `<Textarea>` (lines 505-519) instead of using the `InputArea` component that contains the SlashMenu logic.
+
+**Root Cause**: The InputArea component with all the slash menu logic was never actually rendered - App.tsx duplicated the input inline.
+
+**Fix**: Replaced inline Textarea with InputArea component in App.tsx:
+```tsx
+// BEFORE (App.tsx lines 505-519)
+<Textarea value={input} onChange={...} onKeyDown={...} />
+
+// AFTER
+<InputArea onSend={handleSendMessage} disabled={...} placeholder={...} />
+```
+
+**Files Modified**:
+- `src/sidepanel/App.tsx` - Replaced inline Textarea with InputArea, added import
+
+---
+
+#### 🔴 Critical Issue 2: Invalid Icon Imports
+**Problem**: Build failures due to non-existent icon `Code01Icon` being imported from @hugeicons/core-free-icons.
+
+**Files Fixed**:
+| File | Line | Fix |
+|------|------|-----|
+| `src/components/chat/ShortcutChip.tsx` | 28 | `Code01Icon` → `SourceCodeIcon` |
+| `src/components/chat/SlashMenu.tsx` | 15 | Removed `Code01Icon` import (unused) |
+
+---
+
+#### 🔴 Critical Issue 3: Duplicate Class Members in CDP Wrapper
+**Problem**: Build failing with "Duplicate member in class body" errors.
+
+**Duplicates Found**:
+| Method | First Definition | Duplicate |
+|--------|------------------|-----------|
+| `scrollToTop` | Line 892 | Line 1279 |
+| `scrollToBottom` | Line 912 | Line 1299 |
+| `insertText` | Line 625 | Line 1265 |
+
+**Fix**: Removed duplicate method definitions from `src/lib/cdp-wrapper.ts` (54 lines deleted)
+
+---
+
+#### 🟡 Medium Issue 4: Ugly Chip Syntax in Input
+**Problem**: When selecting a shortcut from the menu, raw syntax `[[shortcut:navigate:navigate]]` appeared in input instead of readable format.
+
+**Fix**: Changed shortcut insertion to show `/command` format:
+```tsx
+// BEFORE
+const chip = `[[shortcut:${chipId}:${chipName}]]`;
+
+// AFTER  
+const commandText = `/${command}`;
+```
+
+**Additional Changes**:
+- Renamed `expandShortcutChips()` → `expandShortcutCommands()`
+- Changed regex to match `/command` syntax instead of chip syntax
+- Added `getByCommand` to store destructuring
+- Updated expansion logic to use command lookup
+
+---
+
+### Summary of Changes
+
+**Files Modified (6 total)**:
+
+1. **`src/sidepanel/App.tsx`**
+   - Added InputArea import
+   - Replaced 34 lines of inline Textarea with 12 lines using InputArea
+   - Fixed SlashMenu integration
+
+2. **`src/components/chat/InputArea.tsx`**
+   - Changed shortcut insertion from chip syntax to `/command` format
+   - Renamed expansion function to `expandShortcutCommands`
+   - Added `getByCommand` to store destructuring
+   - Removed debug console.log statements
+
+3. **`src/components/chat/ShortcutChip.tsx`**
+   - Fixed icon import: `Code01Icon` → `SourceCodeIcon`
+
+4. **`src/components/chat/SlashMenu.tsx`**
+   - Removed invalid `Code01Icon` import
+
+5. **`src/lib/cdp-wrapper.ts`**
+   - Removed duplicate `scrollToTop` method (Lines 1276-1294)
+   - Removed duplicate `scrollToBottom` method (Lines 1296-1314)
+   - Removed duplicate `insertText` method (Lines 1262-1274)
+   - Total: 54 lines removed
+
+### Verification
+- ✅ Build passes successfully (11.19s)
+- ✅ SlashMenu appears when typing "/"
+- ✅ Shortcuts display as readable `/command` in input
+- ✅ Commands expand to prompts when message is sent
+- ✅ No TypeScript errors
+- ✅ No duplicate class member errors
+
+### Lessons Learned
+1. **Always verify component usage**: The InputArea was beautifully implemented but never actually used in the main App.tsx
+2. **Check icon package exports**: @hugeicons/core-free-icons doesn't export all icons - verify before using
+3. **Watch for copy-paste artifacts**: Duplicate method definitions likely from copy-paste during development
+4. **UX matters**: Raw syntax `[[shortcut:id:name]]` is confusing - readable `/command` is much better
+
+
+
+### S09 Integration Fixes (Task 8 Completion)
+**Date**: 2026-01-15
+**Status**: ✅ Complete
+
+#### Issues Fixed
+
+**Issue 1: RecordingBar not in App.tsx** ✅
+- Added `RecordingBar` import to `src/sidepanel/App.tsx`
+- Added `<RecordingBar />` component after `<ConnectedPermissionDialog />`
+- Recording bar now appears at top of side panel when recording is active
+
+**Issue 2: "Record Workflow" action was just a TODO** ✅
+- Imported `useWorkflowStore` in `src/components/chat/InputArea.tsx`
+- Implemented `handleStartRecording()` function:
+  - Gets active tab using `chrome.tabs.query`
+  - Calls `startRecording(tabId)` from workflow store
+  - Shows toast notification on success/error
+- Connected to slash menu "record-workflow" action
+
+**Issue 3: WorkflowEditor not connected** ✅
+- Added `showWorkflowEditor` and `completedWorkflow` state to InputArea
+- Implemented `handleStopRecording()` function:
+  - Calls `stopRecording()` from workflow store
+  - Sets completed workflow and opens editor modal
+- Added `<WorkflowEditor />` component to InputArea JSX
+- Connected success/discard callbacks with toast notifications
+
+**Issue 4: captureStep not hooked to CDP actions** ✅
+- Added `toolInputToWorkflowAction()` helper function in `src/tools/registry.ts`
+- Maps tool inputs to WorkflowAction types:
+  - `computer` tool → click, type, key, scroll actions
+  - `navigation` tool → navigate actions
+- Modified `executeTool()` to capture steps after successful execution:
+  - Checks if workflow recording is active
+  - Converts tool input to workflow action
+  - Calls `captureStep()` asynchronously (non-blocking)
+  - Handles errors gracefully without failing tool execution
+
+#### Files Modified
+- `src/sidepanel/App.tsx` - Added RecordingBar import and render
+- `src/components/chat/InputArea.tsx` - Full workflow integration
+- `src/tools/registry.ts` - Auto-capture steps on tool execution
+
+#### Verification
+- ✅ Build succeeds without errors
+- ✅ Workflow store tests: 20/20 passing
+- ✅ RecordingBar tests: 21/21 passing
+- ✅ No TypeScript errors in modified files
+
+#### User Flow Now Working
+1. Type "/" and select "Record Workflow" → Starts recording, shows RecordingBar
+2. Perform browser actions (click, type, navigate) → Steps captured with screenshots
+3. Click "Stop Recording" in RecordingBar → Opens WorkflowEditor modal
+4. Enter workflow name and click "Save as Shortcut" → Creates shortcut with workflow prompt
+5. Workflow can be replayed by using the shortcut command
+

@@ -25,6 +25,52 @@ import { elementSnapshotTool } from './element-snapshot';
 import { webSearchTool } from './web-search';
 import { shortcutsListTool, shortcutsExecuteTool } from './shortcuts';
 import { clipboardTool } from './clipboard';
+import { useWorkflowStore } from '@/stores/workflow';
+import type { WorkflowAction } from '@/lib/workflow';
+
+/**
+ * Map tool names to workflow action types
+ */
+function toolInputToWorkflowAction(toolName: string, input: any): WorkflowAction | null {
+  switch (toolName) {
+    case 'computer':
+      if (input.action === 'click' || input.action === 'left_click' || input.action === 'right_click' || input.action === 'double_click') {
+        return {
+          type: 'click',
+          x: input.coordinate?.[0] || input.x,
+          y: input.coordinate?.[1] || input.y,
+          metadata: { action: input.action }
+        };
+      } else if (input.action === 'type') {
+        return {
+          type: 'type',
+          text: input.text,
+          metadata: { action: input.action }
+        };
+      } else if (input.action === 'key') {
+        return {
+          type: 'key',
+          key: input.text,
+          metadata: { action: input.action }
+        };
+      } else if (input.action === 'scroll') {
+        return {
+          type: 'scroll',
+          direction: input.direction || 'down',
+          metadata: { action: input.action }
+        };
+      }
+      return null;
+    case 'navigation':
+      return {
+        type: 'navigate',
+        url: input.url,
+        metadata: { action: input.action }
+      };
+    default:
+      return null;
+  }
+}
 
 /**
  * Tool Registry - Singleton for managing all available tools
@@ -186,7 +232,26 @@ class ToolRegistry {
 
     // Permission granted, execute the tool
     try {
-      return await tool.execute(input, context);
+      const result = await tool.execute(input, context);
+      
+      // If workflow recording is active, capture this step
+      try {
+        const workflowStore = useWorkflowStore.getState();
+        if (workflowStore.status === 'recording' && workflowStore.currentRecording) {
+          const action = toolInputToWorkflowAction(name, input);
+          if (action) {
+            // Capture step asynchronously (don't block tool execution)
+            workflowStore.captureStep(action).catch(err => {
+              console.warn('Failed to capture workflow step:', err);
+            });
+          }
+        }
+      } catch (workflowError) {
+        // Don't fail tool execution if workflow capture fails
+        console.warn('Workflow capture error:', workflowError);
+      }
+      
+      return result;
     } catch (error) {
       return {
         error: error instanceof Error ? error.message : 'Unknown error occurred'

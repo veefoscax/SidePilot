@@ -67,7 +67,7 @@ This implementation plan creates a workflow recording system that captures user 
   - Add context about starting URL
   - _Requirements: AC7_
 
-- [-] 8. Integration with System
+- [x] 8. Integration with System
   - Add "Record Workflow" to slash menu
   - Hook step capture to CDP action completions
   - Auto-capture screenshot after each action
