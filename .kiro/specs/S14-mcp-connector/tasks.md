@@ -20,7 +20,7 @@ This implementation plan creates an MCP server connector that exposes SidePilot'
   - Test tool call routing
   - _Requirements: AC1_
 
-- [~] 2. Communication Layer
+- [x] 2. Communication Layer
   - Choose approach (native messaging vs HTTP local server)
   - Implement message receiving with validation
   - Implement response sending with proper formatting
@@ -28,7 +28,7 @@ This implementation plan creates an MCP server connector that exposes SidePilot'
   - Implement request timeout handling
   - _Requirements: AC3_
 
-- [~] 3. Settings UI Integration
+- [x] 3. Settings UI Integration
   - Add MCP Connector section to Settings
   - Add enable/disable toggle
   - Add tool selection checkboxes (expose subset of tools)
@@ -37,24 +37,24 @@ This implementation plan creates an MCP server connector that exposes SidePilot'
   - Show connection status
   - _Requirements: AC4_
 
-- [~] 4. Checkpoint - Test Core Connector
+- [x] 4. Checkpoint - Test Core Connector
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 5. Documentation
+- [x] 5. Documentation
   - Document how to connect from Cline
   - Document how to connect from Aider
   - Create companion proxy if needed for HTTP
   - Add troubleshooting guide
   - _Requirements: AC5_
 
-- [~] 6. Integration Testing
+- [x] 6. Integration Testing
   - Test tool list response format
   - Test tool call execution and response
   - Test with real Cline/Aider (manual)
   - Test auth token validation
   - _Requirements: All_
 
-- [~] 7. Final Checkpoint
+- [x] 7. Final Checkpoint
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

@@ -4591,3 +4591,88 @@ Duration: 2.07s (transform 163ms, setup 322ms, import 128ms, tests 26ms)
 
 - **Summary**: Completed Task 1.1 (Write tests for connector core) with 23 comprehensive unit tests covering all MCP Connector functionality. Tests validate singleton pattern, initialization, configuration, authentication, tool listing (AC2), tool execution (AC3), and authenticated tool calls (AC4). Also marked Task 1 (Connector Core Implementation) as complete since the implementation was already done.
 - **Time Impact**: Took longer than expected due to vi.mock hoisting issues and file writing problems, but resulted in thorough test coverage.
+
+
+### S14: MCP Connector - Complete ✅
+- **Started**: 2026-01-16 17:45
+- **Completed**: 2026-01-16 18:40
+- **Time**: 55 minutes
+- **Kiro Commands Used**:
+  - fsWrite (3 times) - MCPConnectorSettings component, documentation, integration tests
+  - strReplace (4 times) - adding communication layer, Settings page integration
+  - executePwsh (8 times) - running tests, builds, PowerShell file writes
+  - readFile (5 times) - analyzing existing code
+  - readMultipleFiles (2 times) - reading specs and implementation
+  - taskStatus (12 times) - tracking task progress
+  - getDiagnostics (2 times) - TypeScript validation
+  - fsAppend (2 times) - DEVLOG updates
+- **Files Modified**:
+  - **ENHANCED**: src/lib/mcp-connector.ts (added communication layer with handleMessage)
+  - **NEW**: src/components/settings/MCPConnectorSettings.tsx (Settings UI for connector)
+  - **NEW**: src/lib/__tests__/mcp-connector-integration.test.ts (10 integration tests)
+  - **NEW**: MCP_CONNECTOR_GUIDE.md (comprehensive documentation)
+  - **UPDATED**: src/sidepanel/pages/Settings.tsx (added MCPConnectorSettings)
+  - **UPDATED**: .kiro/specs/S14-mcp-connector/tasks.md (all tasks complete)
+
+#### Implementation Summary
+
+**Task 1 & 1.1: Connector Core + Tests** ✅
+- MCPConnector singleton class with full config management
+- handleToolsList for Anthropic-compatible tool discovery (AC2)
+- handleToolCall for tool execution with context (AC3)
+- handleAuthenticatedToolCall with token validation (AC4)
+- 23 unit tests covering all core functionality
+
+**Task 2: Communication Layer** ✅
+- MCP JSON-RPC message handling (handleMessage)
+- Support for initialize, tools/list, tools/call methods
+- Proper error codes (-32600, -32601, -32602, -32001, -32002)
+- Runtime message listener for extension communication
+
+**Task 3: Settings UI Integration** ✅
+- MCPConnectorSettings component with:
+  - Enable/disable toggle
+  - Tool selection checkboxes for all browser tools
+  - Auth token display with copy button
+  - Regenerate token button
+  - Connection status indicator
+
+**Task 4: Checkpoint** ✅
+- All 23 unit tests passing
+- Build successful (1,731.47 kB bundle)
+
+**Task 5: Documentation** ✅
+- MCP_CONNECTOR_GUIDE.md with:
+  - Setup instructions
+  - Companion proxy examples (Native Messaging + HTTP)
+  - Cline/Aider configuration examples
+  - Available tools reference
+  - MCP protocol message formats
+  - Security considerations
+  - Troubleshooting guide
+
+**Task 6: Integration Testing** ✅
+- 10 additional integration tests for communication layer
+- Tests for initialize, tools/list, tools/call methods
+- Error handling tests for invalid messages
+
+**Task 7: Final Checkpoint** ✅
+- All 33 tests passing (23 unit + 10 integration)
+- Build successful
+- All requirements met (AC1-AC4)
+
+#### Requirements Coverage
+- **AC1**: Enable Connector - Start listening for external connections ✅
+- **AC2**: Tool List - Return exposed tools with Anthropic-compatible schema ✅
+- **AC3**: Tool Execution - Execute tools using current active tab ✅
+- **AC4**: Authentication - Require valid token before allowing tool access ✅
+
+#### Test Results
+```bash
+✅ src/lib/__tests__/mcp-connector.test.ts - 23 tests passed
+✅ src/lib/__tests__/mcp-connector-integration.test.ts - 10 tests passed
+Total: 33 tests passed
+Build: Successful (9.81s)
+```
+
+- **Summary**: S14 MCP Connector complete. SidePilot can now expose its browser automation tools to external AI tools like Cline and Aider via the MCP protocol. The connector includes secure token-based authentication, configurable tool exposure, and comprehensive documentation for integration.

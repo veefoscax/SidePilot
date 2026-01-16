@@ -426,6 +426,201 @@ export class MCPConnector {
   static resetInstance(): void {
     MCPConnector.instance = null;
   }
+
+  // ===========================================================================
+  // Communication Layer (AC3)
+  // ===========================================================================
+
+  /**
+   * Handle incoming MCP protocol message
+   * Routes to appropriate handler based on method
+   * 
+   * @param message - The incoming MCP message
+   * @returns Response to send back to client
+   */
+  async handleMessage(message: MCPMessage): Promise<MCPResponse> {
+    // Validate message structure
+    if (!message || typeof message !== 'object') {
+      return {
+        id: null,
+        error: { code: -32600, message: 'Invalid request' },
+      };
+    }
+
+    const { id, method, params } = message;
+
+    // Validate auth token for tool calls
+    if (method === 'tools/call') {
+      const authToken = params?.authToken as string | undefined;
+      if (!this.validateAuthToken(authToken || '')) {
+        return {
+          id,
+          error: { code: -32001, message: 'Invalid or missing authentication token' },
+        };
+      }
+    }
+
+    // Check if connector is enabled (except for initialize)
+    if (!this.config.enabled && method !== 'initialize') {
+      return {
+        id,
+        error: { code: -32002, message: 'MCP Connector is not enabled' },
+      };
+    }
+
+    try {
+      switch (method) {
+        case 'initialize':
+          return this.handleInitialize(id);
+        
+        case 'tools/list':
+          return this.handleToolsListMessage(id);
+        
+        case 'tools/call':
+          return await this.handleToolsCallMessage(id, params);
+        
+        default:
+          return {
+            id,
+            error: { code: -32601, message: `Method not found: ${method}` },
+          };
+      }
+    } catch (error) {
+      return {
+        id,
+        error: {
+          code: -32603,
+          message: error instanceof Error ? error.message : 'Internal error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Handle initialize request
+   */
+  private handleInitialize(id: string | number | null): MCPResponse {
+    return {
+      id,
+      result: {
+        protocolVersion: '2024-11-05',
+        capabilities: {
+          tools: {},
+        },
+        serverInfo: {
+          name: 'sidepilot-mcp-connector',
+          version: '1.0.0',
+        },
+      },
+    };
+  }
+
+  /**
+   * Handle tools/list message
+   */
+  private handleToolsListMessage(id: string | number | null): MCPResponse {
+    const { tools } = this.handleToolsList();
+    return {
+      id,
+      result: { tools },
+    };
+  }
+
+  /**
+   * Handle tools/call message
+   */
+  private async handleToolsCallMessage(
+    id: string | number | null,
+    params: Record<string, unknown> | undefined
+  ): Promise<MCPResponse> {
+    if (!params || typeof params.name !== 'string') {
+      return {
+        id,
+        error: { code: -32602, message: 'Invalid params: name is required' },
+      };
+    }
+
+    const name = params.name;
+    const input = (params.arguments || params.input || {}) as Record<string, unknown>;
+
+    const response = await this.handleToolCall(name, input);
+
+    if (!response.success) {
+      return {
+        id,
+        error: { code: -32000, message: response.error || 'Tool execution failed' },
+      };
+    }
+
+    return {
+      id,
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: response.result?.output || JSON.stringify(response.result),
+          },
+        ],
+        isError: false,
+      },
+    };
+  }
+
+  /**
+   * Setup message listener for runtime messages
+   * This allows communication from native messaging host or other extension contexts
+   */
+  setupMessageListener(): void {
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+      // Only handle MCP connector messages
+      if (message?.type !== 'MCP_CONNECTOR_REQUEST') {
+        return false;
+      }
+
+      // Handle the message asynchronously
+      this.handleMessage(message.payload)
+        .then(response => {
+          sendResponse({ success: true, response });
+        })
+        .catch(error => {
+          sendResponse({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        });
+
+      // Return true to indicate async response
+      return true;
+    });
+  }
+}
+
+// =============================================================================
+// MCP Protocol Types
+// =============================================================================
+
+/**
+ * MCP JSON-RPC message format
+ */
+export interface MCPMessage {
+  jsonrpc?: '2.0';
+  id: string | number | null;
+  method: string;
+  params?: Record<string, unknown>;
+}
+
+/**
+ * MCP JSON-RPC response format
+ */
+export interface MCPResponse {
+  jsonrpc?: '2.0';
+  id: string | number | null;
+  result?: unknown;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
+  };
 }
 
 // =============================================================================
