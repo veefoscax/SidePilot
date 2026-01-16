@@ -6,7 +6,7 @@ This implementation plan adds Model Context Protocol (MCP) client support, enabl
 
 ## Tasks
 
-- [ ] 1. MCP Types and Utilities
+- [x] 1. MCP Types and Utilities
   - Create src/lib/mcp.ts with core types
   - Define MCPServer interface (url, name, status, tools)
   - Define MCPTool interface (name, description, inputSchema)
@@ -15,7 +15,7 @@ This implementation plan adds Model Context Protocol (MCP) client support, enabl
   - Implement isMcpTool checker
   - _Requirements: AC1_
 
-- [ ] 2. MCP Client Implementation
+- [x] 2. MCP Client Implementation
   - Create MCPClient class
   - Implement connect with WebSocket or HTTP
   - Implement tool discovery on connect
@@ -24,13 +24,13 @@ This implementation plan adds Model Context Protocol (MCP) client support, enabl
   - Implement reconnection logic
   - _Requirements: AC2, AC3_
 
-- [ ] 2.1 Write tests for MCP client
+- [x] 2.1 Write tests for MCP client
   - Test connection lifecycle
   - Test tool discovery parsing
   - Test tool execution
   - _Requirements: AC2_
 
-- [ ] 3. MCP Store Implementation
+- [x] 3. MCP Store Implementation
   - Create src/stores/mcp.ts with Zustand
   - Implement addServer with validation
   - Implement removeServer

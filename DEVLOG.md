@@ -4318,3 +4318,91 @@ Build: Successful (11.90s, 1,723.19 kB bundle)
 - **Summary**: S12 Notifications was already fully implemented. This session verified all 7 tasks are complete with 44 passing tests. The notification system enables Chrome notifications for task completion, permission requests, and errors, with full settings UI integration and focus detection to avoid spamming users who are already viewing the extension.
 - **Time Impact**: Completed in 20 minutes vs 1.5h estimate because implementation was already done - only verification and test execution needed.
 
+
+
+---
+
+## 2026-01-16 16:50 - S13: MCP Integration - Task 3 Complete
+
+### S13: MCP Store Implementation (Task 3)
+- **Started**: 2026-01-16 16:45
+- **Completed**: 2026-01-16 16:55
+- **Time**: 10 minutes
+- **Kiro Commands Used**:
+  - readFile (4 times) - reading existing MCP types, client, and store patterns
+  - readMultipleFiles (2 times) - reading spec files and related code
+  - fsWrite (1 time) - creating complete MCP store implementation
+  - executePwsh (2 times) - running tests and line count verification
+  - getDiagnostics (1 time) - TypeScript validation
+  - taskStatus (2 times) - progress tracking
+- **Files Modified**:
+  - **FIXED**: `src/stores/mcp.ts` - Complete rewrite (was truncated at 28 lines with syntax errors)
+
+#### Implementation Summary
+
+**Problem**: The MCP store file was truncated mid-comment at line 28, causing syntax errors and making the store non-functional.
+
+**Solution**: Implemented complete Zustand store with all required functionality:
+
+1. **State Management**:
+   - `servers: MCPServerWithTools[]` - List of configured MCP servers with their tools
+   - `enabledTools: Set<string>` - Set of enabled tool full names
+   - `isLoaded: boolean` - Storage load status
+   - `isConnecting: boolean` - Connection operation status
+   - `error: string | null` - Current error message
+
+2. **Actions Implemented**:
+   - `loadFromStorage()` - Load servers and enabled tools from chrome.storage
+   - `addServer(url, name)` - Validate URL, connect, discover tools, enable all by default
+   - `removeServer(uuid)` - Disconnect and clean up enabled tools
+   - `refreshTools(uuid)` - Reconnect to server and rediscover tools
+   - `refreshAllServers()` - Refresh all configured servers
+   - `setToolEnabled(fullToolName, enabled)` - Toggle individual tool
+   - `setAllToolsEnabled(uuid, enabled)` - Bulk enable/disable for server
+   - `getServer(uuid)` - Get server by UUID
+   - `getEnabledMcpTools()` - Get enabled tools with server context (for registry)
+   - `getAllMcpTools()` - Get all tools regardless of enabled state
+   - `isToolEnabled(fullToolName)` - Check if tool is enabled
+   - `clearError()` - Clear current error
+
+3. **Persistence**:
+   - Servers persisted to `sidepilot-mcp-servers` key (without tools - rediscovered on connect)
+   - Enabled tools persisted to `sidepilot-mcp-enabled-tools` key
+   - Chrome storage adapter for Zustand persist middleware
+
+4. **Integration with MCP Client**:
+   - Uses `mcpClient.connect()` for server connections
+   - Uses `mcpClient.disconnect()` for cleanup
+   - Handles connection results and updates server status
+
+#### Technical Details
+
+**Storage Keys**:
+```typescript
+export const MCP_SERVERS_STORAGE_KEY = 'sidepilot-mcp-servers';
+export const MCP_ENABLED_TOOLS_STORAGE_KEY = 'sidepilot-mcp-enabled-tools';
+```
+
+**Server Status Flow**:
+- `disconnected` → Initial state or after disconnect
+- `connected` → After successful connection with tools discovered
+- `error` → After failed connection attempt
+
+**Tool Naming Convention**:
+- Full tool names follow pattern: `mcp__<uuid>__<toolname>`
+- Example: `mcp__a1b2c3d4-e5f6-7890-abcd-ef1234567890__read_file`
+
+#### Test Results
+```bash
+✅ src/lib/__tests__/mcp.test.ts - 31 tests passed
+✅ src/lib/__tests__/mcp-client.test.ts - 34 tests passed
+Total: 65 tests passed (11.27s)
+```
+
+#### Requirements Coverage
+- **AC4**: Toggle Tools - include or exclude MCP tools from AI tool list ✅
+  - `setToolEnabled()` for individual tools
+  - `setAllToolsEnabled()` for bulk operations
+  - `getEnabledMcpTools()` returns only enabled tools for registry
+
+- **Summary**: Completed MCP Store implementation (Task 3 of S13). The store provides full CRUD operations for MCP servers, tool discovery, enable/disable toggles, and chrome.storage persistence. All 65 existing MCP tests pass.
