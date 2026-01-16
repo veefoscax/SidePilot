@@ -6,7 +6,7 @@ This implementation plan adds network request and console log tracking capabilit
 
 ## Tasks
 
-- [ ] 1. Verify CDP Integration
+- [x] 1. Verify CDP Integration
   - Confirm cdpWrapper.enableNetworkTracking() works
   - Confirm cdpWrapper.enableConsoleTracking() works
   - Confirm cdpWrapper.getNetworkRequests() returns data
@@ -14,7 +14,7 @@ This implementation plan adds network request and console log tracking capabilit
   - Test with real page loads
   - _Requirements: AC1_
 
-- [ ] 2. Network Tool Implementation
+- [x] 2. Network Tool Implementation
   - Create src/tools/network.ts
   - Implement tool with filter parameter (url, method, status)
   - Format output as structured JSON
@@ -23,13 +23,13 @@ This implementation plan adds network request and console log tracking capabilit
   - Add to tool registry
   - _Requirements: AC2, AC3_
 
-- [ ] 2.1 Write tests for network tool
+- [x] 2.1 Write tests for network tool
   - Test filtering by URL pattern
   - Test filtering by HTTP method
   - Test filtering by status code
   - _Requirements: AC2_
 
-- [ ] 3. Console Tool Implementation
+- [x] 3. Console Tool Implementation
   - Create src/tools/console.ts
   - Implement tool with type filter (log/warn/error/info)
   - Include stack traces for errors
@@ -38,22 +38,22 @@ This implementation plan adds network request and console log tracking capabilit
   - Add to tool registry
   - _Requirements: AC4, AC5_
 
-- [ ] 3.1 Write tests for console tool
+- [x] 3.1 Write tests for console tool
   - Test filtering by log type
   - Test stack trace formatting
   - _Requirements: AC4_
 
-- [ ] 4. Checkpoint - Test CDP Tracking
+- [x] 4. Checkpoint - Test CDP Tracking
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Integration Testing
+- [x] 5. Integration Testing
   - Test network capture on API-heavy page
   - Test console capture with console.log/error
   - Test filtering works correctly
   - Test memory limits respected
   - _Requirements: All_
 
-- [ ] 6. Final Checkpoint
+- [x] 6. Final Checkpoint
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

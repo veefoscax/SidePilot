@@ -35,6 +35,7 @@ interface ConsoleMessage {
   timestamp: number;
   url?: string;
   lineNumber?: number;
+  stackTrace?: string;
 }
 
 /**
@@ -45,7 +46,15 @@ const consoleMessages = new Map<number, ConsoleMessage[]>();
 /**
  * Maximum number of messages to store per tab
  */
-const MAX_MESSAGES = 200;
+const MAX_LOGS = 100;
+
+/**
+ * Format timestamp to human-readable string
+ */
+function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp);
+  return date.toISOString().replace('T', ' ').replace('Z', '');
+}
 
 /**
  * Start monitoring console messages for a tab
@@ -76,8 +85,8 @@ function addMessage(tabId: number, message: ConsoleMessage): void {
   // Add new message
   messages.push(message);
   
-  // Keep only the most recent messages
-  if (messages.length > MAX_MESSAGES) {
+  // Keep only the most recent messages (MAX_LOGS limit)
+  if (messages.length > MAX_LOGS) {
     messages.shift();
   }
   
@@ -235,10 +244,20 @@ async function handleGetLogs(
   }
   
   const output = limitedMessages.map(msg => {
+    const timestamp = formatTimestamp(msg.timestamp);
     const location = msg.url && msg.lineNumber 
       ? ` (${msg.url}:${msg.lineNumber})` 
       : '';
-    return `[${msg.level.toUpperCase()}] ${msg.text}${location}`;
+    
+    // Build the log entry
+    let entry = `[${timestamp}] [${msg.level.toUpperCase()}] ${msg.text}${location}`;
+    
+    // Include stack trace for errors if available
+    if ((msg.level === 'error' || msg.level === 'exception') && msg.stackTrace) {
+      entry += `\n  Stack trace:\n${msg.stackTrace.split('\n').map(line => `    ${line}`).join('\n')}`;
+    }
+    
+    return entry;
   }).join('\n');
   
   return {
@@ -280,20 +299,80 @@ export function handleConsoleEvent(
       })
       .join(' ');
 
+    // Extract full stack trace for errors
+    let stackTrace: string | undefined;
+    if (params.type === 'error' || params.type === 'exception') {
+      if (params.stackTrace?.callFrames) {
+        stackTrace = params.stackTrace.callFrames
+          .map((frame: any) => {
+            const functionName = frame.functionName || '(anonymous)';
+            const url = frame.url || '(unknown)';
+            const line = frame.lineNumber ?? '?';
+            const col = frame.columnNumber ?? '?';
+            return `at ${functionName} (${url}:${line}:${col})`;
+          })
+          .join('\n');
+      }
+    }
+
     addMessage(tabId, {
       level: params.type,
       text,
-      timestamp: params.timestamp,
+      timestamp: params.timestamp || Date.now(),
       url: params.stackTrace?.callFrames?.[0]?.url,
-      lineNumber: params.stackTrace?.callFrames?.[0]?.lineNumber
+      lineNumber: params.stackTrace?.callFrames?.[0]?.lineNumber,
+      stackTrace
     });
   } else if (method === 'Log.entryAdded') {
+    // Extract stack trace from Log.entryAdded if available
+    let stackTrace: string | undefined;
+    if (params.entry.level === 'error' && params.entry.stackTrace) {
+      if (params.entry.stackTrace.callFrames) {
+        stackTrace = params.entry.stackTrace.callFrames
+          .map((frame: any) => {
+            const functionName = frame.functionName || '(anonymous)';
+            const url = frame.url || '(unknown)';
+            const line = frame.lineNumber ?? '?';
+            const col = frame.columnNumber ?? '?';
+            return `at ${functionName} (${url}:${line}:${col})`;
+          })
+          .join('\n');
+      }
+    }
+
     addMessage(tabId, {
       level: params.entry.level,
       text: params.entry.text,
-      timestamp: params.entry.timestamp,
+      timestamp: params.entry.timestamp || Date.now(),
       url: params.entry.url,
-      lineNumber: params.entry.lineNumber
+      lineNumber: params.entry.lineNumber,
+      stackTrace
+    });
+  } else if (method === 'Runtime.exceptionThrown') {
+    // Handle uncaught exceptions with full stack trace
+    const exception = params.exceptionDetails;
+    const text = exception.exception?.description || exception.text || 'Unknown exception';
+    
+    let stackTrace: string | undefined;
+    if (exception.stackTrace?.callFrames) {
+      stackTrace = exception.stackTrace.callFrames
+        .map((frame: any) => {
+          const functionName = frame.functionName || '(anonymous)';
+          const url = frame.url || '(unknown)';
+          const line = frame.lineNumber ?? '?';
+          const col = frame.columnNumber ?? '?';
+          return `at ${functionName} (${url}:${line}:${col})`;
+        })
+        .join('\n');
+    }
+
+    addMessage(tabId, {
+      level: 'exception',
+      text,
+      timestamp: params.timestamp || Date.now(),
+      url: exception.url,
+      lineNumber: exception.lineNumber,
+      stackTrace
     });
   }
 }

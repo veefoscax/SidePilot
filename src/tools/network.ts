@@ -3,8 +3,11 @@
  * 
  * Provides network monitoring capabilities including:
  * - View recent network requests
- * - Filter by request type
- * - View request/response details
+ * - Filter by URL pattern, method, or status code
+ * - View request/response headers
+ * - Structured JSON output
+ * 
+ * Requirements: AC2, AC3
  */
 
 import { cdpWrapper } from '@/lib/cdp-wrapper';
@@ -22,12 +25,27 @@ type NetworkAction =
  */
 interface NetworkInput {
   action: NetworkAction;
-  filter?: 'all' | 'xhr' | 'fetch' | 'document' | 'script' | 'stylesheet' | 'image';
+  /** URL substring filter - matches requests containing this string */
+  url_filter?: string;
+  /** HTTP method filter (GET, POST, PUT, DELETE, etc.) */
+  method_filter?: string;
+  /** Status code filter (e.g., 200, 404, 500) */
+  status_filter?: number;
+  /** Resource type filter */
+  type_filter?: 'all' | 'xhr' | 'fetch' | 'document' | 'script' | 'stylesheet' | 'image';
+  /** Maximum number of requests to return (default: 20) */
   limit?: number;
 }
 
 /**
- * Network request information
+ * Request/Response headers
+ */
+interface Headers {
+  [key: string]: string;
+}
+
+/**
+ * Network request information with headers
  */
 interface NetworkRequest {
   requestId: string;
@@ -35,7 +53,12 @@ interface NetworkRequest {
   method: string;
   type: string;
   status?: number;
+  statusText?: string;
   timestamp: number;
+  requestHeaders?: Headers;
+  responseHeaders?: Headers;
+  mimeType?: string;
+  contentLength?: number;
 }
 
 /**
@@ -89,10 +112,12 @@ function addRequest(tabId: number, request: NetworkRequest): void {
  * 
  * Provides network request monitoring through CDP.
  * Tracks all network activity for analysis.
+ * 
+ * Requirements: AC2 (filter by URL pattern), AC3 (capture HTTP requests)
  */
 export const networkTool: ToolDefinition = {
   name: 'network_requests',
-  description: 'View recent network requests made by the page. Use this to inspect API calls, resource loading, and network activity.',
+  description: 'View recent network requests made by the page. Use this to inspect API calls, resource loading, and network activity. Supports filtering by URL pattern, HTTP method, and status code.',
   
   parameters: {
     action: {
@@ -101,14 +126,26 @@ export const networkTool: ToolDefinition = {
       required: true,
       enum: ['get_requests', 'clear_requests']
     },
-    filter: {
+    url_filter: {
       type: 'string',
-      description: 'Filter requests by type (optional)',
+      description: 'Filter requests by URL substring (e.g., "api" to match all API calls)'
+    },
+    method_filter: {
+      type: 'string',
+      description: 'Filter requests by HTTP method (GET, POST, PUT, DELETE, etc.)'
+    },
+    status_filter: {
+      type: 'number',
+      description: 'Filter requests by status code (e.g., 200, 404, 500)'
+    },
+    type_filter: {
+      type: 'string',
+      description: 'Filter requests by resource type',
       enum: ['all', 'xhr', 'fetch', 'document', 'script', 'stylesheet', 'image']
     },
     limit: {
       type: 'number',
-      description: 'Maximum number of requests to return (default: 20)'
+      description: 'Maximum number of requests to return (default: 20, max: 100)'
     }
   },
 
@@ -116,7 +153,14 @@ export const networkTool: ToolDefinition = {
    * Execute network tool action
    */
   async execute(input: NetworkInput, context: ToolContext): Promise<ToolResult> {
-    const { action, filter = 'all', limit = 20 } = input;
+    const { 
+      action, 
+      url_filter, 
+      method_filter, 
+      status_filter, 
+      type_filter = 'all', 
+      limit = 20 
+    } = input;
     const tabId = context.tabId;
 
     try {
@@ -125,7 +169,13 @@ export const networkTool: ToolDefinition = {
 
       switch (action) {
         case 'get_requests':
-          return await handleGetRequests(tabId, filter, limit);
+          return await handleGetRequests(tabId, {
+            url_filter,
+            method_filter,
+            status_filter,
+            type_filter,
+            limit: Math.min(limit, MAX_REQUESTS)
+          });
 
         case 'clear_requests':
           return await handleClearRequests(tabId);
@@ -146,7 +196,7 @@ export const networkTool: ToolDefinition = {
   toAnthropicSchema() {
     return {
       name: 'network_requests',
-      description: 'View recent network requests made by the page. Use this to inspect API calls, resource loading, and network activity.',
+      description: 'View recent network requests made by the page. Use this to inspect API calls, resource loading, and network activity. Supports filtering by URL pattern, HTTP method, and status code.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -155,14 +205,26 @@ export const networkTool: ToolDefinition = {
             enum: ['get_requests', 'clear_requests'],
             description: 'The network action to perform'
           },
-          filter: {
+          url_filter: {
+            type: 'string',
+            description: 'Filter requests by URL substring (e.g., "api" to match all API calls)'
+          },
+          method_filter: {
+            type: 'string',
+            description: 'Filter requests by HTTP method (GET, POST, PUT, DELETE, etc.)'
+          },
+          status_filter: {
+            type: 'number',
+            description: 'Filter requests by status code (e.g., 200, 404, 500)'
+          },
+          type_filter: {
             type: 'string',
             enum: ['all', 'xhr', 'fetch', 'document', 'script', 'stylesheet', 'image'],
-            description: 'Filter requests by type'
+            description: 'Filter requests by resource type'
           },
           limit: {
             type: 'number',
-            description: 'Maximum number of requests to return (default: 20)'
+            description: 'Maximum number of requests to return (default: 20, max: 100)'
           }
         },
         required: ['action']
@@ -178,7 +240,7 @@ export const networkTool: ToolDefinition = {
       type: 'function' as const,
       function: {
         name: 'network_requests',
-        description: 'View recent network requests made by the page. Use this to inspect API calls, resource loading, and network activity.',
+        description: 'View recent network requests made by the page. Use this to inspect API calls, resource loading, and network activity. Supports filtering by URL pattern, HTTP method, and status code.',
         parameters: {
           type: 'object' as const,
           properties: {
@@ -187,14 +249,26 @@ export const networkTool: ToolDefinition = {
               enum: ['get_requests', 'clear_requests'],
               description: 'The network action to perform'
             },
-            filter: {
+            url_filter: {
+              type: 'string',
+              description: 'Filter requests by URL substring (e.g., "api" to match all API calls)'
+            },
+            method_filter: {
+              type: 'string',
+              description: 'Filter requests by HTTP method (GET, POST, PUT, DELETE, etc.)'
+            },
+            status_filter: {
+              type: 'number',
+              description: 'Filter requests by status code (e.g., 200, 404, 500)'
+            },
+            type_filter: {
               type: 'string',
               enum: ['all', 'xhr', 'fetch', 'document', 'script', 'stylesheet', 'image'],
-              description: 'Filter requests by type'
+              description: 'Filter requests by resource type'
             },
             limit: {
               type: 'number',
-              description: 'Maximum number of requests to return (default: 20)'
+              description: 'Maximum number of requests to return (default: 20, max: 100)'
             }
           },
           required: ['action']
@@ -207,40 +281,115 @@ export const networkTool: ToolDefinition = {
 // ===== Action Handlers =====
 
 /**
- * Handle get requests action
+ * Filter options for get_requests
+ */
+interface FilterOptions {
+  url_filter?: string;
+  method_filter?: string;
+  status_filter?: number;
+  type_filter?: string;
+  limit: number;
+}
+
+/**
+ * Structured JSON output for a network request
+ */
+interface NetworkRequestOutput {
+  url: string;
+  method: string;
+  status: number | null;
+  statusText: string | null;
+  type: string;
+  timestamp: number;
+  mimeType: string | null;
+  contentLength: number | null;
+  requestHeaders: Headers | null;
+  responseHeaders: Headers | null;
+}
+
+/**
+ * Handle get requests action with filtering
+ * 
+ * Requirements: AC2 - Return request URL, method, status code with optional URL pattern filter
  */
 async function handleGetRequests(
   tabId: number, 
-  filter: string, 
-  limit: number
+  options: FilterOptions
 ): Promise<ToolResult> {
+  const { url_filter, method_filter, status_filter, type_filter, limit } = options;
   const requests = networkRequests.get(tabId) || [];
   
-  // Filter requests if needed
+  // Apply all filters
   let filteredRequests = requests;
-  if (filter !== 'all') {
-    filteredRequests = requests.filter(req => 
-      req.type.toLowerCase() === filter.toLowerCase()
+  
+  // Filter by URL pattern (substring match)
+  if (url_filter) {
+    filteredRequests = filteredRequests.filter(req => 
+      req.url.toLowerCase().includes(url_filter.toLowerCase())
     );
   }
   
-  // Limit results
+  // Filter by HTTP method
+  if (method_filter) {
+    filteredRequests = filteredRequests.filter(req => 
+      req.method.toUpperCase() === method_filter.toUpperCase()
+    );
+  }
+  
+  // Filter by status code
+  if (status_filter !== undefined) {
+    filteredRequests = filteredRequests.filter(req => 
+      req.status === status_filter
+    );
+  }
+  
+  // Filter by resource type
+  if (type_filter && type_filter !== 'all') {
+    filteredRequests = filteredRequests.filter(req => 
+      req.type.toLowerCase() === type_filter.toLowerCase()
+    );
+  }
+  
+  // Limit results (take most recent)
   const limitedRequests = filteredRequests.slice(-limit);
   
-  // Format output
+  // Format output as structured JSON
   if (limitedRequests.length === 0) {
     return {
-      output: 'No network requests found. The page may not have made any requests yet, or monitoring was not active.'
+      output: JSON.stringify({
+        count: 0,
+        requests: [],
+        message: 'No network requests found matching the filters. The page may not have made any requests yet, or monitoring was not active.'
+      }, null, 2)
     };
   }
   
-  const output = limitedRequests.map(req => {
-    const status = req.status ? ` [${req.status}]` : '';
-    return `${req.method} ${req.url}${status} (${req.type})`;
-  }).join('\n');
+  // Convert to structured output format with headers
+  const outputRequests: NetworkRequestOutput[] = limitedRequests.map(req => ({
+    url: req.url,
+    method: req.method,
+    status: req.status ?? null,
+    statusText: req.statusText ?? null,
+    type: req.type,
+    timestamp: req.timestamp,
+    mimeType: req.mimeType ?? null,
+    contentLength: req.contentLength ?? null,
+    requestHeaders: req.requestHeaders ?? null,
+    responseHeaders: req.responseHeaders ?? null
+  }));
   
   return {
-    output: `Recent network requests (${limitedRequests.length}):\n${output}`
+    output: JSON.stringify({
+      count: outputRequests.length,
+      total_captured: requests.length,
+      filters_applied: {
+        url: url_filter || null,
+        method: method_filter || null,
+        status: status_filter ?? null,
+        type: type_filter !== 'all' ? type_filter : null
+      },
+      requests: outputRequests
+    }, null, 2)
   };
 }
 
@@ -258,6 +407,8 @@ async function handleClearRequests(tabId: number): Promise<ToolResult> {
 /**
  * Export function to handle CDP network events
  * This should be called from the CDP wrapper when network events occur
+ * 
+ * Captures request/response headers as required by AC2
  */
 export function handleNetworkEvent(
   tabId: number, 
@@ -270,14 +421,25 @@ export function handleNetworkEvent(
       url: params.request.url,
       method: params.request.method,
       type: params.type || 'other',
-      timestamp: params.timestamp
+      timestamp: params.timestamp,
+      requestHeaders: params.request.headers || undefined
     });
   } else if (method === 'Network.responseReceived') {
-    // Update request with response status
+    // Update request with response status and headers
     const requests = networkRequests.get(tabId) || [];
     const request = requests.find(r => r.requestId === params.requestId);
     if (request) {
       request.status = params.response.status;
+      request.statusText = params.response.statusText;
+      request.responseHeaders = params.response.headers || undefined;
+      request.mimeType = params.response.mimeType;
+      
+      // Extract content length from headers if available
+      const contentLength = params.response.headers?.['content-length'] || 
+                           params.response.headers?.['Content-Length'];
+      if (contentLength) {
+        request.contentLength = parseInt(contentLength, 10);
+      }
     }
   }
 }

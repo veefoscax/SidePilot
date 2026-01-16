@@ -10,7 +10,8 @@
     "tabs",
     "scripting",
     "debugger",
-    "notifications"
+    "notifications",
+    "tabGroups"
   ],
   "host_permissions": ["<all_urls>"],
   "side_panel": {
