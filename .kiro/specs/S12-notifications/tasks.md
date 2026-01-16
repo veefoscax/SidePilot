@@ -6,7 +6,7 @@ This implementation plan adds system notification support, allowing SidePilot to
 
 ## Tasks
 
-- [ ] 1. Notification Manager Implementation
+- [x] 1. Notification Manager Implementation
   - Create src/lib/notifications.ts
   - Define NotificationConfig interface (enabled, soundEnabled, types)
   - Implement loadConfig from chrome.storage
@@ -15,19 +15,19 @@ This implementation plan adds system notification support, allowing SidePilot to
   - Handle notification click to open extension
   - _Requirements: AC1, AC2_
 
-- [ ] 1.1 Write tests for notification manager
+- [x] 1.1 Write tests for notification manager
   - Test config loading
   - Test notification creation
   - _Requirements: AC1_
 
-- [ ] 2. Notification Types
+- [x] 2. Notification Types
   - Implement notifyTaskComplete with success icon
   - Implement notifyPermissionRequired with warning icon
   - Implement notifyError with error icon
   - Add sound option for each type
   - _Requirements: AC3_
 
-- [ ] 3. Settings UI Integration
+- [x] 3. Settings UI Integration
   - Add notifications section to Settings page
   - Add enable/disable master toggle
   - Add individual toggles per notification type
@@ -36,24 +36,24 @@ This implementation plan adds system notification support, allowing SidePilot to
   - Connect to notification manager
   - _Requirements: AC4_
 
-- [ ] 4. Checkpoint - Test Core Notifications
+- [x] 4. Checkpoint - Test Core Notifications
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. System Integration
+- [x] 5. System Integration
   - Call notifyTaskComplete when chat completes (with tab in background)
   - Call notifyPermissionRequired from permission system
   - Call notifyError from chat error handler
   - Only notify when side panel not focused
   - _Requirements: AC5_
 
-- [ ] 6. Integration Testing
+- [x] 6. Integration Testing
   - Test notifications appear correctly
   - Test disable toggle works
   - Test notification click opens extension
   - Test focus detection
   - _Requirements: All_
 
-- [ ] 7. Final Checkpoint
+- [x] 7. Final Checkpoint
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

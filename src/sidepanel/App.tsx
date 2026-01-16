@@ -17,6 +17,7 @@ import { useChatStore } from '@/stores/chat';
 import { useMultiProviderStore } from '@/stores/multi-provider';
 import { useShortcutsStore } from '@/stores/shortcuts';
 import { toolRegistry } from '@/tools/registry';
+import { notifications } from '@/lib/notifications';
 import { UserMessage } from '@/components/chat/UserMessage';
 import { AssistantMessage } from '@/components/chat/AssistantMessage';
 import { InputArea } from '@/components/chat/InputArea';
@@ -84,6 +85,9 @@ function App() {
         // Initialize shortcuts store
         await loadShortcuts();
         await initializeDefaults();
+
+        // Initialize notification manager
+        await notifications.loadConfig();
 
         setIsLoading(false);
 
@@ -212,6 +216,14 @@ Always use tools when appropriate instead of just describing how to do something
               // Check if permission is required
               if (result.error === 'PERMISSION_REQUIRED') {
                 console.log('🔧 Permission required for tool:', chunk.toolCall.name);
+                
+                // Notify permission required if side panel is not focused
+                if (!document.hasFocus()) {
+                  notifications.notifyPermissionRequired(chunk.toolCall.name).catch(notifyErr => {
+                    console.warn('Failed to send permission notification:', notifyErr);
+                  });
+                }
+                
                 addToolResult(chunk.toolCall.id, {
                   toolUseId: chunk.toolCall.id,
                   error: 'Permission required. Please grant permission in the dialog and retry.',
@@ -223,6 +235,14 @@ Always use tools when appropriate instead of just describing how to do something
               // Add the tool result
               if (result.error) {
                 console.error('🔧 Tool execution error:', result.error);
+                
+                // Notify error if side panel is not focused
+                if (!document.hasFocus()) {
+                  notifications.notifyError(`Tool "${chunk.toolCall.name}" failed: ${result.error}`).catch(notifyErr => {
+                    console.warn('Failed to send tool error notification:', notifyErr);
+                  });
+                }
+                
                 addToolResult(chunk.toolCall.id, {
                   toolUseId: chunk.toolCall.id,
                   error: result.error,
@@ -237,9 +257,18 @@ Always use tools when appropriate instead of just describing how to do something
               }
             } catch (toolError) {
               console.error('🔧 Tool execution exception:', toolError);
+              const toolErrorMessage = toolError instanceof Error ? toolError.message : 'Tool execution failed';
+              
+              // Notify error if side panel is not focused
+              if (!document.hasFocus()) {
+                notifications.notifyError(`Tool "${chunk.toolCall.name}" failed: ${toolErrorMessage}`).catch(notifyErr => {
+                  console.warn('Failed to send tool error notification:', notifyErr);
+                });
+              }
+              
               addToolResult(chunk.toolCall.id, {
                 toolUseId: chunk.toolCall.id,
-                error: toolError instanceof Error ? toolError.message : 'Tool execution failed',
+                error: toolErrorMessage,
               });
             }
           })();
@@ -255,9 +284,26 @@ Always use tools when appropriate instead of just describing how to do something
         finalReasoning || undefined
       );
 
+      // Notify task complete if side panel is not focused (user is in another tab)
+      if (!document.hasFocus()) {
+        // Generate a task name from the first user message or use a default
+        const taskName = content.length > 50 ? content.substring(0, 50) + '...' : content;
+        notifications.notifyTaskComplete(taskName).catch(err => {
+          console.warn('Failed to send task complete notification:', err);
+        });
+      }
+
     } catch (err) {
       console.error('Chat error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
+      setError(errorMessage);
+
+      // Notify error if side panel is not focused
+      if (!document.hasFocus()) {
+        notifications.notifyError(errorMessage).catch(notifyErr => {
+          console.warn('Failed to send error notification:', notifyErr);
+        });
+      }
     }
   };
 

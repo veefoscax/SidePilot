@@ -1,6 +1,10 @@
 import { initializeMessageListener, registerHandler } from '@/lib/messaging';
+import { setupNotificationClickHandler } from '@/lib/notifications';
 
 console.log('🚀 SidePilot service worker starting...');
+
+// Set up notification click handler to open side panel
+setupNotificationClickHandler();
 
 // Initialize message handling
 initializeMessageListener();
@@ -61,7 +65,8 @@ async function updateIconsForTheme(theme: 'light' | 'dark') {
     console.log(`✅ Icons updated for ${theme} theme`);
     
   } catch (error) {
-    console.log(`⚠️ Could not update icons for ${theme} theme:`, error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log(`⚠️ Could not update icons for ${theme} theme:`, errorMessage);
     
     // Fallback to default icons
     await chrome.action.setIcon({
@@ -99,7 +104,8 @@ async function detectAndApplyTheme() {
     setupPeriodicThemeCheck();
     
   } catch (error) {
-    console.log('⚠️ Theme setup error:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('⚠️ Theme setup error:', errorMessage);
   }
 }
 
@@ -121,7 +127,8 @@ async function detectChromeThemeInServiceWorker(): Promise<'light' | 'dark'> {
     return 'dark';
     
   } catch (error) {
-    console.log('⚠️ Service worker theme detection failed:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('⚠️ Service worker theme detection failed:', errorMessage);
     return 'dark';
   }
 }
