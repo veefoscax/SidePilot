@@ -1,0 +1,254 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "reset": "Restaurar Padrões",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "close": "Fechar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Aviso",
+    "info": "Informação",
+    "yes": "Sim",
+    "no": "Não",
+    "ok": "OK",
+    "back": "Voltar",
+    "next": "Próximo",
+    "done": "Concluído",
+    "search": "Buscar",
+    "noResults": "Nenhum resultado encontrado",
+    "retry": "Tentar novamente",
+    "copy": "Copiar",
+    "copied": "Copiado!"
+  },
+  "settings": {
+    "title": "Configurações Gerais",
+    "pageTitle": "Configurações do SidePilot",
+    "pageDescription": "Configure múltiplos provedores de LLM e gerencie sua coleção de modelos",
+    "language": {
+      "label": "Idioma",
+      "description": "Escolha seu idioma preferido"
+    },
+    "theme": {
+      "label": "Tema",
+      "description": "Escolha seu tema de cores",
+      "system": "Padrão do Sistema",
+      "light": "Claro",
+      "dark": "Escuro"
+    },
+    "version": "Versão {{version}}",
+    "resetConfirm": {
+      "title": "Restaurar Padrões?",
+      "description": "Isso irá restaurar todas as configurações gerais para os valores padrão."
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "send": "Enviar",
+    "clear": "Limpar Chat",
+    "revertLast": "Reverter última resposta",
+    "messageCount": "{{count}} mensagens",
+    "messageCount_one": "{{count}} mensagem",
+    "messagesQueued": "{{count}} mensagens na fila",
+    "messagesQueued_one": "{{count}} mensagem na fila",
+    "noModelsSelected": "Nenhum modelo selecionado para chat.",
+    "selectModels": "Selecionar modelos",
+    "aiTyping": "IA está digitando...",
+    "clearConfirm": {
+      "title": "Limpar Chat?",
+      "description": "Isso irá excluir todas as mensagens da conversa atual."
+    },
+    "newConversation": "Nova Conversa",
+    "conversations": "Conversas",
+    "noMessages": "Nenhuma mensagem ainda. Inicie uma conversa!",
+    "thinking": "Pensando...",
+    "streaming": "Recebendo resposta...",
+    "placeholder": {
+      "default": "Mensagem...",
+      "selectModel": "Selecione um modelo para começar a conversar...",
+      "modelNotAvailable": "Modelo não disponível...",
+      "responding": "IA está respondendo...",
+      "queueNext": "Digite para enfileirar próxima mensagem..."
+    },
+    "keyboardHint": {
+      "enter": "Pressione Enter para {{action}},",
+      "send": "enviar",
+      "queue": "enfileirar",
+      "shiftEnter": "Shift + Enter para nova linha"
+    },
+    "toolsDisabled": {
+      "title": "Automação do navegador desabilitada.",
+      "description": "O modelo selecionado ({{modelName}}) não suporta uso de ferramentas. Você ainda pode conversar, mas os recursos de automação do navegador não funcionarão. Selecione um modelo com suporte a ferramentas para funcionalidade completa."
+    },
+    "error": {
+      "sendFailed": "Falha ao enviar mensagem",
+      "connectionLost": "Conexão perdida. Por favor, tente novamente.",
+      "noModel": "Nenhum modelo ativo selecionado. Por favor, selecione um modelo no menu suspenso ou configure um provedor nas Configurações."
+    },
+    "voice": {
+      "start": "Iniciar entrada de voz",
+      "stop": "Parar entrada de voz",
+      "listening": "Ouvindo...",
+      "notSupported": "Entrada de voz não é suportada neste navegador"
+    }
+  },
+  "providers": {
+    "title": "Configurações de Provedor",
+    "llmProvider": "Provedor de LLM",
+    "models": "Modelos",
+    "modelsSelected": "Modelos ({{count}} selecionados)",
+    "selectedModels": "Modelos Selecionados",
+    "context": "contexto",
+    "per1M": "por 1M",
+    "addApiKeyToSeeModels": "Adicione uma chave de API para ver os modelos disponíveis",
+    "addProvider": "Adicionar Provedor",
+    "editProvider": "Editar Provedor",
+    "deleteProvider": "Excluir Provedor",
+    "noProviders": "Nenhum provedor configurado",
+    "selectProvider": "Selecione um provedor",
+    "selectModel": "Selecione um modelo",
+    "apiKey": "Chave da API",
+    "apiKeyPlaceholder": "Digite sua chave da API",
+    "baseUrl": "URL Base",
+    "baseUrlPlaceholder": "Digite a URL base (opcional)",
+    "testConnection": "Testar Conexão",
+    "connectionSuccess": "Conexão bem-sucedida!",
+    "connectionFailed": "Falha na conexão",
+    "loadingModels": "Carregando modelos...",
+    "noModels": "Nenhum modelo disponível",
+    "deleteConfirm": {
+      "title": "Excluir Provedor?",
+      "description": "Isso irá remover o provedor e todas as suas configurações."
+    },
+    "capabilities": {
+      "vision": "Visão",
+      "tools": "Uso de Ferramentas",
+      "streaming": "Streaming",
+      "json": "Modo JSON"
+    }
+  },
+  "shortcuts": {
+    "title": "Atalhos",
+    "addShortcut": "Adicionar Atalho",
+    "editShortcut": "Editar Atalho",
+    "deleteShortcut": "Excluir Atalho",
+    "noShortcuts": "Nenhum atalho configurado",
+    "name": "Nome",
+    "namePlaceholder": "Digite o nome do atalho",
+    "prompt": "Prompt",
+    "promptPlaceholder": "Digite o modelo de prompt",
+    "trigger": "Gatilho",
+    "triggerPlaceholder": "ex: /buscar",
+    "deleteConfirm": {
+      "title": "Excluir Atalho?",
+      "description": "Isso irá remover permanentemente este atalho."
+    }
+  },
+  "permissions": {
+    "title": "Permissões",
+    "description": "Gerencie quais ações a IA pode executar",
+    "allow": "Permitir",
+    "deny": "Negar",
+    "askEveryTime": "Perguntar sempre",
+    "alwaysAllow": "Sempre permitir",
+    "alwaysDeny": "Sempre negar",
+    "requestTitle": "Solicitação de Permissão",
+    "requestDescription": "A IA deseja executar a seguinte ação:",
+    "remember": "Lembrar esta escolha",
+    "categories": {
+      "navigation": "Navegação",
+      "interaction": "Interação com Página",
+      "data": "Acesso a Dados",
+      "system": "Ações do Sistema"
+    }
+  },
+  "tools": {
+    "title": "Ferramentas do Navegador",
+    "description": "Ferramentas disponíveis para automação do navegador",
+    "enabled": "Habilitado",
+    "disabled": "Desabilitado",
+    "categories": {
+      "navigation": "Navegação",
+      "interaction": "Interação",
+      "data": "Extração de Dados",
+      "tabs": "Gerenciamento de Abas",
+      "system": "Sistema"
+    }
+  },
+  "workflow": {
+    "title": "Gravação de Fluxo de Trabalho",
+    "startRecording": "Iniciar Gravação",
+    "stopRecording": "Parar Gravação",
+    "pauseRecording": "Pausar Gravação",
+    "resumeRecording": "Retomar Gravação",
+    "recording": "Gravando...",
+    "paused": "Pausado",
+    "steps": "Passos",
+    "noSteps": "Nenhum passo gravado ainda",
+    "saveWorkflow": "Salvar Fluxo de Trabalho",
+    "discardWorkflow": "Descartar Fluxo de Trabalho",
+    "workflowName": "Nome do Fluxo de Trabalho",
+    "workflowNamePlaceholder": "Digite o nome do fluxo de trabalho",
+    "recordingStarted": "Gravação iniciada! Execute ações no navegador.",
+    "savedAsShortcut": "Fluxo de trabalho salvo como atalho!",
+    "error": {
+      "noActiveTab": "Nenhuma aba ativa encontrada",
+      "startFailed": "Falha ao iniciar gravação",
+      "stopFailed": "Falha ao parar gravação"
+    }
+  },
+  "notifications": {
+    "title": "Notificações",
+    "enabled": "Notificações habilitadas",
+    "disabled": "Notificações desabilitadas",
+    "permission": {
+      "title": "Habilitar Notificações",
+      "description": "Permitir que o SidePilot envie notificações"
+    },
+    "types": {
+      "title": "Tipos de Notificação",
+      "taskComplete": "Tarefa concluída",
+      "permissionRequired": "Permissão necessária",
+      "error": "Erros"
+    },
+    "sound": {
+      "label": "Som",
+      "description": "Reproduzir som com notificações"
+    },
+    "test": {
+      "label": "Testar Notificação",
+      "description": "Enviar uma notificação de teste para verificar as configurações",
+      "button": "Testar",
+      "sent": "Enviado!",
+      "failed": "Falhou"
+    }
+  },
+  "mcp": {
+    "title": "Integração MCP",
+    "servers": "Servidores MCP",
+    "addServer": "Adicionar Servidor",
+    "noServers": "Nenhum servidor MCP configurado",
+    "connector": {
+      "title": "Conector MCP",
+      "description": "Expor ferramentas do navegador para clientes LLM externos",
+      "enabled": "Conector habilitado",
+      "disabled": "Conector desabilitado",
+      "port": "Porta",
+      "status": "Status",
+      "connected": "Conectado",
+      "disconnected": "Desconectado"
+    }
+  },
+  "errors": {
+    "generic": "Algo deu errado. Por favor, tente novamente.",
+    "network": "Erro de rede. Por favor, verifique sua conexão.",
+    "unauthorized": "Não autorizado. Por favor, verifique sua chave da API.",
+    "notFound": "Recurso não encontrado.",
+    "rateLimit": "Limite de requisições excedido. Por favor, aguarde e tente novamente.",
+    "timeout": "Tempo limite da requisição excedido. Por favor, tente novamente."
+  }
+}

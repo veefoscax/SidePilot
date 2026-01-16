@@ -7,6 +7,7 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ export function InputArea({
   disabled = false,
   placeholder = "Message..."
 }: InputAreaProps) {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -220,16 +222,16 @@ export function InputArea({
       // Get the active tab
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab || !tab.id) {
-        toast.error('No active tab found');
+        toast.error(t('workflow.error.noActiveTab'));
         return;
       }
 
       // Start recording
       await startRecording(tab.id);
-      toast.success('Recording started! Perform actions in the browser.');
+      toast.success(t('workflow.recordingStarted'));
     } catch (error) {
       console.error('Failed to start recording:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to start recording');
+      toast.error(error instanceof Error ? error.message : t('workflow.error.startFailed'));
     }
   };
 
@@ -243,7 +245,7 @@ export function InputArea({
       }
     } catch (error) {
       console.error('Failed to stop recording:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to stop recording');
+      toast.error(error instanceof Error ? error.message : t('workflow.error.stopFailed'));
     }
   };
 
@@ -271,7 +273,7 @@ export function InputArea({
         <div className="max-w-4xl mx-auto mb-2">
           <Badge variant="secondary" className="text-xs">
             <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3 mr-1" />
-            {messageQueue.length} message{messageQueue.length > 1 ? 's' : ''} queued
+            {t('chat.messagesQueued', { count: messageQueue.length })}
           </Badge>
         </div>
       )}
@@ -301,9 +303,9 @@ export function InputArea({
               onKeyDown={handleKeyDown}
               placeholder={
                 isStreaming
-                  ? "Type to queue next message..."
+                  ? t('chat.placeholder.queueNext')
                   : disabled
-                    ? "AI is responding..."
+                    ? t('chat.placeholder.responding')
                     : placeholder
               }
               disabled={disabled && !isStreaming}
@@ -342,12 +344,13 @@ export function InputArea({
         {/* Keyboard shortcut hint */}
         <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
           <span>
-            Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to {isStreaming ? 'queue' : 'send'},
-            <kbd className="px-1 py-0.5 bg-muted rounded text-xs ml-1">Shift + Enter</kbd> for new line
+            {t('chat.keyboardHint.enter', { action: isStreaming ? t('chat.keyboardHint.queue') : t('chat.keyboardHint.send') })}
+            {' '}
+            {t('chat.keyboardHint.shiftEnter')}
           </span>
 
           {isStreaming && (
-            <span className="text-primary">AI is typing...</span>
+            <span className="text-primary">{t('chat.aiTyping')}</span>
           )}
         </div>
       </div>
@@ -369,7 +372,7 @@ export function InputArea({
         onOpenChange={setShowWorkflowEditor}
         workflow={completedWorkflow}
         onSuccess={(workflowId) => {
-          toast.success('Workflow saved as shortcut!');
+          toast.success(t('workflow.savedAsShortcut'));
           setCompletedWorkflow(null);
         }}
         onDiscard={() => {

@@ -6,6 +6,7 @@
  */
 
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/stores/chat';
 import { useMultiProviderStore } from '@/stores/multi-provider';
 import { toolRegistry } from '@/tools/registry';
@@ -34,6 +35,7 @@ interface ChatPageProps {
 }
 
 export function ChatPage({ onBack, onSettings }: ChatPageProps) {
+  const { t } = useTranslation();
   const {
     messages,
     isStreaming,
@@ -75,7 +77,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
     const activeProviderInstance = getCurrentProviderInstance();
 
     if (!currentProvider || !activeProviderInstance) {
-      setError('No active model selected. Please select a model from the dropdown or configure a provider in Settings.');
+      setError(t('chat.error.noModel'));
       return;
     }
 
@@ -326,7 +328,7 @@ Always use tools when appropriate instead of just describing how to do something
           {/* Message count badge */}
           {messages.length > 0 && (
             <Badge variant="secondary" className="text-xs">
-              {messages.length} messages
+              {t('chat.messageCount', { count: messages.length })}
             </Badge>
           )}
 
@@ -337,7 +339,7 @@ Always use tools when appropriate instead of just describing how to do something
               size="icon"
               onClick={revertLastMessage}
               className="h-8 w-8"
-              title="Revert last response"
+              title={t('chat.revertLast')}
             >
               <HugeiconsIcon icon={UndoIcon} className="h-4 w-4" />
             </Button>
@@ -350,7 +352,7 @@ Always use tools when appropriate instead of just describing how to do something
               size="icon"
               onClick={clearMessages}
               className="h-8 w-8"
-              title="Clear chat"
+              title={t('chat.clear')}
             >
               <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
             </Button>
@@ -373,14 +375,14 @@ Always use tools when appropriate instead of just describing how to do something
         <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
           <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-200">
             <HugeiconsIcon icon={WifiOffIcon} className="h-4 w-4" />
-            <span>No models selected for chat.</span>
+            <span>{t('chat.noModelsSelected')}</span>
             <Button
               variant="link"
               size="sm"
               onClick={onSettings}
               className="h-auto p-0 text-yellow-800 dark:text-yellow-200 underline"
             >
-              Select models
+              {t('chat.selectModels')}
             </Button>
           </div>
         </div>
@@ -400,10 +402,8 @@ Always use tools when appropriate instead of just describing how to do something
         <Alert className="mx-4 mt-2 mb-0">
           <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4" />
           <AlertDescription className="text-sm">
-            <span className="font-medium">Browser automation disabled.</span>{' '}
-            The selected model ({currentProvider.model.name}) doesn't support tool use. 
-            You can still chat, but browser automation features won't work. 
-            Select a model with tool support for full functionality.
+            <span className="font-medium">{t('chat.toolsDisabled.title')}</span>{' '}
+            {t('chat.toolsDisabled.description', { modelName: currentProvider.model.name })}
           </AlertDescription>
         </Alert>
       )}
@@ -418,12 +418,12 @@ Always use tools when appropriate instead of just describing how to do something
           disabled={isStreaming || !hasActiveProvider}
           placeholder={
             !hasModelsAvailable
-              ? "Select a model to start chatting..."
+              ? t('chat.placeholder.selectModel')
               : !hasActiveProvider
-                ? "Model not available..."
+                ? t('chat.placeholder.modelNotAvailable')
                 : isStreaming
-                  ? "AI is responding..."
-                  : "Message..."
+                  ? t('chat.placeholder.responding')
+                  : t('chat.placeholder.default')
           }
         />
       </div>

@@ -5,6 +5,7 @@
  * Shows model names with checkboxes and displays selected models with capabilities.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,11 +20,13 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({ selectedModels, onToggleModel, models, disabled, isLoading }: ModelSelectorProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Models
+          {t('providers.models')}
         </label>
         {/* Skeleton loading effect */}
         <div className="space-y-2">
@@ -39,10 +42,10 @@ export function ModelSelector({ selectedModels, onToggleModel, models, disabled,
     return (
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Models
+          {t('providers.models')}
         </label>
         <div className="text-sm text-muted-foreground">
-          Add an API key to see available models
+          {t('providers.addApiKeyToSeeModels')}
         </div>
       </div>
     );
@@ -51,7 +54,7 @@ export function ModelSelector({ selectedModels, onToggleModel, models, disabled,
   return (
     <div className="space-y-3">
       <label className="text-sm font-medium text-foreground">
-        Models ({selectedModels.length} selected)
+        {t('providers.modelsSelected', { count: selectedModels.length })}
       </label>
       
       {/* Model list with checkboxes */}
@@ -73,10 +76,10 @@ export function ModelSelector({ selectedModels, onToggleModel, models, disabled,
                   {model.name}
                 </label>
                 <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                  <span>{(model.capabilities.contextWindow / 1000).toFixed(0)}K context</span>
+                  <span>{(model.capabilities.contextWindow / 1000).toFixed(0)}K {t('providers.context')}</span>
                   {model.pricing && (
                     <span>
-                      ${model.pricing.inputPer1M.toFixed(2)}/${model.pricing.outputPer1M.toFixed(2)} per 1M
+                      ${model.pricing.inputPer1M.toFixed(2)}/${model.pricing.outputPer1M.toFixed(2)} {t('providers.per1M')}
                     </span>
                   )}
                 </div>
@@ -89,7 +92,7 @@ export function ModelSelector({ selectedModels, onToggleModel, models, disabled,
       {/* Selected models summary */}
       {selectedModels.length > 0 && (
         <div className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground">Selected Models:</div>
+          <div className="text-xs font-medium text-muted-foreground">{t('providers.selectedModels')}:</div>
           <div className="flex flex-wrap gap-1">
             {selectedModels.map((modelId) => {
               const model = models.find(m => m.id === modelId);

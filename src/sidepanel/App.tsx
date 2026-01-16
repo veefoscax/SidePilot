@@ -14,6 +14,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { initializeTheme } from '@/lib/theme';
 import { useChatStore } from '@/stores/chat';
+import { useSettingsStore } from '@/stores/settings';
 import { useMultiProviderStore } from '@/stores/multi-provider';
 import { useShortcutsStore } from '@/stores/shortcuts';
 import { toolRegistry } from '@/tools/registry';
@@ -79,7 +80,11 @@ function App() {
     // Initialize theme detection and shortcuts store
     const initializeApp = async () => {
       try {
-        // Initialize theme detection
+        // Initialize theme from settings store (triggers rehydration)
+        // The settings store's onRehydrateStorage will apply the persisted theme
+        const settingsTheme = useSettingsStore.getState().theme;
+        
+        // Also initialize theme detection for system theme changes
         const detectedTheme = await initializeTheme();
 
         // Initialize shortcuts store
@@ -95,7 +100,7 @@ function App() {
         if (typeof chrome !== 'undefined' && chrome.runtime) {
           chrome.runtime.sendMessage({
             type: 'THEME_CHANGED',
-            payload: { theme: detectedTheme }
+            payload: { theme: settingsTheme === 'system' ? detectedTheme : settingsTheme }
           }).catch(() => {
             // Ignore if service worker is not available
           });

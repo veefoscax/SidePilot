@@ -1,0 +1,254 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "reset": "Reset to Defaults",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "search": "Search",
+    "noResults": "No results found",
+    "retry": "Retry",
+    "copy": "Copy",
+    "copied": "Copied!"
+  },
+  "settings": {
+    "title": "General Settings",
+    "pageTitle": "SidePilot Settings",
+    "pageDescription": "Configure multiple LLM providers and manage your model collection",
+    "language": {
+      "label": "Language",
+      "description": "Choose your preferred language"
+    },
+    "theme": {
+      "label": "Theme",
+      "description": "Choose your color theme",
+      "system": "System Default",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "version": "Version {{version}}",
+    "resetConfirm": {
+      "title": "Reset to Defaults?",
+      "description": "This will reset all general settings to their default values."
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "send": "Send",
+    "clear": "Clear Chat",
+    "revertLast": "Revert last response",
+    "messageCount": "{{count}} messages",
+    "messageCount_one": "{{count}} message",
+    "messagesQueued": "{{count}} messages queued",
+    "messagesQueued_one": "{{count}} message queued",
+    "noModelsSelected": "No models selected for chat.",
+    "selectModels": "Select models",
+    "aiTyping": "AI is typing...",
+    "clearConfirm": {
+      "title": "Clear Chat?",
+      "description": "This will delete all messages in the current conversation."
+    },
+    "newConversation": "New Conversation",
+    "conversations": "Conversations",
+    "noMessages": "No messages yet. Start a conversation!",
+    "thinking": "Thinking...",
+    "streaming": "Streaming response...",
+    "placeholder": {
+      "default": "Message...",
+      "selectModel": "Select a model to start chatting...",
+      "modelNotAvailable": "Model not available...",
+      "responding": "AI is responding...",
+      "queueNext": "Type to queue next message..."
+    },
+    "keyboardHint": {
+      "enter": "Press Enter to {{action}},",
+      "send": "send",
+      "queue": "queue",
+      "shiftEnter": "Shift + Enter for new line"
+    },
+    "toolsDisabled": {
+      "title": "Browser automation disabled.",
+      "description": "The selected model ({{modelName}}) doesn't support tool use. You can still chat, but browser automation features won't work. Select a model with tool support for full functionality."
+    },
+    "error": {
+      "sendFailed": "Failed to send message",
+      "connectionLost": "Connection lost. Please try again.",
+      "noModel": "No active model selected. Please select a model from the dropdown or configure a provider in Settings."
+    },
+    "voice": {
+      "start": "Start voice input",
+      "stop": "Stop voice input",
+      "listening": "Listening...",
+      "notSupported": "Voice input is not supported in this browser"
+    }
+  },
+  "providers": {
+    "title": "Provider Settings",
+    "llmProvider": "LLM Provider",
+    "models": "Models",
+    "modelsSelected": "Models ({{count}} selected)",
+    "selectedModels": "Selected Models",
+    "context": "context",
+    "per1M": "per 1M",
+    "addApiKeyToSeeModels": "Add an API key to see available models",
+    "addProvider": "Add Provider",
+    "editProvider": "Edit Provider",
+    "deleteProvider": "Delete Provider",
+    "noProviders": "No providers configured",
+    "selectProvider": "Select a provider",
+    "selectModel": "Select a model",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "Enter your API key",
+    "baseUrl": "Base URL",
+    "baseUrlPlaceholder": "Enter base URL (optional)",
+    "testConnection": "Test Connection",
+    "connectionSuccess": "Connection successful!",
+    "connectionFailed": "Connection failed",
+    "loadingModels": "Loading models...",
+    "noModels": "No models available",
+    "deleteConfirm": {
+      "title": "Delete Provider?",
+      "description": "This will remove the provider and all its settings."
+    },
+    "capabilities": {
+      "vision": "Vision",
+      "tools": "Tool Use",
+      "streaming": "Streaming",
+      "json": "JSON Mode"
+    }
+  },
+  "shortcuts": {
+    "title": "Shortcuts",
+    "addShortcut": "Add Shortcut",
+    "editShortcut": "Edit Shortcut",
+    "deleteShortcut": "Delete Shortcut",
+    "noShortcuts": "No shortcuts configured",
+    "name": "Name",
+    "namePlaceholder": "Enter shortcut name",
+    "prompt": "Prompt",
+    "promptPlaceholder": "Enter the prompt template",
+    "trigger": "Trigger",
+    "triggerPlaceholder": "e.g., /search",
+    "deleteConfirm": {
+      "title": "Delete Shortcut?",
+      "description": "This will permanently remove this shortcut."
+    }
+  },
+  "permissions": {
+    "title": "Permissions",
+    "description": "Manage what actions the AI can perform",
+    "allow": "Allow",
+    "deny": "Deny",
+    "askEveryTime": "Ask every time",
+    "alwaysAllow": "Always allow",
+    "alwaysDeny": "Always deny",
+    "requestTitle": "Permission Request",
+    "requestDescription": "The AI wants to perform the following action:",
+    "remember": "Remember this choice",
+    "categories": {
+      "navigation": "Navigation",
+      "interaction": "Page Interaction",
+      "data": "Data Access",
+      "system": "System Actions"
+    }
+  },
+  "tools": {
+    "title": "Browser Tools",
+    "description": "Tools available for browser automation",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "categories": {
+      "navigation": "Navigation",
+      "interaction": "Interaction",
+      "data": "Data Extraction",
+      "tabs": "Tab Management",
+      "system": "System"
+    }
+  },
+  "workflow": {
+    "title": "Workflow Recording",
+    "startRecording": "Start Recording",
+    "stopRecording": "Stop Recording",
+    "pauseRecording": "Pause Recording",
+    "resumeRecording": "Resume Recording",
+    "recording": "Recording...",
+    "paused": "Paused",
+    "steps": "Steps",
+    "noSteps": "No steps recorded yet",
+    "saveWorkflow": "Save Workflow",
+    "discardWorkflow": "Discard Workflow",
+    "workflowName": "Workflow Name",
+    "workflowNamePlaceholder": "Enter workflow name",
+    "recordingStarted": "Recording started! Perform actions in the browser.",
+    "savedAsShortcut": "Workflow saved as shortcut!",
+    "error": {
+      "noActiveTab": "No active tab found",
+      "startFailed": "Failed to start recording",
+      "stopFailed": "Failed to stop recording"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "enabled": "Notifications enabled",
+    "disabled": "Notifications disabled",
+    "permission": {
+      "title": "Enable Notifications",
+      "description": "Allow SidePilot to send you notifications"
+    },
+    "types": {
+      "title": "Notification Types",
+      "taskComplete": "Task complete",
+      "permissionRequired": "Permission required",
+      "error": "Errors"
+    },
+    "sound": {
+      "label": "Sound",
+      "description": "Play sound with notifications"
+    },
+    "test": {
+      "label": "Test Notification",
+      "description": "Send a test notification to verify settings",
+      "button": "Test",
+      "sent": "Sent!",
+      "failed": "Failed"
+    }
+  },
+  "mcp": {
+    "title": "MCP Integration",
+    "servers": "MCP Servers",
+    "addServer": "Add Server",
+    "noServers": "No MCP servers configured",
+    "connector": {
+      "title": "MCP Connector",
+      "description": "Expose browser tools to external LLM clients",
+      "enabled": "Connector enabled",
+      "disabled": "Connector disabled",
+      "port": "Port",
+      "status": "Status",
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "Unauthorized. Please check your API key.",
+    "notFound": "Resource not found.",
+    "rateLimit": "Rate limit exceeded. Please wait and try again.",
+    "timeout": "Request timed out. Please try again."
+  }
+}

@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -73,6 +74,7 @@ const DEFAULT_NOTIFICATION_CONFIG: NotificationConfig = {
  * Requirements: AC4
  */
 function NotificationSettings() {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(true);
   const [config, setConfig] = useState<NotificationConfig>(DEFAULT_NOTIFICATION_CONFIG);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,8 +134,8 @@ function NotificationSettings() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-medium">Notifications</h3>
-            <p className="text-sm text-muted-foreground">Loading...</p>
+            <h3 className="text-base font-medium">{t('notifications.title')}</h3>
+            <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
           </div>
         </div>
       </div>
@@ -148,9 +150,9 @@ function NotificationSettings() {
           <div className="flex items-center gap-2">
             <HugeiconsIcon icon={Notification01Icon} className="h-4 w-4 text-primary" />
             <div>
-              <h3 className="text-base font-medium">Notifications</h3>
+              <h3 className="text-base font-medium">{t('notifications.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                {config.enabled ? 'Enabled' : 'Disabled'}
+                {config.enabled ? t('notifications.enabled') : t('notifications.disabled')}
               </p>
             </div>
           </div>
@@ -171,10 +173,10 @@ function NotificationSettings() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="notifications-enabled" className="text-sm font-medium">
-                    Enable notifications
+                    {t('notifications.permission.title')}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Show Chrome notifications for important events
+                    {t('notifications.permission.description')}
                   </p>
                 </div>
                 <Switch
@@ -188,7 +190,7 @@ function NotificationSettings() {
 
               {/* Individual Type Toggles */}
               <div className="space-y-3">
-                <h4 className="text-sm font-medium">Notification Types</h4>
+                <h4 className="text-sm font-medium">{t('notifications.types.title')}</h4>
                 
                 <div className="space-y-3">
                   {/* Task Complete */}
@@ -196,7 +198,7 @@ function NotificationSettings() {
                     <div className="flex items-center gap-2">
                       <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-green-500" />
                       <Label htmlFor="notify-task-complete" className="text-xs">
-                        Task complete
+                        {t('notifications.types.taskComplete')}
                       </Label>
                     </div>
                     <Switch
@@ -212,7 +214,7 @@ function NotificationSettings() {
                     <div className="flex items-center gap-2">
                       <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-yellow-500" />
                       <Label htmlFor="notify-permission" className="text-xs">
-                        Permission required
+                        {t('notifications.types.permissionRequired')}
                       </Label>
                     </div>
                     <Switch
@@ -228,7 +230,7 @@ function NotificationSettings() {
                     <div className="flex items-center gap-2">
                       <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-red-500" />
                       <Label htmlFor="notify-error" className="text-xs">
-                        Errors
+                        {t('notifications.types.error')}
                       </Label>
                     </div>
                     <Switch
@@ -249,10 +251,10 @@ function NotificationSettings() {
                   <HugeiconsIcon icon={VolumeHighIcon} className="h-4 w-4 text-muted-foreground" />
                   <div className="space-y-0.5">
                     <Label htmlFor="sound-enabled" className="text-xs">
-                      Sound
+                      {t('notifications.sound.label')}
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Play sound with notifications
+                      {t('notifications.sound.description')}
                     </p>
                   </div>
                 </div>
@@ -269,9 +271,9 @@ function NotificationSettings() {
               {/* Test Notification Button */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">Test Notification</Label>
+                  <Label className="text-sm font-medium">{t('notifications.test.label')}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Send a test notification to verify settings
+                    {t('notifications.test.description')}
                   </p>
                 </div>
                 <Button
@@ -283,15 +285,15 @@ function NotificationSettings() {
                   {testStatus === 'sent' ? (
                     <>
                       <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 mr-1 text-green-500" />
-                      Sent!
+                      {t('notifications.test.sent')}
                     </>
                   ) : testStatus === 'error' ? (
                     <>
                       <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 mr-1 text-red-500" />
-                      Failed
+                      {t('notifications.test.failed')}
                     </>
                   ) : (
-                    'Test'
+                    t('notifications.test.button')
                   )}
                 </Button>
               </div>
@@ -304,6 +306,7 @@ function NotificationSettings() {
 }
 
 export function SettingsPage({ onBack }: SettingsPageProps) {
+  const { t } = useTranslation();
   const [browserSettings, setBrowserSettings] = useState<BrowserAutomationSettingsConfig>(DEFAULT_BROWSER_SETTINGS);
   
   // Get current model from multi-provider store for warnings display
@@ -342,9 +345,9 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             </Button>
           )}
           <div>
-            <h1 className="text-lg font-semibold">SidePilot Settings</h1>
+            <h1 className="text-lg font-semibold">{t('settings.pageTitle')}</h1>
             <p className="text-sm text-muted-foreground">
-              Configure multiple LLM providers and manage your model collection
+              {t('settings.pageDescription')}
             </p>
           </div>
         </div>
