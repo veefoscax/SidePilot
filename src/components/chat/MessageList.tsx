@@ -3,10 +3,13 @@
  * 
  * Displays chat messages with modern UX patterns including message grouping,
  * smart timestamp display, and improved spacing following iMessage/WhatsApp conventions.
+ * 
+ * AC4: Adapts the thinking indicator based on model streaming capability.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { useChatStore, type Message } from '@/stores/chat';
+import { useMultiProviderStore } from '@/stores/multi-provider';
 import { UserMessage } from './UserMessage';
 import { AssistantMessage } from './AssistantMessage';
 import { StreamingMessage } from './StreamingMessage';
@@ -49,10 +52,15 @@ function shouldShowTimestamp(current: Message, previous: Message, next: Message)
 
 export function MessageList() {
   const { messages, isStreaming, streamingContent, streamingReasoning, error } = useChatStore();
+  const { getCurrentProvider } = useMultiProviderStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPinnedToBottom, setIsPinnedToBottom] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
+
+  // Get current model's streaming capability
+  const currentProvider = getCurrentProvider();
+  const supportsStreaming = currentProvider?.model?.capabilities?.supportsStreaming ?? true;
 
   // Auto-scroll to bottom when new messages arrive or streaming updates
   useEffect(() => {
@@ -129,13 +137,17 @@ export function MessageList() {
           );
         })}
 
-        {/* Streaming message */}
-        {isStreaming && (streamingContent || streamingReasoning) && (
+        {/* Streaming message - only show for streaming models when content is available */}
+        {isStreaming && supportsStreaming && (streamingContent || streamingReasoning) && (
           <StreamingMessage />
         )}
 
-        {/* Thinking indicator - only when streaming but no content yet */}
-        {isStreaming && !streamingContent && !streamingReasoning && <ThinkingIndicator />}
+        {/* Thinking indicator - adapts based on streaming capability (AC4) */}
+        {/* For streaming models: shows animated dots while waiting for first content */}
+        {/* For non-streaming models: shows static "Generating..." until full response */}
+        {isStreaming && !streamingContent && !streamingReasoning && (
+          <ThinkingIndicator supportsStreaming={supportsStreaming} />
+        )}
 
         {/* Error display */}
         {error && <ErrorCard error={error} />}

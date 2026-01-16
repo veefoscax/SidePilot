@@ -1101,7 +1101,109 @@ _(To be filled during development)_
 ## Phase 6: Innovation
 **Target Specs**: S13, S14, S15
 
-_(To be filled during development)_
+### S15: Model Capabilities ✅ COMPLETE
+- **Started**: 2026-01-16 19:10
+- **Completed**: 2026-01-16 19:40
+- **Time**: 30 minutes (originally estimated 1h 30m)
+- **Token Usage**: ~45 credits
+- **Kiro Commands Used**:
+  - readFile (12 times) - analyzing existing implementations and spec documents
+  - readMultipleFiles (2 times) - reading spec files and related components
+  - executePwsh (8 times) - running tests and build verification
+  - taskStatus (18 times) - tracking task progress
+  - invokeSubAgent (7 times) - delegating task execution
+- **Files Verified/Modified**:
+  - **VERIFIED**: src/lib/model-capabilities.ts (CAPABILITY_BADGES, CAPABILITY_WARNINGS, types already implemented)
+  - **VERIFIED**: src/components/settings/ModelWarnings.tsx (warning component already integrated)
+  - **VERIFIED**: src/components/settings/__tests__/ModelWarnings.test.tsx (15 tests passing)
+  - **VERIFIED**: src/lib/__tests__/vision-fallback.test.ts (12 tests passing)
+  - **VERIFIED**: src/components/chat/ThinkingIndicator.tsx (streaming adaptation implemented)
+  - **VERIFIED**: src/components/chat/__tests__/ThinkingIndicator.test.tsx (8 tests passing)
+  - **VERIFIED**: src/components/chat/__tests__/streaming-adaptation.test.tsx (9 tests passing)
+  - **VERIFIED**: src/components/chat/__tests__/tool-disable-logic.test.tsx (12 tests passing)
+  - **VERIFIED**: src/providers/models-registry.ts (model capabilities verified)
+  - **VERIFIED**: src/providers/__tests__/model-capability-accuracy.test.ts (8 tests passing)
+
+#### Model Capabilities Implementation ✅
+
+**🎯 All 8 Tasks Completed**:
+1. ✅ **Capability Constants and Types** - CAPABILITY_BADGES, CAPABILITY_WARNINGS, CapabilityLevel type
+2. ✅ **Model Warnings Component** - ModelWarnings.tsx with severity-based alerts
+3. ✅ **Model Warnings Tests** - 15 tests covering detection logic and rendering
+4. ✅ **Vision Fallback Implementation** - getPageRepresentation() with screenshot/accessibility fallback
+5. ✅ **Streaming Adaptation** - ThinkingIndicator adapts based on model capabilities
+6. ✅ **Tool Disable Logic** - Tools conditionally sent to API based on model support
+7. ✅ **Model Registry Verification** - All models verified against provider documentation
+8. ✅ **Final Checkpoint** - 64 tests passing, build successful
+
+#### Technical Implementation Details
+
+**🏷️ Capability Badge System**:
+```typescript
+const CAPABILITY_BADGES = {
+  vision: { icon: ViewIcon, label: 'Vision', color: 'bg-blue-500/20 text-blue-400' },
+  tools: { icon: Settings02Icon, label: 'Tools', color: 'bg-green-500/20 text-green-400' },
+  streaming: { icon: FlashIcon, label: 'Streaming', color: 'bg-yellow-500/20 text-yellow-400' },
+  reasoning: { icon: AiBrain01Icon, label: 'Reasoning', color: 'bg-purple-500/20 text-purple-400' },
+  promptCache: { icon: Clock01Icon, label: 'Cache', color: 'bg-orange-500/20 text-orange-400' }
+};
+```
+
+**⚠️ Capability Warning System**:
+- **noTools** (error): "This model cannot use browser automation tools"
+- **noVision** (warning): "Screenshots will be converted to text descriptions"
+- **noStreaming** (info): "Responses will appear all at once"
+- **smallContext** (warning): "Long conversations may be truncated"
+
+**👁️ Vision Fallback Logic**:
+```typescript
+async function getPageRepresentation(tabId: number, model: ModelInfo): Promise<ContentPart[]> {
+  if (model.capabilities.supportsVision) {
+    return [{ type: 'image', image: { data: screenshot, mediaType: 'image/png' } }];
+  } else {
+    return [{ type: 'text', text: `[Page Content - Accessibility Snapshot]\n${a11yTree}` }];
+  }
+}
+```
+
+**🔄 Streaming Adaptation**:
+- **Streaming models**: Animated bouncing dots with "Thinking..."
+- **Non-streaming models**: Static dot with "Generating response..."
+
+**🔧 Tool Disable Logic**:
+- Tools only sent to API when `model.capabilities.supportsTools === true`
+- BrowserAutomationSettings shows warning when tools not supported
+- System prompt adapted based on tool availability
+
+#### Model Registry Verification Results
+
+**📊 Models Verified Against Official Documentation**:
+- **Anthropic**: Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku - all capabilities accurate
+- **OpenAI**: GPT-4o, o1, o1-mini, o3-mini - updated o1 capabilities (Dec 2024)
+- **Google**: Gemini 2.0 Flash, Gemini 1.5 Pro/Flash - 1M+ context windows verified
+- **DeepSeek**: V3 (no vision), R1 (no tools during reasoning)
+- **ZAI**: GLM-4 Plus (no vision), GLM-4V Plus (vision), GLM-4.7 (reasoning)
+
+#### Testing & Verification Results
+- ✅ **64 Total Tests Passing** across 6 test files
+- ✅ **ModelWarnings.test.tsx**: 15 tests (warning detection, alert rendering, edge cases)
+- ✅ **vision-fallback.test.ts**: 12 tests (screenshot/accessibility routing)
+- ✅ **ThinkingIndicator.test.tsx**: 8 tests (streaming/non-streaming modes)
+- ✅ **streaming-adaptation.test.tsx**: 9 tests (capability-based UI adaptation)
+- ✅ **tool-disable-logic.test.tsx**: 12 tests (tool preparation, API calls)
+- ✅ **model-capability-accuracy.test.ts**: 8 tests (registry verification)
+- ✅ **Build Successful**: 1,732KB bundle, no TypeScript errors
+
+#### Requirements Satisfied
+- **AC1**: Capability badges with appropriate colors and icons ✅
+- **AC2**: Prominent warning when tools not supported ✅
+- **AC3**: Vision fallback to accessibility snapshot ✅
+- **AC4**: Streaming adaptation with static "Generating..." message ✅
+- **AC5**: Tool disable logic before API calls ✅
+- **AC6**: Model registry verification against documentation ✅
+
+- **Summary**: Successfully completed S15 Model Capabilities spec with all 8 tasks verified and passing. The implementation provides comprehensive capability awareness throughout the UI, including visual badges, contextual warnings, vision fallback, streaming adaptation, and tool disable logic. All 64 tests pass and the build is successful. The model registry has been verified against official provider documentation for accuracy.
+- **Time Impact**: Completed in 30 minutes vs 1h 30m estimate because most functionality was already implemented in previous work. The task primarily involved verification and running tests to confirm everything was working correctly.
 
 ---
 

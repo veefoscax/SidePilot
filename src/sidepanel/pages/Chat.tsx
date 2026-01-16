@@ -17,13 +17,15 @@ import { CapabilityWarnings } from '@/components/chat/CapabilityWarnings';
 import { RecordingBar } from '@/components/RecordingBar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowLeft01Icon,
   Settings02Icon,
   Delete01Icon,
   WifiOffIcon,
-  UndoIcon
+  UndoIcon,
+  InformationCircleIcon
 } from '@hugeicons/core-free-icons';
 
 interface ChatPageProps {
@@ -90,38 +92,43 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
         { role: 'user' as const, content }
       ];
 
+      // Check if model supports tools before preparing them
+      const supportsTools = currentProvider.model.capabilities?.supportsTools ?? true;
+      
       // Stream response from provider using the current model
-      const tools = activeProviderInstance.type === 'anthropic'
-        ? toolRegistry.getAnthropicTools().map(tool => ({
-          name: tool.name,
-          description: tool.description,
-          inputSchema: tool.input_schema
-        }))
-        : toolRegistry.getOpenAITools().map(tool => ({
-          name: tool.function.name,
-          description: tool.function.description,
-          inputSchema: tool.function.parameters
-        }));
+      const tools = supportsTools
+        ? (activeProviderInstance.type === 'anthropic'
+          ? toolRegistry.getAnthropicTools().map(tool => ({
+            name: tool.name,
+            description: tool.description,
+            inputSchema: tool.input_schema
+          }))
+          : toolRegistry.getOpenAITools().map(tool => ({
+            name: tool.function.name,
+            description: tool.function.description,
+            inputSchema: tool.function.parameters
+          })))
+        : undefined; // Don't send tools if model doesn't support them
 
       console.log('🔧 Chat.tsx - Tools prepared:', {
         providerType: activeProviderInstance.type,
-        toolsCount: tools.length,
-        toolNames: tools.map(t => t.name),
-        firstTool: tools[0],
+        supportsTools,
+        toolsCount: tools?.length ?? 0,
+        toolNames: tools?.map(t => t.name) ?? [],
+        firstTool: tools?.[0],
         allTools: tools
       });
 
       console.log('🔧 Chat.tsx - About to call stream with options:', {
         model: currentProvider.model.id,
         hasTools: !!tools,
-        toolsCount: tools.length,
+        toolsCount: tools?.length ?? 0,
         hasSystemPrompt: true
       });
 
-      const stream = activeProviderInstance.stream(allMessages, {
-        model: currentProvider.model.id, // Use the selected model ID
-        tools, // Pass tools in unified format
-        systemPrompt: `You are SidePilot, an AI assistant with browser automation capabilities. You have access to the following tools:
+      // Build system prompt based on tool support
+      const systemPrompt = supportsTools
+        ? `You are SidePilot, an AI assistant with browser automation capabilities. You have access to the following tools:
 
 - screenshot: Capture and annotate web pages with element bounding boxes
 - click: Click on elements using coordinates, references, or natural language descriptions
@@ -136,7 +143,13 @@ When a user asks you to interact with a web page, USE THESE TOOLS. For example:
 - "Go to google.com" → Use the navigate tool
 - "Extract all links" → Use the extract tool
 
-Always use tools when appropriate instead of just describing how to do something manually.`,
+Always use tools when appropriate instead of just describing how to do something manually.`
+        : `You are SidePilot, an AI assistant. Note: This model does not support tool use, so browser automation features are not available. You can still help with questions, explanations, and general assistance, but you cannot directly interact with web pages.`;
+
+      const stream = activeProviderInstance.stream(allMessages, {
+        model: currentProvider.model.id, // Use the selected model ID
+        tools, // Pass tools in unified format (or undefined if not supported)
+        systemPrompt,
       });
       let fullContent = '';
       const toolCalls: any[] = [];
@@ -380,6 +393,19 @@ Always use tools when appropriate instead of just describing how to do something
           requirements={{ tools: true }} // Chat interface requires tools
           className="p-4 border-b"
         />
+      )}
+
+      {/* Tools disabled info message */}
+      {currentProvider && !currentProvider.model.capabilities?.supportsTools && (
+        <Alert className="mx-4 mt-2 mb-0">
+          <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            <span className="font-medium">Browser automation disabled.</span>{' '}
+            The selected model ({currentProvider.model.name}) doesn't support tool use. 
+            You can still chat, but browser automation features won't work. 
+            Select a model with tool support for full functionality.
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Message list */}

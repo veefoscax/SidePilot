@@ -31,7 +31,9 @@ import {
 import { PermissionsManager } from '@/components/settings/PermissionsManager';
 import { MCPSettings } from '@/components/settings/MCPSettings';
 import { MCPConnectorSettings } from '@/components/settings/MCPConnectorSettings';
+import { ModelWarnings } from '@/components/settings/ModelWarnings';
 import { notifications, type NotificationConfig } from '@/lib/notifications';
+import { useMultiProviderStore } from '@/stores/multi-provider';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -303,6 +305,16 @@ function NotificationSettings() {
 
 export function SettingsPage({ onBack }: SettingsPageProps) {
   const [browserSettings, setBrowserSettings] = useState<BrowserAutomationSettingsConfig>(DEFAULT_BROWSER_SETTINGS);
+  
+  // Get current model from multi-provider store for warnings display
+  const currentProvider = useMultiProviderStore(state => state.getCurrentProvider());
+  const currentModel = currentProvider?.model ? {
+    id: currentProvider.model.id,
+    name: currentProvider.model.name,
+    provider: currentProvider.provider,
+    capabilities: currentProvider.model.capabilities,
+    pricing: currentProvider.model.pricing,
+  } : null;
 
   // Load settings from Chrome storage on mount
   useEffect(() => {
@@ -340,9 +352,11 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
 
       <div className="p-4 space-y-6">
         <MultiProviderManager />
+        <ModelWarnings model={currentModel} />
         <BrowserAutomationSettingsComponent
           settings={browserSettings}
           onSettingsChange={handleSettingsChange}
+          supportsTools={currentModel?.capabilities?.supportsTools ?? true}
         />
         <MCPSettings />
         <MCPConnectorSettings />

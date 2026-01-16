@@ -47,9 +47,10 @@ export interface BrowserAutomationSettings {
 interface BrowserAutomationSettingsProps {
   settings: BrowserAutomationSettings;
   onSettingsChange: (settings: BrowserAutomationSettings) => void;
+  supportsTools?: boolean; // Whether the current model supports tools
 }
 
-export function BrowserAutomationSettings({ settings, onSettingsChange }: BrowserAutomationSettingsProps) {
+export function BrowserAutomationSettings({ settings, onSettingsChange, supportsTools = true }: BrowserAutomationSettingsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [cloudStatus, setCloudStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [nativeStatus, setNativeStatus] = useState<'idle' | 'checking' | 'connected' | 'not-installed' | 'error'>('idle');
@@ -181,13 +182,19 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
           <div>
             <h3 className="text-base font-medium">Browser Automation</h3>
             <p className="text-sm text-muted-foreground">
-              {settings.backend === 'builtin' && 'Built-in CDP Engine'}
-              {settings.backend === 'browser-use-cloud' && 'Cloud-Powered Automation'}
-              {settings.backend === 'browser-use-native' && 'Local Python Backend'}
+              {!supportsTools ? (
+                <span className="text-yellow-600 dark:text-yellow-400">Tools not supported by current model</span>
+              ) : (
+                <>
+                  {settings.backend === 'builtin' && 'Built-in CDP Engine'}
+                  {settings.backend === 'browser-use-cloud' && 'Cloud-Powered Automation'}
+                  {settings.backend === 'browser-use-native' && 'Local Python Backend'}
+                </>
+              )}
             </p>
           </div>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" disabled={!supportsTools}>
               <HugeiconsIcon
                 icon={isExpanded ? ArrowUp01Icon : ArrowDown01Icon}
                 className="h-4 w-4"
@@ -195,6 +202,18 @@ export function BrowserAutomationSettings({ settings, onSettingsChange }: Browse
             </Button>
           </CollapsibleTrigger>
         </div>
+
+        {/* Tools not supported message */}
+        {!supportsTools && (
+          <Alert className="border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20">
+            <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+            <AlertDescription className="text-sm text-yellow-800 dark:text-yellow-200">
+              <span className="font-medium">Browser automation unavailable.</span>{' '}
+              The current model doesn't support tool use. Select a model with tool support 
+              (like Claude 3.5 Sonnet, GPT-4, or Gemini Pro) to enable browser automation features.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <CollapsibleContent className="space-y-4">
           {/* Backend Selection */}
