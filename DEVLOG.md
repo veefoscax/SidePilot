@@ -4500,3 +4500,94 @@ Build: Successful (10.57s)
 ```
 
 - **Summary**: S13 MCP Integration complete. SidePilot can now connect to external MCP servers, discover their tools, and use them alongside browser automation tools. Full Settings UI for managing servers and enabling/disabling individual tools.
+
+
+---
+
+### S14: MCP Connector - Task 1.1 Tests ✅ COMPLETE
+- **Started**: 2026-01-16 17:45
+- **Completed**: 2026-01-16 18:11
+- **Time**: 26 minutes
+- **Kiro Commands Used**:
+  - fsWrite (5 times) - creating test file, multiple rewrites due to mock hoisting issues
+  - strReplace (5 times) - fixing mock setup, type errors
+  - executePwsh (15 times) - running tests, debugging, cache clearing
+  - readFile (6 times) - analyzing existing tests, implementation, configs
+  - readMultipleFiles (3 times) - understanding tool registry, types, test patterns
+  - deleteFile (4 times) - removing failed test file attempts
+  - listDirectory (2 times) - verifying file structure
+  - taskStatus (2 times) - marking tasks complete
+  - getDiagnostics (2 times) - checking TypeScript errors
+- **Files Modified**:
+  - **NEW**: src/lib/__tests__/mcp-connector.test.ts (23 comprehensive unit tests)
+  - **UPDATED**: .kiro/specs/S14-mcp-connector/tasks.md (marked Task 1 and 1.1 complete)
+
+#### Major Struggles & Refactorings
+
+**🚨 Critical Issue: vi.mock Hoisting**
+- **Problem**: Tests failed with "No test suite found" error despite valid test file
+- **Root Cause**: vi.mock() calls are hoisted to top of file, but referenced variables (mockTools, mockExecuteTool) defined after the mock weren't available
+- **Discovery Process**: 
+  1. Initial test file created with fsWrite showed 0 bytes
+  2. Multiple rewrites still resulted in empty files
+  3. Used PowerShell Out-File to write test content directly
+  4. Discovered actual error: "Cannot access 'mockExecuteTool' before initialization"
+- **Solution**: Moved all mock tool creation inside the vi.mock() factory function
+- **Result**: All 23 tests pass successfully
+
+**🔧 File Writing Issue**:
+- **Problem**: fsWrite tool was creating 0-byte files
+- **Workaround**: Used PowerShell `Out-File` command to write test content
+- **Note**: This may be a temporary issue with the fsWrite tool
+
+#### Test Coverage (23 tests)
+
+**Singleton Pattern (2 tests)**:
+- Returns same instance
+- Creates new instance after reset
+
+**Initialization (3 tests)**:
+- Initializes with default config
+- Generates auth token (64 hex chars)
+- Loads config from storage
+
+**Configuration Management (2 tests)**:
+- Updates config and saves to storage
+- Sets exposed tools
+
+**Authentication (3 tests)**:
+- Validates correct token
+- Rejects incorrect token
+- Regenerates token
+
+**handleToolsList - AC2 (3 tests)**:
+- Returns empty array when no tools exposed
+- Returns only exposed tools
+- Returns Anthropic schema format
+
+**handleToolCall - AC3 (4 tests)**:
+- Rejects when disabled
+- Rejects unexposed tool
+- Executes when enabled and exposed
+- Returns error when no active tab
+
+**handleAuthenticatedToolCall - AC4 (3 tests)**:
+- Rejects missing token
+- Rejects invalid token
+- Accepts valid token
+
+**getActiveTabContext (2 tests)**:
+- Returns context for active tab
+- Returns null when no active tab
+
+**Error Handling (1 test)**:
+- Handles storage errors gracefully
+
+#### Test Results
+```bash
+✅ src/lib/__tests__/mcp-connector.test.ts - 23 tests passed
+Duration: 2.07s (transform 163ms, setup 322ms, import 128ms, tests 26ms)
+```
+
+- **Summary**: Completed Task 1.1 (Write tests for connector core) with 23 comprehensive unit tests covering all MCP Connector functionality. Tests validate singleton pattern, initialization, configuration, authentication, tool listing (AC2), tool execution (AC3), and authenticated tool calls (AC4). Also marked Task 1 (Connector Core Implementation) as complete since the implementation was already done.
+- **Time Impact**: Took longer than expected due to vi.mock hoisting issues and file writing problems, but resulted in thorough test coverage.

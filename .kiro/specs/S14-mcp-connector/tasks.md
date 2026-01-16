@@ -6,7 +6,7 @@ This implementation plan creates an MCP server connector that exposes SidePilot'
 
 ## Tasks
 
-- [ ] 1. Connector Core Implementation
+- [x] 1. Connector Core Implementation
   - Create src/lib/mcp-connector.ts
   - Define MCPConnectorConfig interface
   - Implement handleToolsList for tool discovery
@@ -15,12 +15,12 @@ This implementation plan creates an MCP server connector that exposes SidePilot'
   - Generate unique auth token for security
   - _Requirements: AC1, AC2_
 
-- [ ] 1.1 Write tests for connector core
+- [x] 1.1 Write tests for connector core
   - Test tools list generation
   - Test tool call routing
   - _Requirements: AC1_
 
-- [ ] 2. Communication Layer
+- [~] 2. Communication Layer
   - Choose approach (native messaging vs HTTP local server)
   - Implement message receiving with validation
   - Implement response sending with proper formatting
@@ -28,7 +28,7 @@ This implementation plan creates an MCP server connector that exposes SidePilot'
   - Implement request timeout handling
   - _Requirements: AC3_
 
-- [ ] 3. Settings UI Integration
+- [~] 3. Settings UI Integration
   - Add MCP Connector section to Settings
   - Add enable/disable toggle
   - Add tool selection checkboxes (expose subset of tools)
@@ -37,24 +37,24 @@ This implementation plan creates an MCP server connector that exposes SidePilot'
   - Show connection status
   - _Requirements: AC4_
 
-- [ ] 4. Checkpoint - Test Core Connector
+- [~] 4. Checkpoint - Test Core Connector
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Documentation
+- [~] 5. Documentation
   - Document how to connect from Cline
   - Document how to connect from Aider
   - Create companion proxy if needed for HTTP
   - Add troubleshooting guide
   - _Requirements: AC5_
 
-- [ ] 6. Integration Testing
+- [~] 6. Integration Testing
   - Test tool list response format
   - Test tool call execution and response
   - Test with real Cline/Aider (manual)
   - Test auth token validation
   - _Requirements: All_
 
-- [ ] 7. Final Checkpoint
+- [~] 7. Final Checkpoint
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
