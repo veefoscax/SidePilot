@@ -1,5 +1,8 @@
 console.log('🎯 SidePilot content script loaded on:', window.location.href);
 
+// Import workflow capture module
+import './workflow-capture';
+
 // Placeholder for future visual indicators
 // This will be expanded in later specs for:
 // - Visual feedback during automation
@@ -23,9 +26,9 @@ const initializeContentScript = () => {
     opacity: 0.7;
     pointer-events: none;
   `;
-  
+
   document.body.appendChild(indicator);
-  
+
   // Remove indicator after 3 seconds
   setTimeout(() => {
     indicator.remove();

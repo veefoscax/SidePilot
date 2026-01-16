@@ -91,3 +91,32 @@ This implementation plan creates a workflow recording system that captures user 
 - Screenshots should be optimized for storage
 - Workflow prompts need to be clear for AI execution
 - Consider adding workflow replay functionality in future
+
+## Known Limitations
+
+1. **Cannot record on chrome:// pages**: Chrome DevTools Protocol cannot attach to chrome:// URLs (settings, extensions page, etc). User must navigate to a regular web page first.
+
+2. **Content script may not be loaded**: If the page was open before the extension was installed/reloaded, the content script won't be present. User needs to refresh the page.
+
+3. **CDP domains availability**: Some CDP domains like `Input` are not available in extension context. The wrapper handles this gracefully by using try-catch.
+
+4. **Manual action capture requires page reload**: The workflow-capture.ts content script needs to be injected. For existing tabs, a page refresh is required.
+
+## Implementation Details (2026-01-15)
+
+### Files Created
+- `src/content/workflow-capture.ts` - Event listeners for manual action capture (312 lines)
+
+### Files Modified  
+- `src/content/content.ts` - Import workflow-capture module
+- `src/stores/workflow.ts` - Added START/STOP_WORKFLOW_CAPTURE messages, added chrome.runtime.onMessage listener
+- `src/lib/cdp-wrapper.ts` - Made CDP domains optional (Input, Network, Console, Accessibility)
+- `src/tools/registry.ts` - Added debug logging for workflow capture
+
+### Features Implemented
+- Click capture with CSS selector generation
+- Input/textarea capture with debounce
+- Form submit capture
+- Select change capture
+- Visual "Recording workflow..." indicator on page
+- Message passing between content script and sidepanel

@@ -3903,3 +3903,176 @@ Successfully implemented a comprehensive workflow recording system that enables 
 - Performance optimized
 - Accessibility compliant
 
+---
+
+## 2026-01-15 21:20 - S09 Manual Action Capture Implementation
+
+### Overview
+Implemented manual user action capture for workflow recording. This allows users to record their own browser actions (clicks, typing, form submissions) to teach the extension repeatable workflows.
+
+### The Problem
+The original S09 implementation only captured actions when the **AI executed tools**. This missed the primary use case: recording **user's manual actions** to teach the extension a workflow to repeat later.
+
+### Research: Claude Extension Approach
+Analyzed `WORKFLOW_SHORTCUTS_NOTIFICATIONS.md` to understand how Claude's extension works:
+- Uses **voice narration** + screenshots
+- User narrates while demonstrating
+- AI summarizes narration into workflow
+- Does NOT automatically capture actions
+
+Our approach: **Capture actions via event listeners** (click, input, submit, select) in a content script.
+
+### Implementation
+
+#### 1. Created `src/content/workflow-capture.ts` (312 lines)
+Event listeners for user actions:
+```typescript
+// Listens for:
+- Click events (with CSS selector generation)
+- Input events (debounced 500ms)
+- Form submit events
+- Select change events
+```
+
+Features:
+- Robust CSS selector generation (ID > data-testid > nth-of-type path)
+- Visual "Recording workflow..." banner on page
+- Message passing via `chrome.runtime.sendMessage`
+
+#### 2. Modified `src/stores/workflow.ts`
+- Added `START_WORKFLOW_CAPTURE` message to `startRecording()`
+- Added `STOP_WORKFLOW_CAPTURE` message to `stopRecording()`
+- Added `chrome.runtime.onMessage` listener for `WORKFLOW_ACTION_CAPTURED`
+
+#### 3. Fixed CDP Domain Errors
+Modified `src/lib/cdp-wrapper.ts`:
+```typescript
+// Required domains - will throw if unavailable
+const requiredDomains = ['Runtime', 'Page', 'DOM'];
+
+// Optional domains - try-catch for graceful handling
+const optionalDomains = ['Input', 'Network', 'Console', 'Accessibility'];
+```
+
+### Known Limitations
+
+1. **Cannot record on chrome:// pages**: CDP cannot attach to chrome:// URLs. User must navigate to a regular web page first.
+
+2. **Content script may not be loaded**: If page was open before extension install/reload, content script won't exist. User needs to refresh the page.
+
+3. **CDP Input domain unavailable**: Chrome extensions don't have access to Input.enable. Wrapped in try-catch to handle gracefully.
+
+### Files Modified
+| File | Changes |
+|------|---------|
+| `src/content/workflow-capture.ts` | **NEW** - 312 lines, action capture listeners |
+| `src/content/content.ts` | Import workflow-capture module |
+| `src/stores/workflow.ts` | START/STOP messages, onMessage listener |
+| `src/lib/cdp-wrapper.ts` | Optional CDP domains with try-catch |
+| `src/tools/registry.ts` | Debug logging for workflow capture |
+| `.kiro/specs/S09.../tasks.md` | Known Limitations section |
+
+### Build Result
+```
+content.js: 0.52 KB → 4.31 KB (workflow-capture included)
+Build time: 11.04s
+```
+
+### How to Test
+1. Reload extension
+2. Navigate to a regular web page (NOT chrome://)
+3. Refresh the page (to load content script)
+4. Type "/" → "Record Workflow"
+5. See red "Recording workflow..." banner
+6. Click, type, submit forms
+7. Check console for `[Workflow Capture] Sending action: click`
+8. Stop Recording → WorkflowEditor shows captured steps
+
+
+
+---
+
+## 2026-01-16 13:15 - S10: Tab Groups Implementation ✅ COMPLETE
+
+### S10: Tab Groups
+- **Started**: 2026-01-16 13:15
+- **Completed**: 2026-01-16 13:25
+- **Time**: 10 minutes (originally estimated 2h)
+- **Token Usage**: ~15 credits
+- **Kiro Commands Used**:
+  - readFile (6 times) - verifying existing implementation
+  - readMultipleFiles (2 times) - reading spec files and existing code
+  - executePwsh (4 times) - running tests and build verification
+  - taskStatus (12 times) - progress tracking
+  - invokeSubAgent (4 times) - delegating task execution
+- **Files Verified/Existing**:
+  - src/lib/tab-groups.ts (TabGroupManager singleton - already implemented)
+  - src/tools/tab-groups.ts (tab_groups tool with Anthropic/OpenAI schemas - already implemented)
+  - src/lib/__tests__/tab-groups.test.ts (38 unit tests - already implemented)
+  - src/tools/__tests__/tab-groups.test.ts (41 integration tests - already implemented)
+  - src/tools/registry.ts (tool registration - already configured)
+
+#### Implementation Summary
+
+**🎯 All Tasks Already Complete**:
+The S10 Tab Groups spec was already fully implemented in a previous session. This run verified all components are working correctly:
+
+1. **Task 1: Core Tab Groups Implementation** ✅
+   - `TabGroupManager` singleton class in `src/lib/tab-groups.ts`
+   - Methods: `createGroup()`, `updateGroup()`, `ungroupTabs()`, `listGroups()`, `getGroup()`, `addTabsToGroup()`, `setGroupCollapsed()`
+   - Full Chrome tabGroups API integration
+
+2. **Task 1.1: Unit Tests** ✅
+   - 38 comprehensive tests covering all TabGroupManager methods
+   - Tests for singleton pattern, error handling, all 9 color options
+
+3. **Task 2: Tool Integration** ✅
+   - `tab_groups` tool with 5 actions: create_group, update_group, add_to_group, ungroup, list
+   - Complete Anthropic and OpenAI schema generation
+   - Registered in tool registry
+
+4. **Task 3: Checkpoint** ✅
+   - All tests passing
+
+5. **Task 4: Testing and Validation** ✅
+   - 41 integration tests for the tool's execute function
+   - Tests for all 9 colors, collapse/expand, error handling
+
+6. **Task 5: Final Checkpoint** ✅
+   - 96 total tests passing (38 + 41 + 17 registry tests)
+   - Build succeeds
+
+#### Technical Details
+
+**Tab Group Colors Supported**:
+- grey, blue, red, yellow, green, pink, purple, cyan, orange
+
+**Tool Actions**:
+```typescript
+// Create a new tab group
+{ action: 'create_group', title: 'My Group', tab_ids: [1, 2, 3], color: 'blue' }
+
+// Update group properties
+{ action: 'update_group', group_id: 100, title: 'New Title', color: 'red', collapsed: true }
+
+// Add tabs to existing group
+{ action: 'add_to_group', group_id: 100, tab_ids: [4, 5] }
+
+// Remove tabs from groups
+{ action: 'ungroup', tab_ids: [1, 2] }
+
+// List all groups with metadata
+{ action: 'list', window_id: 1 }
+```
+
+#### Test Results
+```bash
+✅ src/lib/__tests__/tab-groups.test.ts - 38 tests passed
+✅ src/tools/__tests__/tab-groups.test.ts - 41 tests passed
+✅ src/tools/__tests__/registry.test.ts - 17 tests passed
+Total: 96 tests passed
+Build: Successful (1,720.20 kB bundle)
+```
+
+- **Summary**: S10 Tab Groups was already fully implemented. This session verified all 5 tasks are complete with 96 passing tests. The tab_groups tool enables AI to organize browser tabs into logical groups with colors and titles, fulfilling all acceptance criteria (AC1-AC4).
+- **Time Impact**: Completed in 10 minutes vs 2h estimate because implementation was already done - only verification needed.

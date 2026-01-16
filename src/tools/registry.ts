@@ -202,7 +202,7 @@ class ToolRegistry {
     context: ToolContext
   ): Promise<ToolResult> {
     const tool = this.getTool(name);
-    
+
     if (!tool) {
       return { error: `Unknown tool: ${name}` };
     }
@@ -233,16 +233,21 @@ class ToolRegistry {
     // Permission granted, execute the tool
     try {
       const result = await tool.execute(input, context);
-      
+
       // If workflow recording is active, capture this step
       try {
         const workflowStore = useWorkflowStore.getState();
+        console.log('[Workflow Debug] Tool executed:', name, 'Recording status:', workflowStore.status);
         if (workflowStore.status === 'recording' && workflowStore.currentRecording) {
           const action = toolInputToWorkflowAction(name, input);
+          console.log('[Workflow Debug] Action mapped:', action);
           if (action) {
             // Capture step asynchronously (don't block tool execution)
-            workflowStore.captureStep(action).catch(err => {
-              console.warn('Failed to capture workflow step:', err);
+            console.log('[Workflow Debug] Capturing step...');
+            workflowStore.captureStep(action).then(() => {
+              console.log('[Workflow Debug] Step captured successfully!');
+            }).catch(err => {
+              console.warn('[Workflow Debug] Failed to capture workflow step:', err);
             });
           }
         }
@@ -250,7 +255,7 @@ class ToolRegistry {
         // Don't fail tool execution if workflow capture fails
         console.warn('Workflow capture error:', workflowError);
       }
-      
+
       return result;
     } catch (error) {
       return {

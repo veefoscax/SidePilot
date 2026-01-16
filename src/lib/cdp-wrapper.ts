@@ -171,20 +171,28 @@ export class CDPWrapper {
 
   /**
    * Enable required CDP domains
+   * Note: Some domains may not be available in all contexts (e.g., Input in extensions)
    */
   private async enableDomains(tabId: number): Promise<void> {
-    const domains = [
-      'Runtime',
-      'Page',
-      'DOM',
-      'Input',
-      'Network',
-      'Console',
-      'Accessibility'
-    ];
+    // Required domains - will throw if unavailable
+    const requiredDomains = ['Runtime', 'Page', 'DOM'];
 
-    for (const domain of domains) {
+    // Optional domains - may not be available in extension context
+    const optionalDomains = ['Input', 'Network', 'Console', 'Accessibility'];
+
+    // Enable required domains first
+    for (const domain of requiredDomains) {
       await this.sendCommand(tabId, `${domain}.enable`);
+    }
+
+    // Try enabling optional domains, but don't fail if unavailable
+    for (const domain of optionalDomains) {
+      try {
+        await this.sendCommand(tabId, `${domain}.enable`);
+      } catch (error) {
+        // Domain not available in this context, that's OK
+        console.log(`CDP domain ${domain} not available, skipping`);
+      }
     }
   }
 
