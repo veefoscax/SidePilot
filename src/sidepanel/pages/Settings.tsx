@@ -29,6 +29,7 @@ import {
   type BrowserAutomationSettings as BrowserAutomationSettingsConfig
 } from '@/components/settings/BrowserAutomationSettings';
 import { PermissionsManager } from '@/components/settings/PermissionsManager';
+import { MCPSettings } from '@/components/settings/MCPSettings';
 import { notifications, type NotificationConfig } from '@/lib/notifications';
 
 interface SettingsPageProps {
@@ -342,6 +343,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           settings={browserSettings}
           onSettingsChange={handleSettingsChange}
         />
+        <MCPSettings />
         <NotificationSettings />
         <PermissionsManager />
       </div>

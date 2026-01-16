@@ -27,6 +27,14 @@ import { shortcutsListTool, shortcutsExecuteTool } from './shortcuts';
 import { clipboardTool } from './clipboard';
 import { useWorkflowStore } from '@/stores/workflow';
 import type { WorkflowAction } from '@/lib/workflow';
+import { isMcpTool, parseMcpToolName } from '@/lib/mcp';
+import { mcpClient } from '@/lib/mcp-client';
+
+// Lazy import to avoid circular dependency
+const getMCPStore = async () => {
+  const { useMCPStore } = await import('@/stores/mcp');
+  return useMCPStore;
+};
 
 /**
  * Map tool names to workflow action types
@@ -132,6 +140,63 @@ class ToolRegistry {
   }
 
   /**
+   * Get enabled MCP tools in Anthropic schema format
+   */
+  async getMcpAnthropicSchemas(): Promise<AnthropicToolSchema[]> {
+    try {
+      const useMCPStore = await getMCPStore();
+      const mcpStore = useMCPStore.getState();
+      const enabledTools = mcpStore.getEnabledMcpTools();
+      
+      return enabledTools.map(tool => ({
+        name: tool.fullName,
+        description: `[MCP: ${tool.serverName}] ${tool.description}`,
+        input_schema: tool.inputSchema as AnthropicToolSchema['input_schema']
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get enabled MCP tools in OpenAI schema format
+   */
+  async getMcpOpenAISchemas(): Promise<OpenAIToolSchema[]> {
+    try {
+      const useMCPStore = await getMCPStore();
+      const mcpStore = useMCPStore.getState();
+      const enabledTools = mcpStore.getEnabledMcpTools();
+      
+      return enabledTools.map(tool => ({
+        type: 'function' as const,
+        function: {
+          name: tool.fullName,
+          description: `[MCP: ${tool.serverName}] ${tool.description}`,
+          parameters: tool.inputSchema as OpenAIToolSchema['function']['parameters']
+        }
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get all tools (browser + MCP) in Anthropic schema format
+   */
+  async getAllAnthropicSchemas(): Promise<AnthropicToolSchema[]> {
+    const mcpSchemas = await this.getMcpAnthropicSchemas();
+    return [...this.getAnthropicSchemas(), ...mcpSchemas];
+  }
+
+  /**
+   * Get all tools (browser + MCP) in OpenAI schema format
+   */
+  async getAllOpenAISchemas(): Promise<OpenAIToolSchema[]> {
+    const mcpSchemas = await this.getMcpOpenAISchemas();
+    return [...this.getOpenAISchemas(), ...mcpSchemas];
+  }
+
+  /**
    * Convenience method: Get Anthropic tools (alias for getAnthropicSchemas)
    */
   getAnthropicTools(): AnthropicToolSchema[] {
@@ -201,6 +266,11 @@ class ToolRegistry {
     input: any,
     context: ToolContext
   ): Promise<ToolResult> {
+    // Check if this is an MCP tool
+    if (isMcpTool(name)) {
+      return this.executeMcpTool(name, input, context);
+    }
+
     const tool = this.getTool(name);
 
     if (!tool) {
@@ -260,6 +330,83 @@ class ToolRegistry {
     } catch (error) {
       return {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Execute an MCP tool by routing to the appropriate server
+   * 
+   * @param fullName - Full MCP tool name (mcp__uuid__toolname)
+   * @param input - Tool input parameters
+   * @param context - Execution context
+   * @returns Tool execution result
+   */
+  private async executeMcpTool(
+    fullName: string,
+    input: any,
+    context: ToolContext
+  ): Promise<ToolResult> {
+    const parsed = parseMcpToolName(fullName);
+    if (!parsed) {
+      return { error: `Invalid MCP tool name: ${fullName}` };
+    }
+
+    try {
+      const useMCPStore = await getMCPStore();
+      const mcpStore = useMCPStore.getState();
+      const server = mcpStore.getServer(parsed.uuid);
+      
+      if (!server) {
+        return { error: `MCP server not found for tool: ${fullName}` };
+      }
+
+      if (server.status !== 'connected') {
+        return { error: `MCP server "${server.name}" is not connected` };
+      }
+
+      // Check if tool is enabled
+      if (!mcpStore.isToolEnabled(fullName)) {
+        return { error: `MCP tool "${parsed.name}" is disabled` };
+      }
+
+      // Check permission for MCP tools (use the full name for permission key)
+      const permission = await context.permissionManager.checkPermission(
+        context.url,
+        fullName
+      );
+
+      if (!permission.allowed && !permission.needsPrompt) {
+        return { error: 'Permission denied for this MCP tool' };
+      }
+
+      if (permission.needsPrompt) {
+        return {
+          error: 'PERMISSION_REQUIRED',
+          output: JSON.stringify({
+            type: 'permission_required',
+            tool: fullName,
+            url: context.url,
+            toolUseId: context.toolUseId
+          })
+        };
+      }
+
+      // Execute the MCP tool
+      const result = await mcpClient.callTool(server.url, parsed.name, input);
+      
+      if (!result.success) {
+        return { error: result.error || 'MCP tool execution failed' };
+      }
+
+      return {
+        output: typeof result.result === 'string' 
+          ? result.result 
+          : JSON.stringify(result.result, null, 2)
+      };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : 'MCP tool execution failed'
       };
     }
   }

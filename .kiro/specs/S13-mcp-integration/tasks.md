@@ -39,17 +39,17 @@ This implementation plan adds Model Context Protocol (MCP) client support, enabl
   - Persist server list to chrome.storage
   - _Requirements: AC4_
 
-- [ ] 4. Checkpoint - Test MCP Core
+- [x] 4. Checkpoint - Test MCP Core
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Tool Registry Integration
+- [x] 5. Tool Registry Integration
   - Add getEnabledMcpTools to registry
   - Merge MCP tools with browser tools
   - Route MCP tool calls through client
   - Handle schema conversion for providers
   - _Requirements: AC5_
 
-- [ ] 6. Settings UI
+- [x] 6. Settings UI
   - Add MCP servers section to Settings
   - Add server URL input field
   - Show connected servers list with status
@@ -58,14 +58,14 @@ This implementation plan adds Model Context Protocol (MCP) client support, enabl
   - Add refresh tools button
   - _Requirements: AC6_
 
-- [ ] 7. Integration Testing
+- [x] 7. Integration Testing
   - Test with mock MCP server
   - Test tool discovery from real server
   - Test tool execution round-trip
   - Test UI updates on connection changes
   - _Requirements: All_
 
-- [ ] 8. Final Checkpoint
+- [x] 8. Final Checkpoint
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

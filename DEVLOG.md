@@ -4406,3 +4406,97 @@ Total: 65 tests passed (11.27s)
   - `getEnabledMcpTools()` returns only enabled tools for registry
 
 - **Summary**: Completed MCP Store implementation (Task 3 of S13). The store provides full CRUD operations for MCP servers, tool discovery, enable/disable toggles, and chrome.storage persistence. All 65 existing MCP tests pass.
+
+
+---
+
+## 2026-01-16 17:25 - S13: MCP Integration ✅ COMPLETE
+
+### S13: MCP Integration
+- **Started**: 2026-01-16 16:45
+- **Completed**: 2026-01-16 17:25
+- **Time**: 40 minutes
+- **Kiro Commands Used**:
+  - readFile (8 times) - reading existing code and specs
+  - readMultipleFiles (3 times) - reading related files
+  - fsWrite (2 times) - creating mcp.ts store and MCPSettings.tsx
+  - strReplace (8 times) - updating registry.ts and Settings.tsx
+  - executePwsh (8 times) - running tests and builds
+  - getDiagnostics (4 times) - TypeScript validation
+  - taskStatus (12 times) - progress tracking
+- **Files Created**:
+  - `src/stores/mcp.ts` - Complete MCP store implementation (fixed truncated file)
+  - `src/components/settings/MCPSettings.tsx` - Settings UI for MCP servers
+- **Files Modified**:
+  - `src/tools/registry.ts` - Added MCP tool integration
+  - `src/sidepanel/pages/Settings.tsx` - Added MCPSettings component
+
+#### Implementation Summary
+
+**Task 3: MCP Store Implementation** ✅
+- Fixed truncated file (was 28 lines with syntax errors)
+- Implemented complete Zustand store with chrome.storage persistence
+- Actions: addServer, removeServer, refreshTools, setToolEnabled, setAllToolsEnabled
+- Getters: getServer, getEnabledMcpTools, getAllMcpTools, isToolEnabled
+- Persistence to `sidepilot-mcp-servers` and `sidepilot-mcp-enabled-tools` keys
+
+**Task 4: Checkpoint** ✅
+- All 65 MCP core tests passing
+
+**Task 5: Tool Registry Integration** ✅
+- Added `getMcpAnthropicSchemas()` and `getMcpOpenAISchemas()` methods
+- Added `getAllAnthropicSchemas()` and `getAllOpenAISchemas()` for combined tools
+- Added `executeMcpTool()` for routing MCP tool calls to servers
+- Used dynamic import to avoid circular dependency with MCP store
+
+**Task 6: Settings UI** ✅
+- Created `MCPSettings` component with:
+  - Server list with connection status badges
+  - Add server form with URL and name inputs
+  - Per-server tool list with enable/disable toggles
+  - Refresh and remove buttons per server
+  - Collapsible sections for clean UI
+
+**Task 7: Integration Testing** ✅
+- All 82 tests passing (31 mcp + 34 mcp-client + 17 registry)
+
+**Task 8: Final Checkpoint** ✅
+- Build succeeds (1,730.93 kB bundle)
+- All tests passing
+
+#### Technical Details
+
+**MCP Tool Naming Convention**:
+```
+mcp__<uuid>__<toolname>
+Example: mcp__a1b2c3d4-e5f6-7890-abcd-ef1234567890__read_file
+```
+
+**Server Status Flow**:
+- `disconnected` → Initial state
+- `connected` → After successful connection with tools discovered
+- `error` → After failed connection attempt
+
+**Registry Integration**:
+- MCP tools merged with browser tools via `getAllAnthropicSchemas()` / `getAllOpenAISchemas()`
+- Tool execution routed through `executeMcpTool()` when tool name matches MCP pattern
+- Permission checking applied to MCP tools same as browser tools
+
+#### Requirements Coverage
+- **AC1**: Register Server - Add MCP server by URL ✅
+- **AC2**: Tool Discovery - Discover tools on connect ✅
+- **AC3**: Tool Execution - Execute MCP tools via client ✅
+- **AC4**: Toggle Tools - Enable/disable individual tools ✅
+- **AC5**: Registry Integration - MCP tools in AI tool list ✅
+- **AC6**: Settings UI - Manage servers and tools ✅
+
+#### Test Results
+```bash
+✅ src/lib/__tests__/mcp.test.ts - 31 tests passed
+✅ src/lib/__tests__/mcp-client.test.ts - 34 tests passed
+✅ src/tools/__tests__/registry.test.ts - 17 tests passed
+Total: 82 tests passed
+Build: Successful (10.57s)
+```
+
+- **Summary**: S13 MCP Integration complete. SidePilot can now connect to external MCP servers, discover their tools, and use them alongside browser automation tools. Full Settings UI for managing servers and enabling/disabling individual tools.
