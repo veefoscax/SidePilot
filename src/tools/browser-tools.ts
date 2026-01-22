@@ -5,6 +5,7 @@
  */
 
 import { cdpWrapper } from '@/lib/cdp-wrapper';
+import { resolveSelector } from '@/lib/context/ref-manager';
 import { Tool, ToolResult } from './types';
 
 /**
@@ -71,17 +72,18 @@ export const screenshotTool: Tool = {
  */
 export const clickTool: Tool = {
   name: 'click',
-  description: 'Click on an element using coordinates, element reference, index, or description',
+  description: 'Click on an element using coordinates, element reference (@ref), index, or description',
   parameters: [
     {
       name: 'target',
       type: 'object',
-      description: 'Target specification - use one of: coordinates {x, y}, ref {ref}, index {index}, or description {description}',
+      description: 'Target specification - use one of: coordinates {x, y}, ref {ref}, selector {selector}, index {index}, or description {description}',
       required: true,
       properties: {
         x: { name: 'x', type: 'number', description: 'X coordinate', required: false },
         y: { name: 'y', type: 'number', description: 'Y coordinate', required: false },
-        ref: { name: 'ref', type: 'string', description: 'Element reference ID (e.g., "element_42")', required: false },
+        ref: { name: 'ref', type: 'string', description: 'Element reference ID (e.g., "@e1" or "e1")', required: false },
+        selector: { name: 'selector', type: 'string', description: 'CSS selector or @ref format (e.g., "@e1", "button.primary")', required: false },
         index: { name: 'index', type: 'number', description: 'Element index from screenshot annotation', required: false },
         description: { name: 'description', type: 'string', description: 'Natural language description of element', required: false }
       }
@@ -101,6 +103,26 @@ export const clickTool: Tool = {
       }
 
       const { target, clickType = 'left' } = params;
+      
+      // Handle @ref or CSS selector format
+      if (target.selector) {
+        try {
+          const element = resolveSelector(target.selector);
+          if (element) {
+            // Convert element to coordinates for CDP wrapper
+            const rect = element.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            target.x = x;
+            target.y = y;
+          }
+        } catch (error) {
+          return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Failed to resolve selector' 
+          };
+        }
+      }
       
       let result;
       switch (clickType) {
@@ -146,10 +168,11 @@ export const typeTool: Tool = {
     {
       name: 'target',
       type: 'object',
-      description: 'Target input field - use ref, index, or description',
+      description: 'Target input field - use ref, selector, index, or description',
       required: false,
       properties: {
-        ref: { name: 'ref', type: 'string', description: 'Element reference ID', required: false },
+        ref: { name: 'ref', type: 'string', description: 'Element reference ID (e.g., "@e1" or "e1")', required: false },
+        selector: { name: 'selector', type: 'string', description: 'CSS selector or @ref format (e.g., "@e1", "input[name=email]")', required: false },
         index: { name: 'index', type: 'number', description: 'Element index', required: false },
         description: { name: 'description', type: 'string', description: 'Description of input field', required: false }
       }
@@ -176,8 +199,32 @@ export const typeTool: Tool = {
 
       const { text, target, delay = 'human', clear = false } = params;
 
-      if (target) {
-        // Type into specific element
+      // Handle @ref or CSS selector format
+      if (target?.selector) {
+        try {
+          const element = resolveSelector(target.selector);
+          if (element) {
+            // Focus the element first
+            element.focus();
+            
+            // Clear if requested
+            if (clear && (element as HTMLInputElement).value !== undefined) {
+              (element as HTMLInputElement).value = '';
+            }
+            
+            // Type the text
+            await cdpWrapper.type(tabs[0].id!, text, { delay });
+          } else {
+            return { success: false, error: 'Element not found' };
+          }
+        } catch (error) {
+          return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Failed to resolve selector' 
+          };
+        }
+      } else if (target) {
+        // Use CDP wrapper's existing target resolution
         await cdpWrapper.input(tabs[0].id!, target, text, { clear });
       } else {
         // Type at current focus

@@ -243,6 +243,50 @@
       "disconnected": "Disconnected"
     }
   },
+  "voice": {
+    "title": "Voice Settings",
+    "provider": "Provider",
+    "apiKey": "API Key",
+    "elevenlabsKey": "ElevenLabs API Key",
+    "language": "Language",
+    "selectVoice": "Voice",
+    "selectVoicePlaceholder": "Choose a voice",
+    "speed": "Speed",
+    "autoPlay": "Auto-play responses",
+    "autoPlayDescription": "Automatically read AI responses aloud",
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "stt": {
+      "title": "Speech-to-Text",
+      "description": "Configure how your voice is transcribed"
+    },
+    "tts": {
+      "title": "Text-to-Speech",
+      "description": "Configure how responses are spoken"
+    },
+    "callMode": {
+      "title": "Call Mode",
+      "description": "Settings for continuous voice conversation",
+      "idle": "Ready",
+      "listening": "Listening...",
+      "processing": "Thinking...",
+      "speaking": "Speaking...",
+      "start": "Start Call",
+      "end": "End Call"
+    },
+    "vad": "Voice Activity Detection",
+    "vadDescription": "Auto-detect when you start/stop speaking",
+    "vadHint": "Start speaking when ready...",
+    "vadMode": "Voice Activity Detection Mode",
+    "pushToTalk": "Hold to Talk",
+    "pttMode": "Push-to-Talk Mode (Space)",
+    "endCall": "End Call",
+    "preview": "Preview",
+    "test": "Test",
+    "testSuccess": "Connection successful!",
+    "testFailed": "Connection failed"
+  },
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "network": "Network error. Please check your connection.",

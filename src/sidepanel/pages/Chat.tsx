@@ -15,7 +15,9 @@ import { MessageList } from '@/components/chat/MessageList';
 import { InputArea } from '@/components/chat/InputArea';
 import { ModelSelectorDropdown } from '@/components/chat/ModelSelectorDropdown';
 import { CapabilityWarnings } from '@/components/chat/CapabilityWarnings';
+import { VoiceControls } from '@/components/chat/VoiceControls';
 import { RecordingBar } from '@/components/RecordingBar';
+import { CallMode } from '@/components/voice/CallMode';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -96,7 +98,7 @@ export function ChatPage({ onBack, onSettings }: ChatPageProps) {
 
       // Check if model supports tools before preparing them
       const supportsTools = currentProvider.model.capabilities?.supportsTools ?? true;
-      
+
       // Stream response from provider using the current model
       const tools = supportsTools
         ? (activeProviderInstance.type === 'anthropic'
@@ -168,7 +170,7 @@ Always use tools when appropriate instead of just describing how to do something
         } else if (chunk.type === 'tool_use' && chunk.toolCall) {
           // Handle tool calls
           console.log('🔧 Tool call received:', chunk.toolCall);
-          
+
           // Add tool call to the list with pending status
           const toolCall = {
             id: chunk.toolCall.id,
@@ -182,7 +184,7 @@ Always use tools when appropriate instead of just describing how to do something
           (async () => {
             try {
               console.log('🔧 Executing tool:', chunk.toolCall.name, 'with input:', chunk.toolCall.input);
-              
+
               // Update status to executing
               const toolCallIndex = toolCalls.findIndex(tc => tc.id === chunk.toolCall.id);
               if (toolCallIndex !== -1) {
@@ -191,20 +193,20 @@ Always use tools when appropriate instead of just describing how to do something
 
               // Execute the tool with current tab context
               const result = await toolRegistry.execute(chunk.toolCall.name, chunk.toolCall.input);
-              
+
               console.log('🔧 Tool execution result:', result);
 
               // Check if permission is required
               if (result.error === 'PERMISSION_REQUIRED') {
                 console.log('🔧 Permission required for tool:', chunk.toolCall.name);
-                
+
                 // Notify permission required if side panel is not focused
                 if (!document.hasFocus()) {
                   notifications.notifyPermissionRequired(chunk.toolCall.name).catch(notifyErr => {
                     console.warn('Failed to send permission notification:', notifyErr);
                   });
                 }
-                
+
                 addToolResult(chunk.toolCall.id, {
                   toolUseId: chunk.toolCall.id,
                   error: 'Permission required. Please grant permission in the dialog and retry.',
@@ -216,14 +218,14 @@ Always use tools when appropriate instead of just describing how to do something
               // Add the tool result
               if (result.error) {
                 console.error('🔧 Tool execution error:', result.error);
-                
+
                 // Notify error if side panel is not focused
                 if (!document.hasFocus()) {
                   notifications.notifyError(`Tool "${chunk.toolCall.name}" failed: ${result.error}`).catch(notifyErr => {
                     console.warn('Failed to send tool error notification:', notifyErr);
                   });
                 }
-                
+
                 addToolResult(chunk.toolCall.id, {
                   toolUseId: chunk.toolCall.id,
                   error: result.error,
@@ -239,14 +241,14 @@ Always use tools when appropriate instead of just describing how to do something
             } catch (toolError) {
               console.error('🔧 Tool execution exception:', toolError);
               const toolErrorMessage = toolError instanceof Error ? toolError.message : 'Tool execution failed';
-              
+
               // Notify error if side panel is not focused
               if (!document.hasFocus()) {
                 notifications.notifyError(`Tool "${chunk.toolCall.name}" failed: ${toolErrorMessage}`).catch(notifyErr => {
                   console.warn('Failed to send tool error notification:', notifyErr);
                 });
               }
-              
+
               addToolResult(chunk.toolCall.id, {
                 toolUseId: chunk.toolCall.id,
                 error: toolErrorMessage,
@@ -305,7 +307,7 @@ Always use tools when appropriate instead of just describing how to do something
     <div className="flex flex-col h-screen bg-background">
       {/* Recording Bar - appears at top when recording */}
       <RecordingBar />
-      
+
       {/* Header */}
       <div className="shrink-0 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur">
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -411,6 +413,14 @@ Always use tools when appropriate instead of just describing how to do something
       {/* Message list */}
       <MessageList />
 
+      {/* Voice Controls */}
+      <div className="shrink-0 border-t bg-card px-4 py-2">
+        <VoiceControls
+          onTranscript={handleSendMessage}
+          disabled={isStreaming || !hasActiveProvider}
+        />
+      </div>
+
       {/* Input area */}
       <div className="shrink-0">
         <InputArea
@@ -427,6 +437,9 @@ Always use tools when appropriate instead of just describing how to do something
           }
         />
       </div>
+
+      {/* Call Mode Overlay */}
+      <CallMode />
     </div>
   );
 }

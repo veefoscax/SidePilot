@@ -33,6 +33,7 @@ import { PermissionsManager } from '@/components/settings/PermissionsManager';
 import { MCPSettings } from '@/components/settings/MCPSettings';
 import { MCPConnectorSettings } from '@/components/settings/MCPConnectorSettings';
 import { ModelWarnings } from '@/components/settings/ModelWarnings';
+import { VoiceSettings } from '@/components/settings/VoiceSettings';
 import { notifications, type NotificationConfig } from '@/lib/notifications';
 import { useMultiProviderStore } from '@/stores/multi-provider';
 
@@ -191,7 +192,7 @@ function NotificationSettings() {
               {/* Individual Type Toggles */}
               <div className="space-y-3">
                 <h4 className="text-sm font-medium">{t('notifications.types.title')}</h4>
-                
+
                 <div className="space-y-3">
                   {/* Task Complete */}
                   <div className="flex items-center justify-between">
@@ -308,7 +309,7 @@ function NotificationSettings() {
 export function SettingsPage({ onBack }: SettingsPageProps) {
   const { t } = useTranslation();
   const [browserSettings, setBrowserSettings] = useState<BrowserAutomationSettingsConfig>(DEFAULT_BROWSER_SETTINGS);
-  
+
   // Get current model from multi-provider store for warnings display
   const currentProvider = useMultiProviderStore(state => state.getCurrentProvider());
   const currentModel = currentProvider?.model ? {
@@ -363,6 +364,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
         />
         <MCPSettings />
         <MCPConnectorSettings />
+        <VoiceSettings />
         <NotificationSettings />
         <PermissionsManager />
       </div>

@@ -243,6 +243,50 @@
       "disconnected": "Desconectado"
     }
   },
+  "voice": {
+    "title": "Configurações de Voz",
+    "provider": "Provedor",
+    "apiKey": "Chave da API",
+    "elevenlabsKey": "Chave da API ElevenLabs",
+    "language": "Idioma",
+    "selectVoice": "Voz",
+    "selectVoicePlaceholder": "Escolha uma voz",
+    "speed": "Velocidade",
+    "autoPlay": "Reproduzir respostas automaticamente",
+    "autoPlayDescription": "Ler respostas da IA em voz alta automaticamente",
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "stop": "Parar",
+    "stt": {
+      "title": "Reconhecimento de Voz",
+      "description": "Configure como sua voz é transcrita"
+    },
+    "tts": {
+      "title": "Síntese de Voz",
+      "description": "Configure como as respostas são faladas"
+    },
+    "callMode": {
+      "title": "Modo Chamada",
+      "description": "Configurações para conversa contínua por voz",
+      "idle": "Pronto",
+      "listening": "Ouvindo...",
+      "processing": "Pensando...",
+      "speaking": "Falando...",
+      "start": "Iniciar Chamada",
+      "end": "Encerrar Chamada"
+    },
+    "vad": "Detecção de Atividade de Voz",
+    "vadDescription": "Detectar automaticamente quando você começa/para de falar",
+    "vadHint": "Comece a falar quando estiver pronto...",
+    "vadMode": "Modo de Detecção de Atividade de Voz",
+    "pushToTalk": "Segure para Falar",
+    "pttMode": "Modo Pressione para Falar (Espaço)",
+    "endCall": "Encerrar Chamada",
+    "preview": "Prévia",
+    "test": "Testar",
+    "testSuccess": "Conexão bem-sucedida!",
+    "testFailed": "Falha na conexão"
+  },
   "errors": {
     "generic": "Algo deu errado. Por favor, tente novamente.",
     "network": "Erro de rede. Por favor, verifique sua conexão.",

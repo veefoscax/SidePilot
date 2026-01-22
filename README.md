@@ -33,6 +33,13 @@ Use **40+ LLM providers** with a single extension:
 - Execute JavaScript
 - Tab and window management
 
+### 🎤 Voice Mode (NEW)
+- **Speech-to-Text**: Browser, OpenAI Whisper
+- **Text-to-Speech**: Browser, OpenAI, ElevenLabs
+- **Call Mode**: Hands-free conversation with VAD
+- Real-time audio visualization
+- Per-message playback with speed control
+
 ### ⚡ Model Capability Warnings
 Visual indicators show what each model supports:
 - 👁️ Vision (image processing)
@@ -40,8 +47,19 @@ Visual indicators show what each model supports:
 - ⚡ Streaming (real-time responses)
 - 🧠 Reasoning (thinking mode)
 
+### 🌍 Internationalization
+- English and Portuguese (BR) support
+- Auto-detect browser language
+- Light/Dark/System themes
+
 ### 🔗 MCP Connector
 Expose browser tools to external LLMs like Cline or Aider.
+
+### 🧠 Context Optimization (S18)
+- Ref-based element targeting (60-90% token savings)
+- Smart snapshot filtering
+- Incremental DOM updates
+- Token budget management
 
 ---
 
@@ -149,6 +167,9 @@ This project uses [Kiro](https://kiro.dev) for specification-driven development.
 - [ ] S13: MCP Integration
 - [ ] S14: MCP Connector
 - [ ] S15: Model Capabilities
+- [x] S16: General Settings & i18n ✅
+- [x] S17: Voice Mode ✅
+- [x] S18: Context Optimization ✅
 
 ---
 
@@ -166,16 +187,41 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- **Browser Automation** patterns inspired by [browser-use](https://github.com/browser-use/browser-use) - the excellent Python library for making websites accessible to AI agents
-- **Multi-provider** architecture inspired by [Cline](https://github.com/cline/cline) - the autonomous coding agent
-- Built with [Kiro](https://kiro.dev) for the Dynamous Hackathon
+SidePilot stands on the shoulders of giants. We're grateful to these amazing open-source projects:
+
+### Core Inspirations
+
+- **[browser-use](https://github.com/browser-use/browser-use)** ⭐ - The Python library that makes websites accessible to AI agents. Our accessibility tree parsing, smart element targeting, and human-like interactions are built using their patterns.
+
+- **[Vercel agent-browser](https://github.com/vercel-labs/agent-browser)** 🚀 - Headless browser CLI for AI agents. Inspired our S18 context optimization with ref-based element targeting and snapshot filtering for minimal token usage.
+
+- **[Cline](https://github.com/cline/cline)** 🤖 - The autonomous coding agent. Our multi-provider factory pattern and model capability detection are inspired by Cline's excellent architecture.
+
+### Development Tools
+
+Built with [Kiro](https://kiro.dev) for the Dynamous Hackathon - specification-driven development that helped us ship fast.
 
 ### Open Source Tools We Love ❤️
 
 | Project | Usage in SidePilot |
 |---------|-------------------|
-| [browser-use](https://github.com/browser-use/browser-use) | Accessibility tree parsing, smart element targeting, human-like interactions |
-| [Cline](https://github.com/cline/cline) | Multi-provider factory pattern, model capability detection |
+| [browser-use](https://github.com/browser-use/browser-use) | Accessibility tree, element targeting, human-like delays |
+| [agent-browser](https://github.com/vercel-labs/agent-browser) | Ref system, snapshot filtering, AI-optimized workflow |
+| [Cline](https://github.com/cline/cline) | Multi-provider factory, capability detection |
 | [shadcn/ui](https://ui.shadcn.com/) | Beautiful Nova-style components |
-| [HugeIcons](https://hugeicons.com/) | 4,600+ beautiful stroke icons |
+| [Radix UI](https://www.radix-ui.com/) | Accessible primitives |
+| [HugeIcons](https://hugeicons.com/) | 4,600+ stroke icons |
 | [Zustand](https://github.com/pmndrs/zustand) | Lightweight state management |
+| [i18next](https://www.i18next.com/) | Internationalization (EN/PT) |
+
+### Special Thanks
+
+- The [MCP Protocol](https://modelcontextprotocol.io/) team for enabling seamless LLM tool integration
+- The Anthropic, OpenAI, and Google teams for their amazing AI APIs
+- The open-source community for making projects like this possible
+
+---
+
+<p align="center">
+  <strong>Made with ❤️ by the SidePilot team</strong>
+</p>

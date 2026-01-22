@@ -10,13 +10,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { 
-  AlertTriangleIcon, 
-  InfoCircleIcon, 
+import {
+  Alert02Icon,
+  InformationCircleIcon,
   Cancel01Icon,
   EyeIcon,
   Settings02Icon,
-  BrainIcon
+  AiBrainIcon
 } from '@hugeicons/core-free-icons';
 import { ModelInfo } from '@/providers/types';
 import { ModelCapabilitySystem, FeatureRequirement } from '@/lib/model-capabilities';
@@ -28,18 +28,18 @@ interface CapabilityWarningsProps {
   className?: string;
 }
 
-export function CapabilityWarnings({ 
-  model, 
-  requirements, 
+export function CapabilityWarnings({
+  model,
+  requirements,
   onDismiss,
-  className 
+  className
 }: CapabilityWarningsProps) {
   const [isDismissed, setIsDismissed] = useState(false);
 
   if (isDismissed) return null;
 
   // Get validation result if requirements are provided
-  const validationResult = requirements 
+  const validationResult = requirements
     ? ModelCapabilitySystem.validateCapabilities(model, requirements)
     : null;
 
@@ -68,7 +68,7 @@ export function CapabilityWarnings({
       {/* Capability Warnings */}
       {allWarnings.length > 0 && (
         <Alert className="mb-2">
-          <HugeiconsIcon icon={AlertTriangleIcon} className="h-4 w-4" />
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <div className="flex-1">
               <div className="font-medium mb-1">Model Limitations</div>
@@ -96,7 +96,7 @@ export function CapabilityWarnings({
       {/* Suggestions */}
       {suggestions.length > 0 && (
         <Alert className="mb-2">
-          <HugeiconsIcon icon={InfoCircleIcon} className="h-4 w-4" />
+          <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4" />
           <AlertDescription>
             <div className="font-medium mb-1">Suggestions</div>
             <div className="space-y-1">
@@ -127,7 +127,7 @@ export function CapabilityWarnings({
         )}
         {model.capabilities.supportsReasoning && (
           <Badge variant="secondary" className="text-xs">
-            <HugeiconsIcon icon={BrainIcon} className="h-3 w-3 mr-1" />
+            <HugeiconsIcon icon={AiBrainIcon} className="h-3 w-3 mr-1" />
             Reasoning
           </Badge>
         )}
