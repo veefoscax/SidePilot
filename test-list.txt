@@ -1,0 +1,53 @@
+Listing tests:
+  [chromium] ΓÇ║ content-script.spec.ts:23:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should have built content script file
+  [chromium] ΓÇ║ content-script.spec.ts:32:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should contain expected console log
+  [chromium] ΓÇ║ content-script.spec.ts:41:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should contain indicator creation code
+  [chromium] ΓÇ║ content-script.spec.ts:51:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should be properly referenced in manifest
+  [chromium] ΓÇ║ content-script.spec.ts:123:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject content script and show console log
+  [chromium] ΓÇ║ content-script.spec.ts:147:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should create visual indicator element
+  [chromium] ΓÇ║ content-script.spec.ts:167:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should remove indicator after timeout
+  [chromium] ΓÇ║ content-script.spec.ts:188:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject on different domains
+  [chromium] ΓÇ║ content-script.spec.ts:223:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should handle DOM ready states correctly
+  [chromium] ΓÇ║ permissions-integration.spec.ts:81:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog appears when tool requires permission
+  [chromium] ΓÇ║ permissions-integration.spec.ts:138:3 ΓÇ║ Permission System Integration ΓÇ║ remember checkbox saves permission preference
+  [chromium] ΓÇ║ permissions-integration.spec.ts:188:3 ΓÇ║ Permission System Integration ΓÇ║ settings page displays and updates permissions
+  [chromium] ΓÇ║ permissions-integration.spec.ts:233:3 ΓÇ║ Permission System Integration ΓÇ║ settings page allows deleting permissions
+  [chromium] ΓÇ║ permissions-integration.spec.ts:271:3 ΓÇ║ Permission System Integration ΓÇ║ deny without remember does not save permission
+  [chromium] ΓÇ║ permissions-integration.spec.ts:313:3 ΓÇ║ Permission System Integration ΓÇ║ deny with remember saves deny permission
+  [chromium] ΓÇ║ permissions-integration.spec.ts:363:3 ΓÇ║ Permission System Integration ΓÇ║ reset all permissions clears all saved permissions
+  [chromium] ΓÇ║ permissions-integration.spec.ts:411:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog shows screenshot for click actions
+  [chromium] ΓÇ║ permissions-integration.spec.ts:456:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog shows text preview for type actions
+  [chromium] ΓÇ║ providers.spec.ts:10:3 ΓÇ║ Provider System ΓÇ║ should have all provider files built
+  [chromium] ΓÇ║ providers.spec.ts:33:3 ΓÇ║ Provider System ΓÇ║ should build without TypeScript errors
+  [chromium] ΓÇ║ providers.spec.ts:47:3 ΓÇ║ Provider System ΓÇ║ should export provider factory correctly
+  [chromium] ΓÇ║ providers.spec.ts:62:3 ΓÇ║ Provider System ΓÇ║ should create providers without errors
+  [chromium] ΓÇ║ providers.spec.ts:79:3 ΓÇ║ Provider System ΓÇ║ should have model registry with capabilities
+  [chromium] ΓÇ║ providers.spec.ts:104:3 ΓÇ║ Provider System ΓÇ║ should handle provider errors gracefully
+  [chromium] ΓÇ║ service-worker-static.spec.ts:22:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have built service worker file
+  [chromium] ΓÇ║ service-worker-static.spec.ts:31:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should contain expected startup logs
+  [chromium] ΓÇ║ service-worker-static.spec.ts:41:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should contain extension icon click handler
+  [chromium] ΓÇ║ service-worker-static.spec.ts:50:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should register message listeners
+  [chromium] ΓÇ║ service-worker-static.spec.ts:59:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should handle installation events
+  [chromium] ΓÇ║ service-worker-static.spec.ts:70:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should be properly referenced in manifest
+  [chromium] ΓÇ║ service-worker-static.spec.ts:82:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have correct Chrome extension permissions
+  [chromium] ΓÇ║ service-worker-static.spec.ts:92:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have side panel configuration
+  [chromium] ΓÇ║ service-worker-static.spec.ts:101:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have action configuration for extension icon
+  [chromium] ΓÇ║ service-worker.spec.ts:73:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should load extension without errors
+  [chromium] ΓÇ║ service-worker.spec.ts:93:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should have active service worker
+  [chromium] ΓÇ║ service-worker.spec.ts:117:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should open side panel when extension icon is clicked
+  [chromium] ΓÇ║ service-worker.spec.ts:138:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should have service worker console logs
+  [chromium] ΓÇ║ service-worker.spec.ts:155:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should register message listeners
+  [chromium] ΓÇ║ service-worker.spec.ts:164:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should handle installation events
+  [chromium] ΓÇ║ settings-ui.spec.ts:13:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Provider store file exists and contains required exports
+  [chromium] ΓÇ║ settings-ui.spec.ts:32:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Settings page component exists and imports required dependencies
+  [chromium] ΓÇ║ settings-ui.spec.ts:48:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ All settings components exist
+  [chromium] ΓÇ║ settings-ui.spec.ts:68:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Provider selector includes all provider categories
+  [chromium] ΓÇ║ settings-ui.spec.ts:82:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ API key input has security features
+  [chromium] ΓÇ║ settings-ui.spec.ts:100:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Capability badges show all supported features
+  [chromium] ΓÇ║ settings-ui.spec.ts:125:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Test connection button handles loading and error states
+  [chromium] ΓÇ║ settings-ui.spec.ts:144:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Build output includes settings components
+  [chromium] ΓÇ║ settings-ui.spec.ts:158:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ App component includes settings navigation
+  [chromium] ΓÇ║ settings-ui.spec.ts:174:3 ΓÇ║ Settings UI - Integration Tests ΓÇ║ Settings components integrate with provider factory
+  [chromium] ΓÇ║ settings-ui.spec.ts:191:3 ΓÇ║ Settings UI - Integration Tests ΓÇ║ Zustand store integrates with Chrome storage
+  [chromium] ΓÇ║ sidepanel-screenshot.spec.ts:73:3 ΓÇ║ SidePilot Side Panel Screenshots ΓÇ║ should capture side panel screenshot
+Total: 51 tests in 7 files
