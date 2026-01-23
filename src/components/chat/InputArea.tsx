@@ -15,6 +15,7 @@ import { VoiceControls } from './VoiceControls';
 import { SlashMenu } from './SlashMenu';
 import { ShortcutEditor } from './ShortcutEditor';
 import { WorkflowEditor } from '@/components/WorkflowEditor';
+import { ElementPointerButton } from './ElementPointerButton';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRight01Icon, Clock01Icon } from '@hugeicons/core-free-icons';
 import { useChatStore } from '@/stores/chat';
@@ -22,6 +23,11 @@ import { useShortcutsStore } from '@/stores/shortcuts';
 import { useWorkflowStore } from '@/stores/workflow';
 import { SlashMenuItem } from '@/lib/shortcuts';
 import { WorkflowRecording } from '@/lib/workflow';
+import { 
+  ElementPointerMessageType, 
+  ElementPointedMessage,
+  formatPointedElementForChat 
+} from '@/lib/element-pointer';
 import { toast } from 'sonner';
 
 interface InputAreaProps {
@@ -56,6 +62,9 @@ export function InputArea({
   const [showWorkflowEditor, setShowWorkflowEditor] = useState(false);
   const [completedWorkflow, setCompletedWorkflow] = useState<WorkflowRecording | null>(null);
 
+  // Element pointer state
+  const [pendingElementContext, setPendingElementContext] = useState<string | null>(null);
+
   // Auto-resize textarea based on content
   useEffect(() => {
     if (textareaRef.current) {
@@ -63,6 +72,30 @@ export function InputArea({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [input]);
+
+  // Listen for element pointer messages
+  useEffect(() => {
+    const handleMessage = (message: any) => {
+      if (message.type === ElementPointerMessageType.ELEMENT_POINTED) {
+        const pointedMessage = message as ElementPointedMessage;
+        const elementContext = formatPointedElementForChat(pointedMessage.data);
+        
+        // Store the context and append to input
+        setPendingElementContext(elementContext);
+        
+        // Show toast notification
+        toast.success(`Element ${pointedMessage.data.ref} selected`);
+        
+        // Focus the textarea
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+  }, []);
 
   // Close slash menu on outside click
   useEffect(() => {
@@ -119,7 +152,13 @@ export function InputArea({
     const trimmedInput = input.trim();
     if (trimmedInput) {
       // Expand shortcut chips before sending
-      const expandedInput = expandShortcutCommands(trimmedInput);
+      let expandedInput = expandShortcutCommands(trimmedInput);
+
+      // Prepend element context if available
+      if (pendingElementContext) {
+        expandedInput = `${pendingElementContext}\n\n${expandedInput}`;
+        setPendingElementContext(null); // Clear after use
+      }
 
       if (isStreaming) {
         // Queue the message if currently streaming
@@ -266,6 +305,20 @@ export function InputArea({
 
   const canSend = input.trim().length > 0;
 
+  // Update placeholder to show element context status
+  const getPlaceholder = () => {
+    if (pendingElementContext) {
+      return '✓ Element selected. Type your message...';
+    }
+    if (isStreaming) {
+      return t('chat.placeholder.queueNext');
+    }
+    if (disabled) {
+      return t('chat.placeholder.responding');
+    }
+    return placeholder;
+  };
+
   return (
     <div className="border-t bg-background p-4">
       {/* Queued messages indicator */}
@@ -301,20 +354,18 @@ export function InputArea({
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder={
-                isStreaming
-                  ? t('chat.placeholder.queueNext')
-                  : disabled
-                    ? t('chat.placeholder.responding')
-                    : placeholder
-              }
+              placeholder={getPlaceholder()}
               disabled={disabled && !isStreaming}
               className="min-h-[44px] max-h-32 resize-none pr-20"
               rows={1}
             />
 
-            {/* Voice controls in textarea */}
+            {/* Controls in textarea */}
             <div className="absolute bottom-2 right-2 flex items-center gap-1">
+              <ElementPointerButton
+                disabled={disabled && !isStreaming}
+              />
+              
               <VoiceControls
                 onTranscript={handleVoiceTranscript}
                 disabled={disabled && !isStreaming}

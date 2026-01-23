@@ -3,6 +3,9 @@ console.log('🎯 SidePilot content script loaded on:', window.location.href);
 // Import workflow capture module
 import './workflow-capture';
 
+// Import element pointer module
+import './element-pointer';
+
 // Placeholder for future visual indicators
 // This will be expanded in later specs for:
 // - Visual feedback during automation

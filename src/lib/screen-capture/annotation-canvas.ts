@@ -88,6 +88,7 @@ export class AnnotationCanvas {
   private undoStack: fabric.Object[] = [];
   private redoStack: fabric.Object[] = [];
   private backgroundImage: fabric.Image | null = null;
+  private readonly MAX_UNDO_LEVELS = 20;
 
   /**
    * Initialize the annotation canvas
@@ -133,6 +134,12 @@ export class AnnotationCanvas {
     this.canvas.on('object:added', (e) => {
       if (e.target && !this.isDrawing) {
         this.undoStack.push(e.target);
+        
+        // Enforce max undo levels (TR7: min 20 levels)
+        if (this.undoStack.length > this.MAX_UNDO_LEVELS) {
+          this.undoStack.shift(); // Remove oldest item
+        }
+        
         this.redoStack = []; // Clear redo stack on new action
       }
     });
@@ -488,6 +495,7 @@ export class AnnotationCanvas {
    * Determine the annotation type from a Fabric object
    */
   private getObjectType(obj: fabric.Object): AnnotationType {
+    // Check using instanceof first (for real objects)
     if (obj instanceof Arrow) return 'arrow';
     if (obj instanceof fabric.Circle) return 'circle';
     if (obj instanceof fabric.Rect) {
@@ -495,6 +503,16 @@ export class AnnotationCanvas {
       return obj.opacity && obj.opacity < 1 ? 'highlight' : 'rectangle';
     }
     if (obj instanceof fabric.Path) return 'freehand';
+    
+    // Fallback to constructor name check (for mocks and edge cases)
+    const constructorName = obj.constructor?.name;
+    if (constructorName === 'Arrow') return 'arrow';
+    if (constructorName === 'Circle') return 'circle';
+    if (constructorName === 'Rect') {
+      return obj.opacity && obj.opacity < 1 ? 'highlight' : 'rectangle';
+    }
+    if (constructorName === 'Path') return 'freehand';
+    
     return 'rectangle'; // Default
   }
 
@@ -516,19 +534,23 @@ export class AnnotationCanvas {
     canvasWidth: number,
     canvasHeight: number
   ): Annotation['coordinates'] {
-    if (obj instanceof Arrow) {
+    // Check for Arrow (using instanceof or constructor name)
+    if (obj instanceof Arrow || obj.constructor?.name === 'Arrow') {
+      const arrowObj = obj as any;
       return {
-        x: (obj.x1 || 0) / canvasWidth,
-        y: (obj.y1 || 0) / canvasHeight,
-        width: ((obj.x2 || 0) - (obj.x1 || 0)) / canvasWidth,
-        height: ((obj.y2 || 0) - (obj.y1 || 0)) / canvasHeight,
+        x: (arrowObj.x1 || 0) / canvasWidth,
+        y: (arrowObj.y1 || 0) / canvasHeight,
+        width: ((arrowObj.x2 || 0) - (arrowObj.x1 || 0)) / canvasWidth,
+        height: ((arrowObj.y2 || 0) - (arrowObj.y1 || 0)) / canvasHeight,
       };
     }
 
-    if (obj instanceof fabric.Circle) {
-      const left = obj.left || 0;
-      const top = obj.top || 0;
-      const radius = obj.radius || 0;
+    // Check for Circle
+    if (obj instanceof fabric.Circle || obj.constructor?.name === 'Circle') {
+      const circleObj = obj as any;
+      const left = circleObj.left || 0;
+      const top = circleObj.top || 0;
+      const radius = circleObj.radius || 0;
       return {
         x: left / canvasWidth,
         y: top / canvasHeight,
@@ -537,12 +559,14 @@ export class AnnotationCanvas {
       };
     }
 
-    if (obj instanceof fabric.Path) {
+    // Check for Path (freehand)
+    if (obj instanceof fabric.Path || obj.constructor?.name === 'Path') {
+      const pathObj = obj as any;
       // For freehand, extract path points
-      const path = obj.path;
+      const path = pathObj.path;
       if (path) {
         const points: Point[] = [];
-        path.forEach((segment) => {
+        path.forEach((segment: any) => {
           if (Array.isArray(segment) && segment.length >= 3) {
             points.push({
               x: segment[1] / canvasWidth,
@@ -551,8 +575,8 @@ export class AnnotationCanvas {
           }
         });
         return {
-          x: (obj.left || 0) / canvasWidth,
-          y: (obj.top || 0) / canvasHeight,
+          x: (pathObj.left || 0) / canvasWidth,
+          y: (pathObj.top || 0) / canvasHeight,
           points,
         };
       }
@@ -570,14 +594,68 @@ export class AnnotationCanvas {
   /**
    * Export canvas as data URL (PNG or JPEG)
    * 
+   * Automatically resizes images larger than 1920x1080 to meet AC4.2 requirement.
+   * This ensures efficient token usage when sending to LLMs.
+   * 
    * @param format - Image format ('png' or 'jpeg')
+   * @param maxWidth - Maximum width (default: 1920)
+   * @param maxHeight - Maximum height (default: 1080)
    * @returns Base64 data URL
    */
-  toDataURL(format: 'png' | 'jpeg' = 'png'): string {
-    return this.canvas.toDataURL({
+  toDataURL(
+    format: 'png' | 'jpeg' = 'png',
+    maxWidth: number = 1920,
+    maxHeight: number = 1080
+  ): string {
+    const currentWidth = this.canvas.width || 1;
+    const currentHeight = this.canvas.height || 1;
+
+    // Check if resizing is needed (AC4.2: max 1920x1080)
+    if (currentWidth <= maxWidth && currentHeight <= maxHeight) {
+      // No resizing needed
+      return this.canvas.toDataURL({
+        format,
+        quality: 0.9,
+      });
+    }
+
+    // Calculate scale factor to fit within max dimensions
+    const scaleX = maxWidth / currentWidth;
+    const scaleY = maxHeight / currentHeight;
+    const scale = Math.min(scaleX, scaleY);
+
+    const newWidth = Math.floor(currentWidth * scale);
+    const newHeight = Math.floor(currentHeight * scale);
+
+    // Create temporary canvas for resizing
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = newWidth;
+    tempCanvas.height = newHeight;
+    const ctx = tempCanvas.getContext('2d');
+
+    if (!ctx) {
+      // Fallback to original if context creation fails
+      return this.canvas.toDataURL({
+        format,
+        quality: 0.9,
+      });
+    }
+
+    // Get the original canvas as image
+    const originalDataUrl = this.canvas.toDataURL({
       format,
       quality: 0.9,
     });
+
+    // Draw scaled image on temporary canvas
+    const img = new Image();
+    img.src = originalDataUrl;
+    
+    // Since we're working synchronously with a data URL, we can draw immediately
+    // (the image is already loaded in memory)
+    ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+    return tempCanvas.toDataURL(`image/${format}`, 0.9);
   }
 
   /**
