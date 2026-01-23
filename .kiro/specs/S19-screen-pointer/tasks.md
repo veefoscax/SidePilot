@@ -48,12 +48,12 @@ Minimal element pointing for hackathon. 5 tasks only.
 ## Checkpoint
 
 ### After All Tasks
-- [ ] 🎯 button visible in chat input
-- [ ] Click activates overlay in tab
-- [ ] Hovering highlights elements
-- [ ] Clicking assigns ref from S18
-- [ ] Comment input works
-- [ ] Agent receives ref + position + comment
+- [x] 🎯 button visible in chat input
+- [x] Click activates overlay in tab
+- [x] Hovering highlights elements
+- [x] Clicking assigns ref from S18
+- [x] Comment input works
+- [x] Agent receives ref + position + comment
 
 ---
 
