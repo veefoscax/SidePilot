@@ -9,7 +9,7 @@
  * Requirements: AC2 (Tool Naming), AC3 (Tool Execution)
  */
 
-import { MCPTool, MCPServer, MCPServerStatus, isValidMcpServerUrl } from './mcp';
+import { MCPTool, MCPServerStatus, isValidMcpServerUrl } from './mcp';
 
 // =============================================================================
 // Constants
@@ -477,9 +477,11 @@ export class MCPClient {
         };
       }
 
+      // Extract result from response
+      const responseObj = response as Record<string, unknown>;
       return {
         success: true,
-        result: response?.result ?? response?.content ?? response
+        result: responseObj?.result ?? responseObj?.content ?? response
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Tool execution failed';

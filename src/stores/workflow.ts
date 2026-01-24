@@ -9,7 +9,6 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
   WorkflowRecording,
-  WorkflowStep,
   WorkflowAction,
   WorkflowState,
   createWorkflowRecording,
@@ -389,7 +388,7 @@ export const useWorkflowStore = create<WorkflowStoreState>()(
         }
 
         // Check saved workflows
-        return savedWorkflows.find(w => w.id === id);
+        return savedWorkflows.find(w => w.id === id) || undefined;
       },
 
       /**
@@ -403,7 +402,7 @@ export const useWorkflowStore = create<WorkflowStoreState>()(
         if (workflowId) {
           workflow = get().getWorkflowById(workflowId);
         } else {
-          workflow = currentRecording;
+          workflow = currentRecording || undefined;
         }
 
         if (!workflow) {

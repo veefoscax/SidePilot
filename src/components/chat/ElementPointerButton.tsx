@@ -31,6 +31,12 @@ export function ElementPointerButton({
         return;
       }
 
+      // Check if tab URL is accessible
+      if (tab.url?.startsWith('chrome://') || tab.url?.startsWith('chrome-extension://')) {
+        toast.error('Element pointer cannot be used on browser internal pages');
+        return;
+      }
+
       // Send message to content script to activate pointer
       await chrome.tabs.sendMessage(tab.id, {
         type: ElementPointerMessageType.ACTIVATE
@@ -40,7 +46,16 @@ export function ElementPointerButton({
       toast.success('🎯 Element pointer activated. Click an element on the page.');
     } catch (error) {
       console.error('Failed to activate element pointer:', error);
-      toast.error('Failed to activate element pointer. Make sure the page is loaded.');
+      
+      // Provide specific error messages
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('Receiving end does not exist')) {
+        toast.error('Content script not loaded. Please refresh the page and try again.');
+      } else if (errorMessage.includes('Cannot access')) {
+        toast.error('Cannot access this page. Try a regular website.');
+      } else {
+        toast.error('Failed to activate element pointer. Make sure the page is fully loaded.');
+      }
     }
   };
 

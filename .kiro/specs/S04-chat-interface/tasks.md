@@ -151,12 +151,12 @@
   - _Requirements: Conversation persistence and sharing_
   - **Status**: ✅ COMPLETED - Full conversation management with save/load, export/import, and templates
 
-- [ ] Model comparison interface <!-- id: 28 -->
+- [x] Model comparison interface <!-- id: 28 -->
   - Allow side-by-side responses from different models
   - Add model performance metrics display
   - _Requirements: Multi-model comparison features_
 
-- [ ] Prompt suggestions and presets <!-- id: 29 -->
+- [x] Prompt suggestions and presets <!-- id: 29 -->
   - Add quick prompt suggestions
   - Implement custom prompt templates
   - Add prompt history and favorites
@@ -183,12 +183,12 @@ The core chat interface is complete and functional. Advanced UX patterns inspire
 
 ### 🚧 Remaining Enhancements:
 
-- [ ] Model comparison interface <!-- id: 28 -->
+- [x] Model comparison interface <!-- id: 28 -->
   - Allow side-by-side responses from different models
   - Add model performance metrics display
   - _Requirements: Multi-model comparison features_
 
-- [ ] Prompt suggestions and presets <!-- id: 29 -->
+- [x] Prompt suggestions and presets <!-- id: 29 -->
   - Add quick prompt suggestions
   - Implement custom prompt templates
   - Add prompt history and favorites

@@ -14,6 +14,13 @@ export interface ScreenshotOptions {
   quality?: number;
   annotateElements?: boolean;
   highlightElement?: string; // ref ID
+  clip?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    scale: number;
+  };
 }
 
 export interface ScreenshotResult {
@@ -753,7 +760,8 @@ export class CDPWrapper {
       format = 'png',
       quality = 90,
       annotateElements = false,
-      highlightElement
+      highlightElement,
+      clip
     } = options;
 
     try {
@@ -769,17 +777,20 @@ export class CDPWrapper {
 
       const viewport = viewportResult.result;
 
+      // Use provided clip or default to full viewport
+      const clipRegion = clip || {
+        x: 0,
+        y: 0,
+        width: viewport.width,
+        height: viewport.height,
+        scale: viewport.devicePixelRatio
+      };
+
       // Capture screenshot using CDP
       const result = await this.sendCommand(tabId, 'Page.captureScreenshot', {
         format,
         quality: format === 'jpeg' ? quality : undefined,
-        clip: {
-          x: 0,
-          y: 0,
-          width: viewport.width,
-          height: viewport.height,
-          scale: viewport.devicePixelRatio
-        }
+        clip: clipRegion
       });
 
       // Highlight specific element if requested

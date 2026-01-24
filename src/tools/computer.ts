@@ -450,12 +450,28 @@ async function handleZoom(
 
   const [x0, y0, x1, y1] = region;
 
-  // For now, take a regular screenshot
-  // TODO: Implement region-specific screenshot cropping
-  const result = await cdpWrapper.screenshot(tabId);
+  // Validate region coordinates
+  if (x0 >= x1 || y0 >= y1) {
+    return { error: 'Invalid region: x0 must be < x1 and y0 must be < y1' };
+  }
+
+  // Calculate region dimensions
+  const width = x1 - x0;
+  const height = y1 - y0;
+
+  // Capture screenshot with clip region
+  const result = await cdpWrapper.screenshot(tabId, {
+    clip: {
+      x: x0,
+      y: y0,
+      width,
+      height,
+      scale: 1
+    }
+  });
 
   return {
-    output: `Zoom screenshot captured for region (${x0}, ${y0}) to (${x1}, ${y1})`,
+    output: `Zoom screenshot captured for region (${x0}, ${y0}) to (${x1}, ${y1}) - ${width}x${height}px`,
     screenshot: `data:image/png;base64,${result.data}`
   };
 }

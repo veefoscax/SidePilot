@@ -52,7 +52,7 @@ Implement token-efficient browser automation through ref-based targeting, snapsh
   - Verify 60%+ reduction target
   - _Requirements: AC2.5, TR2_
 
-- [ ] 6. Context Module Index
+- [x] 6. Context Module Index
   - Create `src/lib/context/index.ts`
   - Export all public APIs
   - Add usage examples in comments
@@ -111,20 +111,20 @@ Implement token-efficient browser automation through ref-based targeting, snapsh
 
 ## Phase 6: Testing & Documentation (AUTO-OK)
 
-- [ ] 14. Unit Tests
+- [x] 14. Unit Tests
   - Test ref assignment determinism
   - Test filter accuracy
   - Test delta detection
   - Test token estimation
   - Create test fixtures for common page patterns
 
-- [ ] 15. Integration Tests
+- [x] 15. Integration Tests
   - End-to-end ref workflow
   - Tool calls with refs
   - Budget warning triggers
   - Performance benchmarks
 
-- [ ] 16. Documentation
+- [x] 16. Documentation
   - Update tool documentation
   - Add examples for ref-based workflow
   - Document filter options
@@ -135,29 +135,29 @@ Implement token-efficient browser automation through ref-based targeting, snapsh
 ## Checkpoints
 
 ### After Phase 1 (Task 3)
-- [ ] Refs assigned to interactive elements
-- [ ] Tools accept @ref format
-- [ ] Backward compatible with CSS selectors
+- [x] Refs assigned to interactive elements
+- [x] Tools accept @ref format
+- [x] Backward compatible with CSS selectors
 
 ### After Phase 2 (Task 6)
-- [ ] Filter options working
-- [ ] 60%+ reduction measured
-- [ ] Ref annotations in output
+- [x] Filter options working
+- [x] 60%+ reduction measured
+- [x] Ref annotations in output
 
 ### After Phase 3 (Task 8)
-- [ ] Delta mode working
-- [ ] 80%+ reduction for stable pages
-- [ ] Navigation triggers full refresh
+- [x] Delta mode working
+- [x] 80%+ reduction for stable pages
+- [x] Navigation triggers full refresh
 
 ### After Phase 4 (Task 10)
-- [ ] Token tracking functional
-- [ ] Auto-compression at thresholds
-- [ ] Warning callbacks firing
+- [x] Token tracking functional
+- [x] Auto-compression at thresholds
+- [x] Warning callbacks firing
 
 ### Final (Task 16)
-- [ ] All tests passing
-- [ ] Performance targets met
-- [ ] Documentation complete
+- [x] All tests passing
+- [x] Performance targets met
+- [x] Documentation complete
 
 ---
 

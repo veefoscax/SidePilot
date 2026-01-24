@@ -1,0 +1,1298 @@
+npm warn Unknown cli config "--run". This will stop working in the next major version of npm.
+npm warn Unknown cli config "--reporter". This will stop working in the next major version of npm.
+
+> sidepilot@1.0.0 test
+> playwright test
+
+
+Running 52 tests using 6 workers
+
+[1A[2K[1/52] [chromium] ΓÇ║ tests\content-script.spec.ts:147:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should create visual indicator element
+[1A[2K[2/52] [chromium] ΓÇ║ tests\content-script.spec.ts:41:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should contain indicator creation code
+[1A[2K[3/52] [chromium] ΓÇ║ tests\content-script.spec.ts:32:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should contain expected console log
+[1A[2K[4/52] [chromium] ΓÇ║ tests\content-script.spec.ts:51:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should be properly referenced in manifest
+[1A[2K[chromium] ΓÇ║ tests\content-script.spec.ts:41:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should contain indicator creation code
+Γ£à Content script contains indicator creation
+
+[1A[2K[5/52] [chromium] ΓÇ║ tests\content-script.spec.ts:167:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should remove indicator after timeout
+[1A[2K[chromium] ΓÇ║ tests\content-script.spec.ts:32:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should contain expected console log
+Γ£à Content script contains startup log
+
+[1A[2K[6/52] [chromium] ΓÇ║ tests\content-script.spec.ts:188:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject on different domains
+[1A[2K[chromium] ΓÇ║ tests\content-script.spec.ts:51:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should be properly referenced in manifest
+Γ£à Manifest correctly references content script
+
+[1A[2K[7/52] [chromium] ΓÇ║ tests\content-script.spec.ts:223:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should handle DOM ready states correctly
+[1A[2K[8/52] [chromium] ΓÇ║ tests\content-script.spec.ts:123:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject content script and show console log
+[1A[2K[9/52] [chromium] ΓÇ║ tests\content-script.spec.ts:23:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should have built content script file
+[1A[2K[chromium] ΓÇ║ tests\content-script.spec.ts:23:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should have built content script file
+Content script file size: 21156 bytes
+
+[1A[2K[10/52] [chromium] ΓÇ║ tests\e2e-simple.spec.ts:4:3 ΓÇ║ Simple Test ΓÇ║ should pass
+[1A[2K[11/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:81:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog appears when tool requires permission
+[1A[2K  1) [chromium] ΓÇ║ tests\content-script.spec.ts:167:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should remove indicator after timeout 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      69 |     let extensionId: string;
+      70 |
+    > 71 |     test.beforeAll(async () => {
+         |          ^
+      72 |       // Launch Chrome with extension loaded
+      73 |       const pathToExtension = path.join(__dirname, '..', 'dist');
+      74 |       
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:71:10
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      84 |
+      85 |       // Wait for extension to load
+    > 86 |       await context.waitForEvent('page');
+         |                     ^
+      87 |       
+      88 |       // Get extension ID from chrome://extensions page
+      89 |       const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:86:21
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      115 |     });
+      116 |
+    > 117 |     test.afterAll(async () => {
+          |          ^
+      118 |       if (context) {
+      119 |         await context.close();
+      120 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:117:10
+
+
+[1A[2K  2) [chromium] ΓÇ║ tests\content-script.spec.ts:147:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should create visual indicator element 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      69 |     let extensionId: string;
+      70 |
+    > 71 |     test.beforeAll(async () => {
+         |          ^
+      72 |       // Launch Chrome with extension loaded
+      73 |       const pathToExtension = path.join(__dirname, '..', 'dist');
+      74 |       
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:71:10
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      84 |
+      85 |       // Wait for extension to load
+    > 86 |       await context.waitForEvent('page');
+         |                     ^
+      87 |       
+      88 |       // Get extension ID from chrome://extensions page
+      89 |       const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:86:21
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      115 |     });
+      116 |
+    > 117 |     test.afterAll(async () => {
+          |          ^
+      118 |       if (context) {
+      119 |         await context.close();
+      120 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:117:10
+
+
+[1A[2K  3) [chromium] ΓÇ║ tests\content-script.spec.ts:188:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject on different domains 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      69 |     let extensionId: string;
+      70 |
+    > 71 |     test.beforeAll(async () => {
+         |          ^
+      72 |       // Launch Chrome with extension loaded
+      73 |       const pathToExtension = path.join(__dirname, '..', 'dist');
+      74 |       
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:71:10
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      84 |
+      85 |       // Wait for extension to load
+    > 86 |       await context.waitForEvent('page');
+         |                     ^
+      87 |       
+      88 |       // Get extension ID from chrome://extensions page
+      89 |       const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:86:21
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      115 |     });
+      116 |
+    > 117 |     test.afterAll(async () => {
+          |          ^
+      118 |       if (context) {
+      119 |         await context.close();
+      120 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:117:10
+
+
+[1A[2K  4) [chromium] ΓÇ║ tests\content-script.spec.ts:223:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should handle DOM ready states correctly 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      69 |     let extensionId: string;
+      70 |
+    > 71 |     test.beforeAll(async () => {
+         |          ^
+      72 |       // Launch Chrome with extension loaded
+      73 |       const pathToExtension = path.join(__dirname, '..', 'dist');
+      74 |       
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:71:10
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      84 |
+      85 |       // Wait for extension to load
+    > 86 |       await context.waitForEvent('page');
+         |                     ^
+      87 |       
+      88 |       // Get extension ID from chrome://extensions page
+      89 |       const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:86:21
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      115 |     });
+      116 |
+    > 117 |     test.afterAll(async () => {
+          |          ^
+      118 |       if (context) {
+      119 |         await context.close();
+      120 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:117:10
+
+
+[1A[2K  5) [chromium] ΓÇ║ tests\content-script.spec.ts:123:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject content script and show console log 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      69 |     let extensionId: string;
+      70 |
+    > 71 |     test.beforeAll(async () => {
+         |          ^
+      72 |       // Launch Chrome with extension loaded
+      73 |       const pathToExtension = path.join(__dirname, '..', 'dist');
+      74 |       
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:71:10
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      84 |
+      85 |       // Wait for extension to load
+    > 86 |       await context.waitForEvent('page');
+         |                     ^
+      87 |       
+      88 |       // Get extension ID from chrome://extensions page
+      89 |       const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:86:21
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      115 |     });
+      116 |
+    > 117 |     test.afterAll(async () => {
+          |          ^
+      118 |       if (context) {
+      119 |         await context.close();
+      120 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\content-script.spec.ts:117:10
+
+
+[1A[2K  6) [chromium] ΓÇ║ tests\permissions-integration.spec.ts:81:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog appears when tool requires permission 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let sidepanelPage: Page;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:21:8
+
+    Error: locator.textContent: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('extensions-item').first().locator('#extension-id')[22m
+
+
+      45 |       
+      46 |       if (name?.includes('SidePilot')) {
+    > 47 |         const idElement = await card.locator('#extension-id').textContent();
+         |                                                               ^
+      48 |         extensionId = idElement?.replace('ID: ', '') || '';
+      49 |         break;
+      50 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:47:63
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      55 |   });
+      56 |
+    > 57 |   test.afterAll(async () => {
+         |        ^
+      58 |     if (context) {
+      59 |       await context.close();
+      60 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:57:8
+
+
+[1A[2K[12/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:138:3 ΓÇ║ Permission System Integration ΓÇ║ remember checkbox saves permission preference
+[1A[2K[13/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:456:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog shows text preview for type actions
+[1A[2K[14/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:271:3 ΓÇ║ Permission System Integration ΓÇ║ deny without remember does not save permission
+[1A[2K[15/52] [chromium] ΓÇ║ tests\providers.spec.ts:33:3 ΓÇ║ Provider System ΓÇ║ should build without TypeScript errors
+[1A[2K  7) [chromium] ΓÇ║ tests\providers.spec.ts:33:3 ΓÇ║ Provider System ΓÇ║ should build without TypeScript errors 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m1000000[39m
+    Received:   [31m1852797[39m
+
+      42 |     const sidePanel = fs.statSync('dist/sidepanel.js');
+      43 |     expect(sidePanel.size).toBeGreaterThan(100000); // At least 100KB
+    > 44 |     expect(sidePanel.size).toBeLessThan(1000000); // Less than 1MB
+         |                            ^
+      45 |   });
+      46 |
+      47 |   test('should export provider factory correctly', async () => {
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\providers.spec.ts:44:28
+
+
+[1A[2K[31mWorker teardown timeout of 30000ms exceeded.[39m
+
+[31mFailed worker ran 2 tests:[39m
+[chromium] ΓÇ║ tests\content-script.spec.ts:41:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should contain indicator creation code
+[chromium] ΓÇ║ tests\content-script.spec.ts:167:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should remove indicator after timeout
+
+[1A[2K[31mWorker teardown timeout of 30000ms exceeded.[39m
+
+[31mFailed worker ran 2 tests:[39m
+[chromium] ΓÇ║ tests\content-script.spec.ts:32:5 ΓÇ║ SidePilot Content Script ΓÇ║ Static Tests ΓÇ║ should contain expected console log
+[chromium] ΓÇ║ tests\content-script.spec.ts:188:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject on different domains
+
+[1A[2K[31mWorker teardown timeout of 30000ms exceeded.[39m
+
+[31mFailed worker ran 1 test:[39m
+[chromium] ΓÇ║ tests\content-script.spec.ts:123:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject content script and show console log
+
+[1A[2K[16/52] [chromium] ΓÇ║ tests\providers.spec.ts:47:3 ΓÇ║ Provider System ΓÇ║ should export provider factory correctly
+[1A[2K[17/52] [chromium] ΓÇ║ tests\providers.spec.ts:62:3 ΓÇ║ Provider System ΓÇ║ should create providers without errors
+[1A[2K  8) [chromium] ΓÇ║ tests\providers.spec.ts:62:3 ΓÇ║ Provider System ΓÇ║ should create providers without errors 
+
+    ProviderError: Unknown provider type: [object Object]. Supported providers: anthropic, openai, google, openai-compat, deepseek, groq, mistral, ollama, lmstudio, openrouter, together, fireworks, moonshot, zai, huggingface, xai, cerebras, sambanova, cohere, perplexity, replicate, anyscale, baseten, modal, runpod, banana, beam, gradient, novita, lepton, hyperbolic, deepinfra, infermatic, aimlapi, shuttleai, cloudflare, workers-ai, bedrock, vertex
+
+       at ..\src\providers\factory.ts:82
+
+      80 |   const ProviderClass = PROVIDER_CLASSES[type];
+      81 |   if (!ProviderClass) {
+    > 82 |     throw new ProviderError(
+         |           ^
+      83 |       `Unknown provider type: ${type}. Supported providers: ${Object.keys(PROVIDER_CLASSES).join(', ')}`,
+      84 |       type,
+      85 |       'UNKNOWN_PROVIDER'
+        at createProvider (C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\src\providers\factory.ts:82:11)
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\providers.spec.ts:66:23
+
+
+[1A[2K[18/52] [chromium] ΓÇ║ tests\providers.spec.ts:10:3 ΓÇ║ Provider System ΓÇ║ should have all provider files built
+[1A[2K[19/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:363:3 ΓÇ║ Permission System Integration ΓÇ║ reset all permissions clears all saved permissions
+[1A[2K[20/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:188:3 ΓÇ║ Permission System Integration ΓÇ║ settings page displays and updates permissions
+[1A[2K[21/52] [chromium] ΓÇ║ tests\providers.spec.ts:104:3 ΓÇ║ Provider System ΓÇ║ should handle provider errors gracefully
+[1A[2K[22/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:22:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have built service worker file
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:22:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have built service worker file
+Service worker file size: 2713 bytes
+
+[1A[2K[23/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:31:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should contain expected startup logs
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:31:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should contain expected startup logs
+Γ£à Service worker contains startup logs
+
+[1A[2K[24/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:41:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should contain extension icon click handler
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:41:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should contain extension icon click handler
+Γ£à Service worker contains click handler
+
+[1A[2K[25/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:50:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should register message listeners
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:50:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should register message listeners
+Γ£à Service worker registers message listeners
+
+[1A[2K[26/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:59:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should handle installation events
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:59:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should handle installation events
+Γ£à Service worker handles installation events
+
+[1A[2K[27/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:70:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should be properly referenced in manifest
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:70:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should be properly referenced in manifest
+Γ£à Manifest correctly references service worker
+
+[1A[2K[28/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:82:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have correct Chrome extension permissions
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:82:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have correct Chrome extension permissions
+Γ£à Manifest has required permissions
+
+[1A[2K[29/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:92:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have side panel configuration
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:92:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have side panel configuration
+Γ£à Manifest has side panel configuration
+
+[1A[2K[30/52] [chromium] ΓÇ║ tests\service-worker-static.spec.ts:101:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have action configuration for extension icon
+[1A[2K[chromium] ΓÇ║ tests\service-worker-static.spec.ts:101:3 ΓÇ║ SidePilot Service Worker - Static Tests ΓÇ║ should have action configuration for extension icon
+Γ£à Manifest has action configuration
+
+[1A[2K[31/52] [chromium] ΓÇ║ tests\service-worker.spec.ts:73:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should load extension without errors
+[1A[2K[32/52] [chromium] ΓÇ║ tests\providers.spec.ts:79:3 ΓÇ║ Provider System ΓÇ║ should have model registry with capabilities
+[1A[2K[33/52] [chromium] ΓÇ║ tests\service-worker.spec.ts:93:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should have active service worker
+[1A[2K  9) [chromium] ΓÇ║ tests\permissions-integration.spec.ts:271:3 ΓÇ║ Permission System Integration ΓÇ║ deny without remember does not save permission 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let sidepanelPage: Page;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:21:8
+
+    Error: locator.textContent: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('extensions-item').first().locator('#extension-id')[22m
+
+
+      45 |       
+      46 |       if (name?.includes('SidePilot')) {
+    > 47 |         const idElement = await card.locator('#extension-id').textContent();
+         |                                                               ^
+      48 |         extensionId = idElement?.replace('ID: ', '') || '';
+      49 |         break;
+      50 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:47:63
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      55 |   });
+      56 |
+    > 57 |   test.afterAll(async () => {
+         |        ^
+      58 |     if (context) {
+      59 |       await context.close();
+      60 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:57:8
+
+
+[1A[2K[34/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:313:3 ΓÇ║ Permission System Integration ΓÇ║ deny with remember saves deny permission
+[1A[2K  10) [chromium] ΓÇ║ tests\permissions-integration.spec.ts:456:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog shows text preview for type actions 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let sidepanelPage: Page;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:21:8
+
+    Error: locator.textContent: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('extensions-item').first().locator('#extension-id')[22m
+
+
+      45 |       
+      46 |       if (name?.includes('SidePilot')) {
+    > 47 |         const idElement = await card.locator('#extension-id').textContent();
+         |                                                               ^
+      48 |         extensionId = idElement?.replace('ID: ', '') || '';
+      49 |         break;
+      50 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:47:63
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      55 |   });
+      56 |
+    > 57 |   test.afterAll(async () => {
+         |        ^
+      58 |     if (context) {
+      59 |       await context.close();
+      60 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:57:8
+
+
+[1A[2K  11) [chromium] ΓÇ║ tests\service-worker.spec.ts:73:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should load extension without errors 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let extensionId: string;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:21:8
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      34 |
+      35 |     // Wait for extension to load and get its ID
+    > 36 |     await context.waitForEvent('page');
+         |                   ^
+      37 |     
+      38 |     // Get extension ID from chrome://extensions page
+      39 |     const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:36:19
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      65 |   });
+      66 |
+    > 67 |   test.afterAll(async () => {
+         |        ^
+      68 |     if (context) {
+      69 |       await context.close();
+      70 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:67:8
+
+
+[1A[2K  12) [chromium] ΓÇ║ tests\permissions-integration.spec.ts:363:3 ΓÇ║ Permission System Integration ΓÇ║ reset all permissions clears all saved permissions 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let sidepanelPage: Page;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:21:8
+
+    Error: locator.textContent: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('extensions-item').first().locator('#extension-id')[22m
+
+
+      45 |       
+      46 |       if (name?.includes('SidePilot')) {
+    > 47 |         const idElement = await card.locator('#extension-id').textContent();
+         |                                                               ^
+      48 |         extensionId = idElement?.replace('ID: ', '') || '';
+      49 |         break;
+      50 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:47:63
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      55 |   });
+      56 |
+    > 57 |   test.afterAll(async () => {
+         |        ^
+      58 |     if (context) {
+      59 |       await context.close();
+      60 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:57:8
+
+
+[1A[2K[35/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:411:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog shows screenshot for click actions
+[1A[2K  13) [chromium] ΓÇ║ tests\permissions-integration.spec.ts:188:3 ΓÇ║ Permission System Integration ΓÇ║ settings page displays and updates permissions 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let sidepanelPage: Page;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:21:8
+
+    Error: locator.textContent: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('extensions-item').first().locator('#extension-id')[22m
+
+
+      45 |       
+      46 |       if (name?.includes('SidePilot')) {
+    > 47 |         const idElement = await card.locator('#extension-id').textContent();
+         |                                                               ^
+      48 |         extensionId = idElement?.replace('ID: ', '') || '';
+      49 |         break;
+      50 |       }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:47:63
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      55 |   });
+      56 |
+    > 57 |   test.afterAll(async () => {
+         |        ^
+      58 |     if (context) {
+      59 |       await context.close();
+      60 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\permissions-integration.spec.ts:57:8
+
+
+[1A[2K[36/52] [chromium] ΓÇ║ tests\permissions-integration.spec.ts:233:3 ΓÇ║ Permission System Integration ΓÇ║ settings page allows deleting permissions
+[1A[2K[37/52] [chromium] ΓÇ║ tests\service-worker.spec.ts:117:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should open side panel when extension icon is clicked
+[1A[2K  14) [chromium] ΓÇ║ tests\service-worker.spec.ts:93:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should have active service worker 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let extensionId: string;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:21:8
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      34 |
+      35 |     // Wait for extension to load and get its ID
+    > 36 |     await context.waitForEvent('page');
+         |                   ^
+      37 |     
+      38 |     // Get extension ID from chrome://extensions page
+      39 |     const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:36:19
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      65 |   });
+      66 |
+    > 67 |   test.afterAll(async () => {
+         |        ^
+      68 |     if (context) {
+      69 |       await context.close();
+      70 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:67:8
+
+
+[1A[2K[31mWorker teardown timeout of 30000ms exceeded.[39m
+
+[31mFailed worker ran 1 test:[39m
+[chromium] ΓÇ║ tests\permissions-integration.spec.ts:456:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog shows text preview for type actions
+
+[1A[2K[38/52] [chromium] ΓÇ║ tests\service-worker.spec.ts:155:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should register message listeners
+[1A[2K[39/52] [chromium] ΓÇ║ tests\service-worker.spec.ts:138:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should have service worker console logs
+[1A[2K[40/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:32:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Settings page component exists and imports required dependencies
+[1A[2K[41/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:13:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Provider store file exists and contains required exports
+[1A[2K  15) [chromium] ΓÇ║ tests\settings-ui.spec.ts:32:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Settings page component exists and imports required dependencies 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected substring: [32m"import { ProviderSelector }"[39m
+    Received string:    [31m"/**┬╖[39m
+    [31m * Settings Page Component┬╖[39m
+    [31m *┬╖┬╖[39m
+    [31m * Advanced multi-provider settings interface for configuring multiple LLM providers┬╖[39m
+    [31m * and managing a unified collection of models from all providers.┬╖[39m
+    [31m */┬╖┬╖┬╖[39m
+    [31mimport { useState, useEffect } from 'react';┬╖[39m
+    [31mimport { useTranslation } from 'react-i18next';┬╖[39m
+    [31mimport { Button } from '@/components/ui/button';┬╖[39m
+    [31mimport { Card, CardContent } from '@/components/ui/card';┬╖[39m
+    [31mimport { Label } from '@/components/ui/label';┬╖[39m
+    [31mimport { Switch } from '@/components/ui/switch';┬╖[39m
+    [31mimport { Separator } from '@/components/ui/separator';┬╖[39m
+    [31mimport { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';┬╖[39m
+    [31mimport { HugeiconsIcon } from '@hugeicons/react';┬╖[39m
+    [31mimport {┬╖[39m
+    [31m  ArrowLeft01Icon,┬╖[39m
+    [31m  ArrowDown01Icon,┬╖[39m
+    [31m  ArrowUp01Icon,┬╖[39m
+    [31m  Notification01Icon,┬╖[39m
+    [31m  CheckmarkCircle02Icon,┬╖[39m
+    [31m  Alert02Icon,┬╖[39m
+    [31m  VolumeHighIcon┬╖[39m
+    [31m} from '@hugeicons/core-free-icons';┬╖┬╖┬╖[39m
+    [31mimport { MultiProviderManager } from '@/components/settings/MultiProviderManager';┬╖[39m
+    [31mimport {┬╖[39m
+    [31m  BrowserAutomationSettings as BrowserAutomationSettingsComponent,┬╖[39m
+    [31m  type BrowserAutomationSettings as BrowserAutomationSettingsConfig┬╖[39m
+    [31m} from '@/components/settings/BrowserAutomationSettings';┬╖[39m
+    [31mimport { PermissionsManager } from '@/components/settings/PermissionsManager';┬╖[39m
+    [31mimport { MCPSettings } from '@/components/settings/MCPSettings';┬╖[39m
+    [31mimport { MCPConnectorSettings } from '@/components/settings/MCPConnectorSettings';┬╖[39m
+    [31mimport { ModelWarnings } from '@/components/settings/ModelWarnings';┬╖[39m
+    [31mimport { VoiceSettings } from '@/components/settings/VoiceSettings';┬╖[39m
+    [31mimport { notifications, type NotificationConfig } from '@/lib/notifications';┬╖[39m
+    [31mimport { useMultiProviderStore } from '@/stores/multi-provider';┬╖┬╖┬╖[39m
+    [31minterface SettingsPageProps {┬╖[39m
+    [31m  onBack?: () => void;┬╖[39m
+    [31m}┬╖┬╖┬╖[39m
+    [31mconst DEFAULT_BROWSER_SETTINGS: BrowserAutomationSettingsConfig = {┬╖[39m
+    [31m  backend: 'builtin',┬╖[39m
+    [31m  humanLikeDelays: true,┬╖[39m
+    [31m  stealthMode: false,┬╖[39m
+    [31m  screenshotAnnotations: true,┬╖[39m
+    [31m  maxScreenshotWidth: 1920,┬╖[39m
+    [31m  maxScreenshotHeight: 1080,┬╖[39m
+    [31m};┬╖┬╖┬╖[39m
+    [31m/**┬╖[39m
+    [31m * Default notification configuration┬╖[39m
+    [31m */┬╖[39m
+    [31mconst DEFAULT_NOTIFICATION_CONFIG: NotificationConfig = {┬╖[39m
+    [31m  enabled: true,┬╖[39m
+    [31m  soundEnabled: false,┬╖[39m
+    [31m  types: {┬╖[39m
+    [31m    taskComplete: true,┬╖[39m
+    [31m    permissionRequired: true,┬╖[39m
+    [31m    error: true┬╖[39m
+    [31m  }┬╖[39m
+    [31m};┬╖┬╖┬╖[39m
+    [31m/**┬╖[39m
+    [31m * NotificationSettings Component┬╖[39m
+    [31m *┬╖┬╖[39m
+    [31m * Provides UI for configuring notification preferences:┬╖[39m
+    [31m * - Master enable/disable toggle┬╖[39m
+    [31m * - Individual toggles per notification type┬╖[39m
+    [31m * - Sound toggle┬╖[39m
+    [31m * - Test notification button┬╖[39m
+    [31m *┬╖┬╖[39m
+    [31m * Requirements: AC4┬╖[39m
+    [31m */┬╖[39m
+    [31mfunction NotificationSettings() {┬╖[39m
+    [31m  const { t } = useTranslation();┬╖[39m
+    [31m  const [isExpanded, setIsExpanded] = useState(true);┬╖[39m
+    [31m  const [config, setConfig] = useState<NotificationConfig>(DEFAULT_NOTIFICATION_CONFIG);┬╖[39m
+    [31m  const [isLoading, setIsLoading] = useState(true);┬╖[39m
+    [31m  const [testStatus, setTestStatus] = useState<'idle' | 'sent' | 'error'>('idle');┬╖┬╖┬╖[39m
+    [31m  // Load notification config on mount┬╖[39m
+    [31m  useEffect(() => {┬╖[39m
+    [31m    const loadConfig = async () => {┬╖[39m
+    [31m      try {┬╖[39m
+    [31m        await notifications.loadConfig();┬╖[39m
+    [31m        setConfig(notifications.getConfig());┬╖[39m
+    [31m      } catch (error) {┬╖[39m
+    [31m        console.error('[NotificationSettings] Failed to load config:', error);┬╖[39m
+    [31m      } finally {┬╖[39m
+    [31m        setIsLoading(false);┬╖[39m
+    [31m      }┬╖[39m
+    [31m    };┬╖[39m
+    [31m    loadConfig();┬╖[39m
+    [31m  }, []);┬╖┬╖┬╖[39m
+    [31m  // Update config and persist┬╖[39m
+    [31m  const updateConfig = async (updates: Partial<NotificationConfig>) => {┬╖[39m
+    [31m    try {┬╖[39m
+    [31m      await notifications.updateConfig(updates);┬╖[39m
+    [31m      setConfig(notifications.getConfig());┬╖[39m
+    [31m    } catch (error) {┬╖[39m
+    [31m      console.error('[NotificationSettings] Failed to update config:', error);┬╖[39m
+    [31m    }┬╖[39m
+    [31m  };┬╖┬╖┬╖[39m
+    [31m  // Update individual notification type┬╖[39m
+    [31m  const updateNotificationType = async (type: keyof NotificationConfig['types'], enabled: boolean) => {┬╖[39m
+    [31m    await updateConfig({┬╖[39m
+    [31m      types: {┬╖[39m
+    [31m        ...config.types,┬╖[39m
+    [31m        [type]: enabled┬╖[39m
+    [31m      }┬╖[39m
+    [31m    });┬╖[39m
+    [31m  };┬╖┬╖┬╖[39m
+    [31m  // Test notification┬╖[39m
+    [31m  const handleTestNotification = async () => {┬╖[39m
+    [31m    try {┬╖[39m
+    [31m      setTestStatus('sent');┬╖[39m
+    [31m      await notifications.notifyTaskComplete('Test Task');┬╖[39m
+    [31m      // Reset status after 2 seconds┬╖[39m
+    [31m      setTimeout(() => setTestStatus('idle'), 2000);┬╖[39m
+    [31m    } catch (error) {┬╖[39m
+    [31m      console.error('[NotificationSettings] Test notification failed:', error);┬╖[39m
+    [31m      setTestStatus('error');┬╖[39m
+    [31m      setTimeout(() => setTestStatus('idle'), 2000);┬╖[39m
+    [31m    }┬╖[39m
+    [31m  };┬╖┬╖┬╖[39m
+    [31m  if (isLoading) {┬╖[39m
+    [31m    return (┬╖[39m
+    [31m      <div className=\"space-y-4\">┬╖[39m
+    [31m        <div className=\"flex items-center justify-between\">┬╖[39m
+    [31m          <div>┬╖[39m
+    [31m            <h3 className=\"text-base font-medium\">{t('notifications.title')}</h3>┬╖[39m
+    [31m            <p className=\"text-sm text-muted-foreground\">{t('common.loading')}</p>┬╖[39m
+    [31m          </div>┬╖[39m
+    [31m        </div>┬╖[39m
+    [31m      </div>┬╖[39m
+    [31m    );┬╖[39m
+    [31m  }┬╖┬╖┬╖[39m
+    [31m  return (┬╖[39m
+    [31m    <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>┬╖[39m
+    [31m      <div className=\"space-y-4\">┬╖[39m
+    [31m        {/* Compact Header */}┬╖[39m
+    [31m        <div className=\"flex items-center justify-between\">┬╖[39m
+    [31m          <div className=\"flex items-center gap-2\">┬╖[39m
+    [31m            <HugeiconsIcon icon={Notification01Icon} className=\"h-4 w-4 text-primary\" />┬╖[39m
+    [31m            <div>┬╖[39m
+    [31m              <h3 className=\"text-base font-medium\">{t('notifications.title')}</h3>┬╖[39m
+    [31m              <p className=\"text-sm text-muted-foreground\">┬╖[39m
+    [31m                {config.enabled ? t('notifications.enabled') : t('notifications.disabled')}┬╖[39m
+    [31m              </p>┬╖[39m
+    [31m            </div>┬╖[39m
+    [31m          </div>┬╖[39m
+    [31m          <CollapsibleTrigger asChild>┬╖[39m
+    [31m            <Button variant=\"ghost\" size=\"sm\">┬╖[39m
+    [31m              <HugeiconsIcon┬╖[39m
+    [31m                icon={isExpanded ? ArrowUp01Icon : ArrowDown01Icon}┬╖[39m
+    [31m                className=\"h-4 w-4\"┬╖[39m
+    [31m              />┬╖[39m
+    [31m            </Button>┬╖[39m
+    [31m          </CollapsibleTrigger>┬╖[39m
+    [31m        </div>┬╖┬╖┬╖[39m
+    [31m        <CollapsibleContent className=\"space-y-4\">┬╖[39m
+    [31m          {/* Master Toggle */}┬╖[39m
+    [31m          <Card>┬╖[39m
+    [31m            <CardContent className=\"pt-4 space-y-4\">┬╖[39m
+    [31m              <div className=\"flex items-center justify-between\">┬╖[39m
+    [31m                <div className=\"space-y-0.5\">┬╖[39m
+    [31m                  <Label htmlFor=\"notifications-enabled\" className=\"text-sm font-medium\">┬╖[39m
+    [31m                    {t('notifications.permission.title')}┬╖[39m
+    [31m                  </Label>┬╖[39m
+    [31m                  <p className=\"text-xs text-muted-foreground\">┬╖[39m
+    [31m                    {t('notifications.permission.description')}┬╖[39m
+    [31m                  </p>┬╖[39m
+    [31m                </div>┬╖[39m
+    [31m                <Switch┬╖[39m
+    [31m                  id=\"notifications-enabled\"┬╖[39m
+    [31m                  checked={config.enabled}┬╖[39m
+    [31m                  onCheckedChange={(checked: boolean) => updateConfig({ enabled: checked })}┬╖[39m
+    [31m                />┬╖[39m
+    [31m              </div>┬╖┬╖┬╖[39m
+    [31m              <Separator />┬╖┬╖┬╖[39m
+    [31m              {/* Individual Type Toggles */}┬╖[39m
+    [31m              <div className=\"space-y-3\">┬╖[39m
+    [31m                <h4 className=\"text-sm font-medium\">{t('notifications.types.title')}</h4>┬╖┬╖┬╖[39m
+    [31m                <div className=\"space-y-3\">┬╖[39m
+    [31m                  {/* Task Complete */}┬╖[39m
+    [31m                  <div className=\"flex items-center justify-between\">┬╖[39m
+    [31m                    <div className=\"flex items-center gap-2\">┬╖[39m
+    [31m                      <HugeiconsIcon icon={CheckmarkCircle02Icon} className=\"h-4 w-4 text-green-500\" />┬╖[39m
+    [31m                      <Label htmlFor=\"notify-task-complete\" className=\"text-xs\">┬╖[39m
+    [31m                        {t('notifications.types.taskComplete')}┬╖[39m
+    [31m                      </Label>┬╖[39m
+    [31m                    </div>┬╖[39m
+    [31m                    <Switch┬╖[39m
+    [31m                      id=\"notify-task-complete\"┬╖[39m
+    [31m                      checked={config.types.taskComplete}┬╖[39m
+    [31m                      onCheckedChange={(checked: boolean) => updateNotificationType('taskComplete', checked)}┬╖[39m
+    [31m                      disabled={!config.enabled}┬╖[39m
+    [31m                    />┬╖[39m
+    [31m                  </div>┬╖┬╖┬╖[39m
+    [31m                  {/* Permission Required */}┬╖[39m
+    [31m                  <div className=\"flex items-center justify-between\">┬╖[39m
+    [31m                    <div className=\"flex items-center gap-2\">┬╖[39m
+    [31m                      <HugeiconsIcon icon={Alert02Icon} className=\"h-4 w-4 text-yellow-500\" />┬╖[39m
+    [31m                      <Label htmlFor=\"notify-permission\" className=\"text-xs\">┬╖[39m
+    [31m                        {t('notifications.types.permissionRequired')}┬╖[39m
+    [31m                      </Label>┬╖[39m
+    [31m                    </div>┬╖[39m
+    [31m                    <Switch┬╖[39m
+    [31m                      id=\"notify-permission\"┬╖[39m
+    [31m                      checked={config.types.permissionRequired}┬╖[39m
+    [31m                      onCheckedChange={(checked: boolean) => updateNotificationType('permissionRequired', checked)}┬╖[39m
+    [31m                      disabled={!config.enabled}┬╖[39m
+    [31m                    />┬╖[39m
+    [31m                  </div>┬╖┬╖┬╖[39m
+    [31m                  {/* Error */}┬╖[39m
+    [31m                  <div className=\"flex items-center justify-between\">┬╖[39m
+    [31m                    <div className=\"flex items-center gap-2\">┬╖[39m
+    [31m                      <HugeiconsIcon icon={Alert02Icon} className=\"h-4 w-4 text-red-500\" />┬╖[39m
+    [31m                      <Label htmlFor=\"notify-error\" className=\"text-xs\">┬╖[39m
+    [31m                        {t('notifications.types.error')}┬╖[39m
+    [31m                      </Label>┬╖[39m
+    [31m                    </div>┬╖[39m
+    [31m                    <Switch┬╖[39m
+    [31m                      id=\"notify-error\"┬╖[39m
+    [31m                      checked={config.types.error}┬╖[39m
+    [31m                      onCheckedChange={(checked: boolean) => updateNotificationType('error', checked)}┬╖[39m
+    [31m                      disabled={!config.enabled}┬╖[39m
+    [31m                    />┬╖[39m
+    [31m                  </div>┬╖[39m
+    [31m                </div>┬╖[39m
+    [31m              </div>┬╖┬╖┬╖[39m
+    [31m              <Separator />┬╖┬╖┬╖[39m
+    [31m              {/* Sound Toggle */}┬╖[39m
+    [31m              <div className=\"flex items-center justify-between\">┬╖[39m
+    [31m                <div className=\"flex items-center gap-2\">┬╖[39m
+    [31m                  <HugeiconsIcon icon={VolumeHighIcon} className=\"h-4 w-4 text-muted-foreground\" />┬╖[39m
+    [31m                  <div className=\"space-y-0.5\">┬╖[39m
+    [31m                    <Label htmlFor=\"sound-enabled\" className=\"text-xs\">┬╖[39m
+    [31m                      {t('notifications.sound.label')}┬╖[39m
+    [31m                    </Label>┬╖[39m
+    [31m                    <p className=\"text-xs text-muted-foreground\">┬╖[39m
+    [31m                      {t('notifications.sound.description')}┬╖[39m
+    [31m                    </p>┬╖[39m
+    [31m                  </div>┬╖[39m
+    [31m                </div>┬╖[39m
+    [31m                <Switch┬╖[39m
+    [31m                  id=\"sound-enabled\"┬╖[39m
+    [31m                  checked={config.soundEnabled}┬╖[39m
+    [31m                  onCheckedChange={(checked: boolean) => updateConfig({ soundEnabled: checked })}┬╖[39m
+    [31m                  disabled={!config.enabled}┬╖[39m
+    [31m                />┬╖[39m
+    [31m              </div>┬╖┬╖┬╖[39m
+    [31m              <Separator />┬╖┬╖┬╖[39m
+    [31m              {/* Test Notification Button */}┬╖[39m
+    [31m              <div className=\"flex items-center justify-between\">┬╖[39m
+    [31m                <div className=\"space-y-0.5\">┬╖[39m
+    [31m                  <Label className=\"text-sm font-medium\">{t('notifications.test.label')}</Label>┬╖[39m
+    [31m                  <p className=\"text-xs text-muted-foreground\">┬╖[39m
+    [31m                    {t('notifications.test.description')}┬╖[39m
+    [31m                  </p>┬╖[39m
+    [31m                </div>┬╖[39m
+    [31m                <Button┬╖[39m
+    [31m                  variant=\"outline\"┬╖[39m
+    [31m                  size=\"sm\"┬╖[39m
+    [31m                  onClick={handleTestNotification}┬╖[39m
+    [31m                  disabled={!config.enabled || testStatus === 'sent'}┬╖[39m
+    [31m                >┬╖[39m
+    [31m                  {testStatus === 'sent' ? (┬╖[39m
+    [31m                    <>┬╖[39m
+    [31m                      <HugeiconsIcon icon={CheckmarkCircle02Icon} className=\"h-4 w-4 mr-1 text-green-500\" />┬╖[39m
+    [31m                      {t('notifications.test.sent')}┬╖[39m
+    [31m                    </>┬╖[39m
+    [31m                  ) : testStatus === 'error' ? (┬╖[39m
+    [31m                    <>┬╖[39m
+    [31m                      <HugeiconsIcon icon={Alert02Icon} className=\"h-4 w-4 mr-1 text-red-500\" />┬╖[39m
+    [31m                      {t('notifications.test.failed')}┬╖[39m
+    [31m                    </>┬╖[39m
+    [31m                  ) : (┬╖[39m
+    [31m                    t('notifications.test.button')┬╖[39m
+    [31m                  )}┬╖[39m
+    [31m                </Button>┬╖[39m
+    [31m              </div>┬╖[39m
+    [31m            </CardContent>┬╖[39m
+    [31m          </Card>┬╖[39m
+    [31m        </CollapsibleContent>┬╖[39m
+    [31m      </div>┬╖[39m
+    [31m    </Collapsible>┬╖[39m
+    [31m  );┬╖[39m
+    [31m}┬╖┬╖┬╖[39m
+    [31mexport function SettingsPage({ onBack }: SettingsPageProps) {┬╖[39m
+    [31m  const { t } = useTranslation();┬╖[39m
+    [31m  const [browserSettings, setBrowserSettings] = useState<BrowserAutomationSettingsConfig>(DEFAULT_BROWSER_SETTINGS);┬╖┬╖┬╖[39m
+    [31m  // Get current model from multi-provider store for warnings display┬╖[39m
+    [31m  const currentProvider = useMultiProviderStore(state => state.getCurrentProvider());┬╖[39m
+    [31m  const currentModel = currentProvider?.model ? {┬╖[39m
+    [31m    id: currentProvider.model.id,┬╖[39m
+    [31m    name: currentProvider.model.name,┬╖[39m
+    [31m    provider: currentProvider.provider,┬╖[39m
+    [31m    capabilities: currentProvider.model.capabilities,┬╖[39m
+    [31m    pricing: currentProvider.model.pricing,┬╖[39m
+    [31m  } : null;┬╖┬╖┬╖[39m
+    [31m  // Load settings from Chrome storage on mount┬╖[39m
+    [31m  useEffect(() => {┬╖[39m
+    [31m    chrome.storage.local.get(['browserAutomationSettings'], (result) => {┬╖[39m
+    [31m      if (result.browserAutomationSettings) {┬╖[39m
+    [31m        setBrowserSettings({ ...DEFAULT_BROWSER_SETTINGS, ...result.browserAutomationSettings });┬╖[39m
+    [31m      }┬╖[39m
+    [31m    });┬╖[39m
+    [31m  }, []);┬╖┬╖┬╖[39m
+    [31m  // Save settings to Chrome storage when they change┬╖[39m
+    [31m  const handleSettingsChange = (newSettings: BrowserAutomationSettingsConfig) => {┬╖[39m
+    [31m    setBrowserSettings(newSettings);┬╖[39m
+    [31m    chrome.storage.local.set({ browserAutomationSettings: newSettings });┬╖[39m
+    [31m  };┬╖┬╖┬╖[39m
+    [31m  return (┬╖[39m
+    [31m    <div className=\"min-h-screen bg-background\">┬╖[39m
+    [31m      {/* Header */}┬╖[39m
+    [31m      <div className=\"border-b bg-card\">┬╖[39m
+    [31m        <div className=\"flex items-center gap-3 p-4\">┬╖[39m
+    [31m          {onBack && (┬╖[39m
+    [31m            <Button variant=\"ghost\" size=\"sm\" onClick={onBack}>┬╖[39m
+    [31m              <HugeiconsIcon icon={ArrowLeft01Icon} className=\"h-4 w-4\" />┬╖[39m
+    [31m            </Button>┬╖[39m
+    [31m          )}┬╖[39m
+    [31m          <div>┬╖[39m
+    [31m            <h1 className=\"text-lg font-semibold\">{t('settings.pageTitle')}</h1>┬╖[39m
+    [31m            <p className=\"text-sm text-muted-foreground\">┬╖[39m
+    [31m              {t('settings.pageDescription')}┬╖[39m
+    [31m            </p>┬╖[39m
+    [31m          </div>┬╖[39m
+    [31m        </div>┬╖[39m
+    [31m      </div>┬╖┬╖┬╖[39m
+    [31m      <div className=\"p-4 space-y-6\">┬╖[39m
+    [31m        <MultiProviderManager />┬╖[39m
+    [31m        <ModelWarnings model={currentModel} />┬╖[39m
+    [31m        <BrowserAutomationSettingsComponent┬╖[39m
+    [31m          settings={browserSettings}┬╖[39m
+    [31m          onSettingsChange={handleSettingsChange}┬╖[39m
+    [31m          supportsTools={currentModel?.capabilities?.supportsTools ?? true}┬╖[39m
+    [31m        />┬╖[39m
+    [31m        <MCPSettings />┬╖[39m
+    [31m        <MCPConnectorSettings />┬╖[39m
+    [31m        <VoiceSettings />┬╖[39m
+    [31m        <NotificationSettings />┬╖[39m
+    [31m        <PermissionsManager />┬╖[39m
+    [31m      </div>┬╖[39m
+    [31m    </div>┬╖[39m
+    [31m  );┬╖[39m
+    [31m}"[39m
+
+      35 |     
+      36 |     // Check for component imports
+    > 37 |     expect(settingsContent).toContain('import { ProviderSelector }');
+         |                             ^
+      38 |     expect(settingsContent).toContain('import { ApiKeyInput }');
+      39 |     expect(settingsContent).toContain('import { ModelSelector }');
+      40 |     expect(settingsContent).toContain('import { CapabilityBadges }');
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\settings-ui.spec.ts:37:29
+
+
+[1A[2K[42/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:68:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Provider selector includes all provider categories
+[1A[2K[43/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:82:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ API key input has security features
+[1A[2K[44/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:100:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Capability badges show all supported features
+[1A[2K[45/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:125:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Test connection button handles loading and error states
+[1A[2K[46/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:144:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Build output includes settings components
+[1A[2K  16) [chromium] ΓÇ║ tests\settings-ui.spec.ts:144:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Build output includes settings components 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m500000[39m
+    Received:   [31m1852797[39m
+
+      153 |     const stats = fs.statSync(sidepanelJs);
+      154 |     expect(stats.size).toBeGreaterThan(200000); // > 200KB with all components
+    > 155 |     expect(stats.size).toBeLessThan(500000); // < 500KB to keep it reasonable
+          |                        ^
+      156 |   });
+      157 |
+      158 |   test('App component includes settings navigation', async () => {
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\settings-ui.spec.ts:155:24
+
+
+[1A[2K[31mWorker teardown timeout of 30000ms exceeded.[39m
+
+[31mFailed worker ran 1 test:[39m
+[chromium] ΓÇ║ tests\permissions-integration.spec.ts:363:3 ΓÇ║ Permission System Integration ΓÇ║ reset all permissions clears all saved permissions
+
+[1A[2K[47/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:48:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ All settings components exist
+[1A[2K[48/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:174:3 ΓÇ║ Settings UI - Integration Tests ΓÇ║ Settings components integrate with provider factory
+[1A[2K[49/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:191:3 ΓÇ║ Settings UI - Integration Tests ΓÇ║ Zustand store integrates with Chrome storage
+[1A[2K[50/52] [chromium] ΓÇ║ tests\sidepanel-screenshot.spec.ts:73:3 ΓÇ║ SidePilot Side Panel Screenshots ΓÇ║ should capture side panel screenshot
+[1A[2K[51/52] [chromium] ΓÇ║ tests\settings-ui.spec.ts:158:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ App component includes settings navigation
+[1A[2K  17) [chromium] ΓÇ║ tests\settings-ui.spec.ts:158:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ App component includes settings navigation 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected substring: [32m"onClick={() => setCurrentPage('settings')"[39m
+    Received string:    [31m"/**┬╖[39m
+    [31m * SidePilot App - Main Entry Point┬╖[39m
+    [31m *┬╖┬╖[39m
+    [31m * Uses page-based routing to organize functionality:┬╖[39m
+    [31m * - ChatPage: Main chat interface with voice controls┬╖[39m
+    [31m * - SettingsPage: LLM provider and voice configuration┬╖[39m
+    [31m * - GeneralSettings: Theme and language settings┬╖[39m
+    [31m */┬╖┬╖┬╖[39m
+    [31mimport { useEffect, useState } from 'react';┬╖[39m
+    [31mimport { initializeTheme } from '@/lib/theme';┬╖[39m
+    [31mimport { useSettingsStore } from '@/stores/settings';┬╖[39m
+    [31mimport { useShortcutsStore } from '@/stores/shortcuts';┬╖[39m
+    [31mimport { notifications } from '@/lib/notifications';┬╖┬╖┬╖[39m
+    [31m// Pages┬╖[39m
+    [31mimport { ChatPage } from './pages/Chat';┬╖[39m
+    [31mimport { SettingsPage } from './pages/Settings';┬╖[39m
+    [31mimport { GeneralSettings } from './pages/GeneralSettings';┬╖┬╖┬╖[39m
+    [31m// Global UI components┬╖[39m
+    [31mimport { ConnectedPermissionDialog } from '@/components/PermissionDialog';┬╖[39m
+    [31mimport { Toaster } from 'sonner';┬╖┬╖┬╖[39m
+    [31mtype Page = 'chat' | 'settings' | 'general-settings';┬╖┬╖┬╖[39m
+    [31mfunction App() {┬╖[39m
+    [31m  const [isLoading, setIsLoading] = useState(true);┬╖[39m
+    [31m  const [currentPage, setCurrentPage] = useState<Page>('chat');┬╖┬╖┬╖[39m
+    [31m  const { loadShortcuts, initializeDefaults } = useShortcutsStore();┬╖┬╖┬╖[39m
+    [31m  // Initialize app on mount┬╖[39m
+    [31m  useEffect(() => {┬╖[39m
+    [31m    const initializeApp = async () => {┬╖[39m
+    [31m      try {┬╖[39m
+    [31m        // Initialize theme from settings store┬╖[39m
+    [31m        const settingsTheme = useSettingsStore.getState().theme;┬╖┬╖┬╖[39m
+    [31m        // Initialize theme detection for system theme changes┬╖[39m
+    [31m        const detectedTheme = await initializeTheme();┬╖┬╖┬╖[39m
+    [31m        // Initialize shortcuts store┬╖[39m
+    [31m        await loadShortcuts();┬╖[39m
+    [31m        await initializeDefaults();┬╖┬╖┬╖[39m
+    [31m        // Initialize notification manager┬╖[39m
+    [31m        await notifications.loadConfig();┬╖┬╖┬╖[39m
+    [31m        setIsLoading(false);┬╖┬╖┬╖[39m
+    [31m        // Notify service worker of the detected theme to update icons┬╖[39m
+    [31m        if (typeof chrome !== 'undefined' && chrome.runtime) {┬╖[39m
+    [31m          chrome.runtime.sendMessage({┬╖[39m
+    [31m            type: 'THEME_CHANGED',┬╖[39m
+    [31m            payload: { theme: settingsTheme === 'system' ? detectedTheme : settingsTheme }┬╖[39m
+    [31m          }).catch(() => {┬╖[39m
+    [31m            // Ignore if service worker is not available┬╖[39m
+    [31m          });┬╖[39m
+    [31m        }┬╖[39m
+    [31m      } catch (error) {┬╖[39m
+    [31m        console.error('Failed to initialize app:', error);┬╖[39m
+    [31m        setIsLoading(false);┬╖[39m
+    [31m      }┬╖[39m
+    [31m    };┬╖┬╖┬╖[39m
+    [31m    initializeApp();┬╖[39m
+    [31m  }, [loadShortcuts, initializeDefaults]);┬╖┬╖┬╖[39m
+    [31m  // Navigation handlers┬╖[39m
+    [31m  const navigateTo = (page: Page) => setCurrentPage(page);┬╖[39m
+    [31m  const navigateBack = () => setCurrentPage('chat');┬╖┬╖┬╖[39m
+    [31m  // Loading state┬╖[39m
+    [31m  if (isLoading) {┬╖[39m
+    [31m    return (┬╖[39m
+    [31m      <div className=\"flex items-center justify-center h-screen bg-background\">┬╖[39m
+    [31m        <div className=\"flex flex-col items-center gap-4\">┬╖[39m
+    [31m          <div className=\"w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin\" />┬╖[39m
+    [31m          <p className=\"text-sm text-muted-foreground\">Loading SidePilot...</p>┬╖[39m
+    [31m        </div>┬╖[39m
+    [31m      </div>┬╖[39m
+    [31m    );┬╖[39m
+    [31m  }┬╖┬╖┬╖[39m
+    [31m  return (┬╖[39m
+    [31m    <div className=\"h-screen flex flex-col bg-background\">┬╖[39m
+    [31m      {/* Page Routing */}┬╖[39m
+    [31m      {currentPage === 'chat' && (┬╖[39m
+    [31m        <ChatPage┬╖[39m
+    [31m          onBack={() => { }}┬╖[39m
+    [31m          onSettings={() => navigateTo('settings')}┬╖[39m
+    [31m        />┬╖[39m
+    [31m      )}┬╖┬╖┬╖[39m
+    [31m      {currentPage === 'settings' && (┬╖[39m
+    [31m        <SettingsPage┬╖[39m
+    [31m          onBack={navigateBack}┬╖[39m
+    [31m        />┬╖[39m
+    [31m      )}┬╖┬╖┬╖[39m
+    [31m      {currentPage === 'general-settings' && (┬╖[39m
+    [31m        <GeneralSettings />┬╖[39m
+    [31m      )}┬╖┬╖┬╖[39m
+    [31m      {/* Global Components */}┬╖[39m
+    [31m      <ConnectedPermissionDialog />┬╖[39m
+    [31m      <Toaster┬╖[39m
+    [31m        position=\"top-right\"┬╖[39m
+    [31m        theme=\"system\"┬╖[39m
+    [31m        richColors┬╖[39m
+    [31m        closeButton┬╖[39m
+    [31m      />┬╖[39m
+    [31m    </div>┬╖[39m
+    [31m  );┬╖[39m
+    [31m}┬╖┬╖┬╖[39m
+    [31mexport default App;"[39m
+
+      167 |     
+      168 |     // Check for navigation buttons
+    > 169 |     expect(appContent).toContain('onClick={() => setCurrentPage(\'settings\')');
+          |                        ^
+      170 |   });
+      171 | });
+      172 |
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\settings-ui.spec.ts:169:24
+
+
+[1A[2K[chromium] ΓÇ║ tests\sidepanel-screenshot.spec.ts:73:3 ΓÇ║ SidePilot Side Panel Screenshots ΓÇ║ should capture side panel screenshot
+Extension ID: 
+          ibphindlilcgjmhhhlmdmajnckfcncbg
+        
+
+[1A[2K[52/52] [chromium] ΓÇ║ tests\service-worker.spec.ts:164:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should handle installation events
+[1A[2K  18) [chromium] ΓÇ║ tests\service-worker.spec.ts:117:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should open side panel when extension icon is clicked 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let extensionId: string;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:21:8
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      34 |
+      35 |     // Wait for extension to load and get its ID
+    > 36 |     await context.waitForEvent('page');
+         |                   ^
+      37 |     
+      38 |     // Get extension ID from chrome://extensions page
+      39 |     const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:36:19
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      65 |   });
+      66 |
+    > 67 |   test.afterAll(async () => {
+         |        ^
+      68 |     if (context) {
+      69 |       await context.close();
+      70 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:67:8
+
+
+[1A[2K  19) [chromium] ΓÇ║ tests\sidepanel-screenshot.spec.ts:73:3 ΓÇ║ SidePilot Side Panel Screenshots ΓÇ║ should capture side panel screenshot 
+
+    Error: page.goto: net::ERR_BLOCKED_BY_CLIENT at chrome-extension://
+              ibphindlilcgjmhhhlmdmajnckfcncbg
+            /sidepanel.html
+    Call log:
+    [2m  - navigating to "chrome-extension://[22m
+    [2m          ibphindlilcgjmhhhlmdmajnckfcncbg[22m
+    [2m        /sidepanel.html", waiting until "load"[22m
+
+
+      75 |     const sidePanelUrl = `chrome-extension://${extensionId}/sidepanel.html`;
+      76 |     const sidePanelPage = await context.newPage();
+    > 77 |     await sidePanelPage.goto(sidePanelUrl);
+         |                         ^
+      78 |     
+      79 |     // Wait for React to render
+      80 |     await sidePanelPage.waitForTimeout(3000);
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\sidepanel-screenshot.spec.ts:77:25
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      65 |   });
+      66 |
+    > 67 |   test.afterAll(async () => {
+         |        ^
+      68 |     if (context) {
+      69 |       await context.close();
+      70 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\sidepanel-screenshot.spec.ts:67:8
+
+
+[1A[2K  20) [chromium] ΓÇ║ tests\service-worker.spec.ts:155:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should register message listeners 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let extensionId: string;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:21:8
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      34 |
+      35 |     // Wait for extension to load and get its ID
+    > 36 |     await context.waitForEvent('page');
+         |                   ^
+      37 |     
+      38 |     // Get extension ID from chrome://extensions page
+      39 |     const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:36:19
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      65 |   });
+      66 |
+    > 67 |   test.afterAll(async () => {
+         |        ^
+      68 |     if (context) {
+      69 |       await context.close();
+      70 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:67:8
+
+
+[1A[2K  21) [chromium] ΓÇ║ tests\service-worker.spec.ts:138:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should have service worker console logs 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let extensionId: string;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:21:8
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      34 |
+      35 |     // Wait for extension to load and get its ID
+    > 36 |     await context.waitForEvent('page');
+         |                   ^
+      37 |     
+      38 |     // Get extension ID from chrome://extensions page
+      39 |     const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:36:19
+
+    [31m"afterAll" hook timeout of 30000ms exceeded.[39m
+
+      65 |   });
+      66 |
+    > 67 |   test.afterAll(async () => {
+         |        ^
+      68 |     if (context) {
+      69 |       await context.close();
+      70 |     }
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:67:8
+
+
+[1A[2K  22) [chromium] ΓÇ║ tests\service-worker.spec.ts:164:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should handle installation events 
+
+    [31m"beforeAll" hook timeout of 30000ms exceeded.[39m
+
+      19 |   let extensionId: string;
+      20 |
+    > 21 |   test.beforeAll(async () => {
+         |        ^
+      22 |     // Launch Chrome with extension loaded
+      23 |     const pathToExtension = path.join(__dirname, '..', 'dist');
+      24 |     
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:21:8
+
+    Error: browserContext.waitForEvent: Target page, context or browser has been closed
+
+      34 |
+      35 |     // Wait for extension to load and get its ID
+    > 36 |     await context.waitForEvent('page');
+         |                   ^
+      37 |     
+      38 |     // Get extension ID from chrome://extensions page
+      39 |     const extensionsPage = await context.newPage();
+        at C:\Users\vinif\OneDrive\Documentos\GitHub\claude_ext_re\SidePilot\tests\service-worker.spec.ts:36:19
+
+
+[1A[2K  22 failed
+    [chromium] ΓÇ║ tests\content-script.spec.ts:123:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject content script and show console log 
+    [chromium] ΓÇ║ tests\content-script.spec.ts:147:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should create visual indicator element 
+    [chromium] ΓÇ║ tests\content-script.spec.ts:167:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should remove indicator after timeout 
+    [chromium] ΓÇ║ tests\content-script.spec.ts:188:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should inject on different domains 
+    [chromium] ΓÇ║ tests\content-script.spec.ts:223:5 ΓÇ║ SidePilot Content Script ΓÇ║ Dynamic Tests ΓÇ║ should handle DOM ready states correctly 
+    [chromium] ΓÇ║ tests\permissions-integration.spec.ts:81:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog appears when tool requires permission 
+    [chromium] ΓÇ║ tests\permissions-integration.spec.ts:188:3 ΓÇ║ Permission System Integration ΓÇ║ settings page displays and updates permissions 
+    [chromium] ΓÇ║ tests\permissions-integration.spec.ts:271:3 ΓÇ║ Permission System Integration ΓÇ║ deny without remember does not save permission 
+    [chromium] ΓÇ║ tests\permissions-integration.spec.ts:363:3 ΓÇ║ Permission System Integration ΓÇ║ reset all permissions clears all saved permissions 
+    [chromium] ΓÇ║ tests\permissions-integration.spec.ts:456:3 ΓÇ║ Permission System Integration ΓÇ║ permission dialog shows text preview for type actions 
+    [chromium] ΓÇ║ tests\providers.spec.ts:33:3 ΓÇ║ Provider System ΓÇ║ should build without TypeScript errors 
+    [chromium] ΓÇ║ tests\providers.spec.ts:62:3 ΓÇ║ Provider System ΓÇ║ should create providers without errors 
+    [chromium] ΓÇ║ tests\service-worker.spec.ts:73:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should load extension without errors 
+    [chromium] ΓÇ║ tests\service-worker.spec.ts:93:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should have active service worker 
+    [chromium] ΓÇ║ tests\service-worker.spec.ts:117:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should open side panel when extension icon is clicked 
+    [chromium] ΓÇ║ tests\service-worker.spec.ts:138:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should have service worker console logs 
+    [chromium] ΓÇ║ tests\service-worker.spec.ts:155:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should register message listeners 
+    [chromium] ΓÇ║ tests\service-worker.spec.ts:164:3 ΓÇ║ SidePilot Service Worker ΓÇ║ should handle installation events 
+    [chromium] ΓÇ║ tests\settings-ui.spec.ts:32:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Settings page component exists and imports required dependencies 
+    [chromium] ΓÇ║ tests\settings-ui.spec.ts:144:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ Build output includes settings components 
+    [chromium] ΓÇ║ tests\settings-ui.spec.ts:158:3 ΓÇ║ Settings UI - Static Tests ΓÇ║ App component includes settings navigation 
+    [chromium] ΓÇ║ tests\sidepanel-screenshot.spec.ts:73:3 ΓÇ║ SidePilot Side Panel Screenshots ΓÇ║ should capture side panel screenshot 
+  4 did not run
+  26 passed (4.6m)
+  5 errors were not a part of any test, see above for details
+
+[36m  Serving HTML report at http://localhost:9323. Press Ctrl+C to quit.[39m

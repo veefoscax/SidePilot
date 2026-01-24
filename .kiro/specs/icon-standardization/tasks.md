@@ -60,16 +60,16 @@ Standardize icon usage across SidePilot by updating tech.md steering documentati
     - Document any icons needing alternative mappings
     - _Requirements: 3.4, 3.5_
 
-- [ ] 4. Fix remaining components (if any found in audit)
-  - [ ] 4.1 Update each component's imports
+- [x] 4. Fix remaining components (if any found in audit)
+  - [x] 4.1 Update each component's imports
     - Follow same pattern as BrowserAutomationSettings
     - _Requirements: 3.2_
   
-  - [ ] 4.2 Update each component's icon usages
+  - [x] 4.2 Update each component's icon usages
     - Replace all legacy patterns with standard pattern
     - _Requirements: 3.2_
   
-  - [ ] 4.3 Verify each component compiles
+  - [x] 4.3 Verify each component compiles
     - Check TypeScript errors for each file
     - _Requirements: 3.3_
 

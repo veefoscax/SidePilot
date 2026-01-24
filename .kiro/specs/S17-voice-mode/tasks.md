@@ -128,19 +128,19 @@ Implements comprehensive voice interaction with multi-provider STT/TTS support, 
 
 ## Phase 5: Polish & Testing (AUTO-OK)
 
-- [ ] 16. Language Detection/Selection
+- [x] 16. Language Detection/Selection
   - Add language selector to voice controls
   - Implement auto-detect option (for providers that support it)
   - Persist language preference
   - _Requirements: AC1.4_
 
-- [ ] 17. Streaming TTS Playback
+- [x] 17. Streaming TTS Playback
   - Implement chunked audio streaming for ElevenLabs
   - Reduce time-to-first-audio
   - Add buffering indicator
   - _Requirements: TR2_
 
-- [ ] 18. Integration Testing
+- [x] 18. Integration Testing
   - Test complete voice input flow
   - Test all TTS providers
   - Test call mode conversation loop
@@ -154,31 +154,31 @@ Implements comprehensive voice interaction with multi-provider STT/TTS support, 
 ## Checkpoints
 
 ### After Phase 1 (Task 4)
-- [ ] Browser voice still works (regression test)
-- [ ] Voice store persists settings
-- [ ] Provider registry works correctly
+- [x] Browser voice still works (regression test)
+- [x] Voice store persists settings
+- [x] Provider registry works correctly
 
 ### After Phase 2 (Task 8)
-- [ ] OpenAI STT transcription works
-- [ ] All TTS providers play audio
-- [ ] Settings UI functional
-- [ ] API keys stored securely
+- [x] OpenAI STT transcription works
+- [x] All TTS providers play audio
+- [x] Settings UI functional
+- [x] API keys stored securely
 
 ### After Phase 3 (Task 11)
-- [ ] Audio visualizer renders correctly
-- [ ] Per-message audio player works
-- [ ] VoiceControls uses new provider system
+- [x] Audio visualizer renders correctly
+- [x] Per-message audio player works
+- [x] VoiceControls uses new provider system
 
 ### After Phase 4 (Task 15)
-- [ ] Call mode starts and ends correctly
-- [ ] VAD detects speech start/end
-- [ ] Conversation loop completes successfully
-- [ ] PTT mode works as alternative
+- [x] Call mode starts and ends correctly
+- [x] VAD detects speech start/end
+- [x] Conversation loop completes successfully
+- [x] PTT mode works as alternative
 
 ### Final (Task 18)
-- [ ] All tests passing
-- [ ] Performance metrics met (TR2)
-- [ ] No regressions in existing functionality
+- [x] All tests passing
+- [x] Performance metrics met (TR2)
+- [x] No regressions in existing functionality
 
 ---
 

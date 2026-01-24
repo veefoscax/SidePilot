@@ -182,7 +182,7 @@ export class PermissionManager {
   private static readonly STORAGE_KEY = 'domain_permissions';
   
   /** Debounce timer for saving permissions */
-  private saveTimer: NodeJS.Timeout | null = null;
+  private saveTimer: ReturnType<typeof setTimeout> | null = null;
   
   /** Debounce delay in milliseconds */
   private static readonly SAVE_DEBOUNCE_MS = 500;

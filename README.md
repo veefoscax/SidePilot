@@ -1,44 +1,42 @@
 # SidePilot
 
-<p align="center">
-  <img src="assets/Sidepilot.png" alt="SidePilot Logo" width="200">
-</p>
+> 🚀 Your AI Co-Pilot in the Browser
 
-<p align="center">
-  <strong>🚀 Your AI Co-Pilot in the Browser</strong>
-</p>
+**SidePilot** is a Chrome extension that brings AI-powered browser automation to any LLM provider—not just Claude.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
-  <img src="https://img.shields.io/badge/platform-Chrome-green.svg" alt="Platform">
-  <img src="https://img.shields.io/badge/TypeScript-5.0-blue.svg" alt="TypeScript">
-</p>
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Chrome-green.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)
 
 ---
-
-**SidePilot** is a Chrome extension that brings AI-powered browser automation to any LLM provider you choose.
 
 ## ✨ Features
 
 ### 🔌 Multi-Provider Support
-Use **40+ LLM providers** with a single extension:
-- Anthropic, OpenAI, Google
-- DeepSeek, Groq, Mistral
-- Z.AI, Moonshot, Together
-- **Local**: Ollama, LM Studio
+Use **7+ LLM providers** with a single extension:
+- **Anthropic** (Claude 3.5 Sonnet, Claude 3 Opus/Haiku)
+- **OpenAI** (GPT-4o, GPT-4o-mini, o1-preview)
+- **Google** (Gemini Pro, Gemini Flash)
+- **Ollama** (Local LLMs - Llama, Mistral, etc.)
+- **LM Studio** (Local models)
+- **zAI** (Grok-2)
+- More via OpenAI-compatible API
 
-### 🖱️ Full Browser Automation
-- Click, type, scroll, navigate
-- Take screenshots
-- Execute JavaScript
-- Tab and window management
+### 🖱️ Browser Automation Tools
+- **Screenshot** - Capture pages with element annotations
+- **Click** - Click elements by position or ref
+- **Type** - Type text with human-like delays
+- **Navigate** - Go to URLs or search
+- **Scroll** - Scroll pages
+- **Extract** - Get page content
 
-### 🎤 Voice Mode (NEW)
-- **Speech-to-Text**: Browser, OpenAI Whisper
-- **Text-to-Speech**: Browser, OpenAI, ElevenLabs
-- **Call Mode**: Hands-free conversation with VAD
-- Real-time audio visualization
-- Per-message playback with speed control
+### 🎯 Element Pointer
+Point at elements visually - AI receives exact refs:
+1. Click 🎯 button
+2. Hover to highlight elements
+3. Click to select
+4. Add optional comment
+5. AI gets: ref (@e5), position, text
 
 ### ⚡ Model Capability Warnings
 Visual indicators show what each model supports:
@@ -48,18 +46,11 @@ Visual indicators show what each model supports:
 - 🧠 Reasoning (thinking mode)
 
 ### 🌍 Internationalization
-- English and Portuguese (BR) support
-- Auto-detect browser language
-- Light/Dark/System themes
+- English and Portuguese (PT-BR)
+- Easy to add more languages
 
-### 🔗 MCP Connector
-Expose browser tools to external LLMs like Cline or Aider.
-
-### 🧠 Context Optimization (S18)
-- Ref-based element targeting (60-90% token savings)
-- Smart snapshot filtering
-- Incremental DOM updates
-- Token budget management
+### 🎨 Themes
+- Light, Dark, and System modes
 
 ---
 
@@ -77,51 +68,50 @@ Expose browser tools to external LLMs like Cline or Aider.
 
 ---
 
-## 📦 Installation
+## 📦 Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- pnpm (recommended) or npm
-- Chrome/Chromium browser
+- npm or pnpm
+- Chrome browser
 
 ### Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/viniciusfoscaches/sidepilot.git
-cd sidepilot
+git clone https://github.com/your-username/sidepilot.git
+cd sidepilot/SidePilot
 
 # Install dependencies
-pnpm install
-
-# Build for development
-pnpm dev
+npm install
 
 # Build for production
-pnpm build
+npm run build
 ```
 
 ### Load in Chrome
 1. Open `chrome://extensions/`
-2. Enable "Developer mode"
+2. Enable "Developer mode" (top right)
 3. Click "Load unpacked"
 4. Select the `dist/` folder
 
+### First Use
+1. Click SidePilot icon → Side panel opens
+2. Go to Settings (⚙️)
+3. Enter OpenAI or Anthropic API key
+4. Select a model
+5. Start chatting!
+
 ---
 
-## 🚀 Usage
+## 🚀 Usage Examples
 
-1. Click the SidePilot icon to open the side panel
-2. Configure your LLM provider in Settings
-3. Enter your API key
-4. Start chatting with your AI assistant!
-
-### Example Prompts
 ```
-"Navigate to github.com and search for 'react'"
 "Take a screenshot of this page"
-"Fill out this form with test data"
+"Navigate to github.com and search for 'react'"
 "Click the submit button"
+"Fill out this form with test data"
+"Scroll down to see more content"
 ```
 
 ---
@@ -129,47 +119,48 @@ pnpm build
 ## 📁 Project Structure
 
 ```
-sidepilot/
+SidePilot/
 ├── src/
 │   ├── sidepanel/      # Side panel React app
 │   ├── background/     # Service worker
 │   ├── content/        # Content scripts
-│   ├── providers/      # LLM providers (40+)
-│   ├── tools/          # Browser tools (13+)
+│   ├── providers/      # LLM providers (7+)
+│   ├── tools/          # Browser tools (6+)
 │   ├── lib/            # Utilities
 │   └── components/     # Shared components
-├── assets/             # Logo and icons
-└── .kiro/
-    ├── steering/       # Project context
-    ├── specs/          # Feature specifications
-    └── prompts/        # Kiro prompts
+├── .kiro/
+│   ├── steering/       # Project context
+│   └── specs/          # Feature specifications (19 specs)
+└── dist/               # Built extension
 ```
 
 ---
 
-## 📋 Specs & Development
+## 📋 Kiro Specs
 
-This project uses [Kiro](https://kiro.dev) for specification-driven development.
+Built with [Kiro](https://kiro.dev) spec-driven development:
 
-### Implemented Specs
-- [x] S01: Extension Scaffold ✅
-- [x] S02: Provider Factory ✅
-- [x] S03: Provider Settings UI ✅
-- [x] S04: Chat Interface ✅
-- [ ] S05: CDP Wrapper (Browser-Use Enhanced)
-- [ ] S06: Permission System
-- [ ] S07: Browser Tools
-- [ ] S08: Shortcuts System
-- [ ] S09: Workflow Recording
-- [ ] S10: Tab Groups
-- [ ] S11: Network/Console
-- [ ] S12: Notifications
-- [ ] S13: MCP Integration
-- [ ] S14: MCP Connector
-- [ ] S15: Model Capabilities
-- [x] S16: General Settings & i18n ✅
-- [x] S17: Voice Mode ✅
-- [x] S18: Context Optimization ✅
+| Spec | Feature | Status |
+|------|---------|--------|
+| S01 | Extension Scaffold | ✅ |
+| S02 | Provider Factory | ✅ |
+| S03 | Provider Settings UI | ✅ |
+| S04 | Chat Interface | ✅ |
+| S05 | CDP Wrapper | ✅ |
+| S06 | Permission System | ✅ |
+| S07 | Browser Tools | ✅ |
+| S08 | Shortcuts | ✅ |
+| S09 | Workflow Recording | ✅ |
+| S10 | Tab Groups | ✅ |
+| S11 | Network/Console | ✅ |
+| S12 | Notifications | ✅ |
+| S13 | MCP Integration | ✅ |
+| S14 | MCP Connector | ✅ |
+| S15 | Model Capabilities | ✅ |
+| S16 | General Settings & i18n | ✅ |
+| S17 | Voice Mode | ✅ |
+| S18 | Context Optimization | ✅ |
+| S19 | Element Pointer | ✅ |
 
 ---
 
@@ -187,41 +178,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-SidePilot stands on the shoulders of giants. We're grateful to these amazing open-source projects:
-
-### Core Inspirations
-
-- **[browser-use](https://github.com/browser-use/browser-use)** ⭐ - The Python library that makes websites accessible to AI agents. Our accessibility tree parsing, smart element targeting, and human-like interactions are built using their patterns.
-
-- **[Vercel agent-browser](https://github.com/vercel-labs/agent-browser)** 🚀 - Headless browser CLI for AI agents. Inspired our S18 context optimization with ref-based element targeting and snapshot filtering for minimal token usage.
-
-- **[Cline](https://github.com/cline/cline)** 🤖 - The autonomous coding agent. Our multi-provider factory pattern and model capability detection are inspired by Cline's excellent architecture.
-
-### Development Tools
-
-Built with [Kiro](https://kiro.dev) for the Dynamous Hackathon - specification-driven development that helped us ship fast.
-
-### Open Source Tools We Love ❤️
-
-| Project | Usage in SidePilot |
-|---------|-------------------|
-| [browser-use](https://github.com/browser-use/browser-use) | Accessibility tree, element targeting, human-like delays |
-| [agent-browser](https://github.com/vercel-labs/agent-browser) | Ref system, snapshot filtering, AI-optimized workflow |
-| [Cline](https://github.com/cline/cline) | Multi-provider factory, capability detection |
-| [shadcn/ui](https://ui.shadcn.com/) | Beautiful Nova-style components |
-| [Radix UI](https://www.radix-ui.com/) | Accessible primitives |
-| [HugeIcons](https://hugeicons.com/) | 4,600+ stroke icons |
-| [Zustand](https://github.com/pmndrs/zustand) | Lightweight state management |
-| [i18next](https://www.i18next.com/) | Internationalization (EN/PT) |
-
-### Special Thanks
-
-- The [MCP Protocol](https://modelcontextprotocol.io/) team for enabling seamless LLM tool integration
-- The Anthropic, OpenAI, and Google teams for their amazing AI APIs
-- The open-source community for making projects like this possible
-
----
-
-<p align="center">
-  <strong>Made with ❤️ by the SidePilot team</strong>
-</p>
+- **[browser-use](https://github.com/browser-use/browser-use)** - Browser automation patterns
+- **[Cline](https://github.com/cline/cline)** - Multi-provider architecture
+- **[Kiro](https://kiro.dev)** - Spec-driven development
+- Built for the **Dynamous Hackathon**
