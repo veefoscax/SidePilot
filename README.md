@@ -7,6 +7,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Chrome-green.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)
+![Hackathon](https://img.shields.io/badge/Dynamous-Hackathon_2026-purple.svg)
 
 ---
 
@@ -79,8 +80,8 @@ Visual indicators show what each model supports:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/sidepilot.git
-cd sidepilot/SidePilot
+git clone https://github.com/veefoscax/SidePilot.git
+cd SidePilot
 
 # Install dependencies
 npm install

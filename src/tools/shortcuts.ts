@@ -32,7 +32,7 @@ interface ExecuteShortcutInput {
 export const shortcutsListTool: ToolDefinition = {
   name: 'shortcuts_list',
   description: 'List all saved prompts/shortcuts. These are reusable prompts that users have saved with slash commands (e.g., /screenshot, /summarize). Shows the command, prompt content, usage count, and optional URL context.',
-  
+
   parameters: {},
 
   /**
@@ -61,15 +61,15 @@ export const shortcutsListTool: ToolDefinition = {
           `   Prompt: ${shortcut.prompt}`,
           `   Usage: ${shortcut.usageCount} times`
         ];
-        
+
         if (shortcut.url) {
           parts.push(`   URL Context: ${shortcut.url}`);
         }
-        
+
         if (shortcut.model) {
           parts.push(`   Preferred Model: ${shortcut.model}`);
         }
-        
+
         return parts.join('\n');
       }).join('\n\n');
 
@@ -126,7 +126,7 @@ export const shortcutsListTool: ToolDefinition = {
 export const shortcutsExecuteTool: ToolDefinition = {
   name: 'shortcuts_execute',
   description: 'Execute a saved shortcut by its ID. Returns the shortcut\'s prompt content so you can use it. Also records usage statistics. Use shortcuts_list first to see available shortcuts and their IDs.',
-  
+
   parameters: {
     shortcut_id: {
       type: 'string',
@@ -138,7 +138,7 @@ export const shortcutsExecuteTool: ToolDefinition = {
   /**
    * Execute a shortcut
    */
-  async execute(input: ExecuteShortcutInput, context: ToolContext): Promise<ToolResult> {
+  async execute(input: ExecuteShortcutInput, _context: ToolContext): Promise<ToolResult> {
     const { shortcut_id } = input;
 
     if (!shortcut_id || shortcut_id.trim().length === 0) {
@@ -149,7 +149,7 @@ export const shortcutsExecuteTool: ToolDefinition = {
       // Retrieve shortcuts from Chrome storage
       const result = await chrome.storage.local.get(SAVED_PROMPTS_STORAGE_KEY);
       const shortcuts: SavedPrompt[] = result[SAVED_PROMPTS_STORAGE_KEY] || [];
-      
+
       // Find the requested shortcut
       const shortcut = shortcuts.find(s => s.id === shortcut_id);
 
@@ -165,7 +165,7 @@ export const shortcutsExecuteTool: ToolDefinition = {
           ? { ...s, usageCount: s.usageCount + 1, updatedAt: Date.now() }
           : s
       );
-      
+
       // Save updated shortcuts back to storage
       await chrome.storage.local.set({ [SAVED_PROMPTS_STORAGE_KEY]: updatedShortcuts });
 

@@ -23,10 +23,10 @@ import { useShortcutsStore } from '@/stores/shortcuts';
 import { useWorkflowStore } from '@/stores/workflow';
 import { SlashMenuItem } from '@/lib/shortcuts';
 import { WorkflowRecording } from '@/lib/workflow';
-import { 
-  ElementPointerMessageType, 
+import {
+  ElementPointerMessageType,
   ElementPointedMessage,
-  formatPointedElementForChat 
+  formatPointedElementForChat
 } from '@/lib/element-pointer';
 import { toast } from 'sonner';
 
@@ -43,6 +43,7 @@ export function InputArea({
 }: InputAreaProps) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
+  const [isSending, setIsSending] = useState(false); // Debounce protection
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { messageQueue, queueMessage, isStreaming } = useChatStore();
@@ -79,13 +80,13 @@ export function InputArea({
       if (message.type === ElementPointerMessageType.ELEMENT_POINTED) {
         const pointedMessage = message as ElementPointedMessage;
         const elementContext = formatPointedElementForChat(pointedMessage.data);
-        
+
         // Store the context and append to input
         setPendingElementContext(elementContext);
-        
+
         // Show toast notification
         toast.success(`Element ${pointedMessage.data.ref} selected`);
-        
+
         // Focus the textarea
         if (textareaRef.current) {
           textareaRef.current.focus();
@@ -150,7 +151,10 @@ export function InputArea({
 
   const handleSend = () => {
     const trimmedInput = input.trim();
-    if (trimmedInput) {
+    if (trimmedInput && !isSending) {
+      // Prevent duplicate sends
+      setIsSending(true);
+
       // Expand shortcut chips before sending
       let expandedInput = expandShortcutCommands(trimmedInput);
 
@@ -179,6 +183,9 @@ export function InputArea({
           textareaRef.current.style.height = 'auto';
         }
       }
+
+      // Reset debounce after short delay
+      setTimeout(() => setIsSending(false), 300);
     }
   };
 
@@ -365,7 +372,7 @@ export function InputArea({
               <ElementPointerButton
                 disabled={disabled && !isStreaming}
               />
-              
+
               <VoiceControls
                 onTranscript={handleVoiceTranscript}
                 disabled={disabled && !isStreaming}

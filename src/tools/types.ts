@@ -40,7 +40,9 @@ export interface ToolContext {
  * Result returned from tool execution
  */
 export interface ToolResult {
+  success?: boolean;
   output?: string;
+  data?: unknown;
   error?: string;
   screenshot?: string;
 }

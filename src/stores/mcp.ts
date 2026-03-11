@@ -29,6 +29,11 @@ export interface MCPState {
     setToolEnabled: (fullName: string, enabled: boolean) => void;
     refreshTools: (uuid: string) => Promise<void>;
     getAllEnabledTools: () => MCPToolWithServer[];
+    getEnabledMcpTools: () => MCPToolWithServer[];
+
+    // Helpers
+    getServer: (uuid: string) => MCPServer | undefined;
+    isToolEnabled: (fullName: string) => boolean;
 
     // Internal Actions
     _setTools: (uuid: string, tools: MCPTool[]) => void;
@@ -229,6 +234,21 @@ export const useMCPStore = create<MCPState>()(
                 });
 
                 return result;
+            },
+
+            // Alias for getAllEnabledTools (for compatibility)
+            getEnabledMcpTools: () => {
+                return get().getAllEnabledTools();
+            },
+
+            // Get server by UUID
+            getServer: (uuid: string) => {
+                return get().servers.find(s => s.uuid === uuid);
+            },
+
+            // Check if tool is enabled
+            isToolEnabled: (fullName: string) => {
+                return get().enabledTools[fullName] ?? false;
             }
         }),
         {

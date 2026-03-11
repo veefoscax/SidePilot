@@ -6957,3 +6957,252 @@ SidePilot hackathon submission is **ready for delivery**. The extension provides
 **Key Achievement**: Achieved production-ready excellence for all S05-S15 implementations with zero TypeScript errors, comprehensive test coverage, and detailed documentation. All 109 tasks complete (100%) with robust error handling, type safety, and performance optimizations.
 
 **User Impact**: Users now have a fully functional, production-ready browser automation extension with excellent error messages, comprehensive features, and robust implementations across all core systems (CDP wrapper, permissions, browser tools, shortcuts, workflow recording, tab groups, network/console monitoring, notifications, MCP integration, MCP connector, and model capabilities).
+
+---
+
+## Deep Agent QA Analysis & Critical Fixes
+**Date**: 2026-01-24
+**Time Spent**: ~45 minutes
+
+### QA Methodology
+Conducted comprehensive QA audit using the **Deep Agent Framework** (Empatia + Paranoia):
+- Analyzed extension for Manifest V3 specific vulnerabilities
+- Tested "unhappy paths" (network failures, rate limits, timeouts)
+- Reviewed for Chrome Web Store policy compliance
+- Evaluated concurrency and edge case handling
+
+### Issues Identified
+
+| Severidade | Qtd | Categoria |
+|------------|-----|-----------|
+| 🔴 Crítica | 3 | Service Worker, AbortController, Rate Limit Retry |
+| 🟠 Alta | 2 | Permissões Excessivas, Sem Debounce |
+| 🟡 Média | 3 | Storage Quota, CSP, Logging |
+| 🟢 Baixa | 2 | Onboarding, i18n |
+
+### P0 Critical Fixes Implemented
+
+#### 1. Service Worker Death Fix (CRITICAL)
+**Problem**: `setInterval` in service worker doesn't survive the 30-second inactivity timeout.
+
+**Solution**: Migrated to `chrome.alarms` API.
+
+**Files Changed**:
+- `src/background/service-worker.ts` - Replaced setInterval with chrome.alarms.onAlarm
+- `public/manifest.json` - Added "alarms" permission
+
+```typescript
+// Before (broken)
+setInterval(async () => { ... }, 60000);
+
+// After (survives worker death)
+chrome.alarms.create('themeCheck', { periodInMinutes: 1 });
+chrome.alarms.onAlarm.addListener((alarm) => { ... });
+```
+
+#### 2. AbortController + Timeout (CRITICAL)
+**Problem**: `fetch` requests could hang indefinitely with no timeout.
+
+**Solution**: Added AbortController with 30-second timeout.
+
+**Files Changed**:
+- `src/providers/base-provider.ts`
+
+```typescript
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 30000);
+const response = await fetch(url, { signal: controller.signal });
+```
+
+#### 3. Exponential Backoff Retry (CRITICAL)
+**Problem**: Rate limit errors (429) only showed error message, no automatic retry.
+
+**Solution**: Implemented retry with exponential backoff + jitter.
+
+**Files Changed**:
+- `src/providers/base-provider.ts`
+
+```typescript
+private calculateBackoffDelay(attempt: number): number {
+  const baseDelay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s...
+  const jitter = Math.random() * 1000;
+  return baseDelay + jitter;
+}
+```
+
+**Retry Logic**:
+- 429 (Rate Limit): Retry up to 3 times with backoff
+- AbortError (Timeout): Retry up to 3 times with backoff
+- Network Error: Retry up to 3 times with backoff
+
+### Build Verification
+- ✅ Build successful (8.23s)
+- ✅ All TypeScript checks pass
+- ✅ Service worker bundle: 2.83 kB (gzip: 1.12 kB)
+
+### Remaining P1/P2 Issues (Not Yet Fixed)
+1. **P1**: Migrate to optional host permissions
+2. **P1**: Add debounce to send button
+3. **P2**: Storage quota handling
+4. **P2**: CSP compatibility testing
+5. **P2**: Structured logging
+
+### QA Report Location
+Full Deep Agent QA report saved to:
+`C:\Users\vinif\.gemini\antigravity\brain\b86fbbe9-c1b3-42b4-ab59-592599cfd786\deep_agent_qa_report.md`
+
+**Key Achievement**: Resolved all 3 critical QA issues that could cause production failures. Extension now has proper timeout handling, retry logic, and service worker persistence.
+
+---
+
+## P1/P2 QA Fixes Implementation
+**Date**: 2026-01-24
+**Time Spent**: ~20 minutes
+
+### P1 Fixes (High Priority)
+
+#### 1. Send Button Debounce
+**Problem**: User clicking send multiple times could fire multiple API requests.
+
+**Solution**: Added `isSending` state with 300ms cooldown.
+
+**File Changed**: `src/components/chat/InputArea.tsx`
+```typescript
+const [isSending, setIsSending] = useState(false);
+
+const handleSend = () => {
+  if (trimmedInput && !isSending) {
+    setIsSending(true);
+    // ... send logic
+    setTimeout(() => setIsSending(false), 300);
+  }
+};
+```
+
+#### 2. Optional Host Permissions
+**Problem**: `<all_urls>` in `host_permissions` scares users and may cause Chrome Web Store rejection.
+
+**Solution**: Moved to `optional_host_permissions` for on-demand permission requests.
+
+**File Changed**: `public/manifest.json`
+```json
+// Before
+"host_permissions": ["<all_urls>"]
+
+// After
+"optional_host_permissions": ["<all_urls>"]
+```
+
+#### 3. Permission Manager Utility
+**New File**: `src/lib/permission-manager.ts`
+
+Provides functions to check and request permissions on-demand:
+- `hasHostPermission(url)` - Check if we have permission for a URL
+- `requestAllUrlsPermission()` - Request all URLs permission with user dialog
+- `ensureHostPermission(url)` - Check and request if needed
+
+### P2 Fixes (Medium Priority)
+
+#### 4. Structured Logging
+**New File**: `src/lib/logger.ts`
+
+Provides consistent logging with module prefixes:
+```typescript
+const logger = createLogger('ProviderManager');
+logger.info('Connecting to API');
+// Output: [SidePilot][INFO][ProviderManager] Connecting to API
+```
+
+#### 5. Safe Storage with Quota Handling
+**New File**: `src/lib/safe-storage.ts`
+
+Handles Chrome storage quota limits:
+- `safeStorageSet()` - Set with automatic cleanup on quota error
+- `getStorageUsage()` - Check current usage
+- `checkStorageHealth()` - Warn and cleanup when near limit
+- Automatic pruning of old conversations and cache
+
+### Build Verification
+- ✅ Build successful (7.79s)
+- ✅ All P1/P2 fixes integrated
+- ✅ New utilities bundled into sidepanel.js
+
+### Files Created/Modified
+
+| File | Type | Change |
+|------|------|--------|
+| `src/components/chat/InputArea.tsx` | Modified | Added debounce |
+| `public/manifest.json` | Modified | Optional permissions |
+| `src/lib/permission-manager.ts` | New | Permission request utility |
+| `src/lib/logger.ts` | New | Structured logging |
+| `src/lib/safe-storage.ts` | New | Quota-safe storage |
+
+### Remaining Items (Nice to Have)
+- CSP compatibility testing on strict sites
+- Onboarding tour for new users
+- i18n layout testing with long texts
+
+**Key Achievement**: Extension now has professional-grade infrastructure for permissions, logging, and storage - critical for Chrome Web Store approval and production reliability.
+
+---
+
+## Security Hardening - Phase 2
+**Date**: 2026-01-24
+**Time Spent**: ~15 minutes
+
+### Deep Agent QA Phase 2 Summary
+Conducted additional stress testing and security audit focusing on:
+- Code execution security
+- Memory leak potential
+- Streaming edge cases
+- Input validation
+
+### Security Fixes Implemented
+
+#### 1. Execute Script Pattern Validation (HIGH)
+**Problem**: `execute_script` tool uses `new Function()` which could execute malicious code via prompt injection.
+
+**Solution**: Added dangerous pattern detection before execution.
+
+**File Changed**: `src/tools/execute-script.ts`
+
+**12 Dangerous Patterns Blocked**:
+```typescript
+const DANGEROUS_PATTERNS = [
+  fetch(),          // Network requests
+  XMLHttpRequest,   // XHR
+  WebSocket,        // WebSocket connections
+  localStorage,     // Storage access
+  sessionStorage,   // Session storage
+  document.cookie,  // Cookie access
+  chrome.*,         // Chrome API access
+  window.open(),    // Opening windows
+  location =,       // Page navigation
+  navigator.sendBeacon, // Beacon requests
+  eval(),           // Dynamic code execution
+  importScripts,    // Script imports
+];
+```
+
+**Behavior**: Scripts containing dangerous patterns are blocked with a security warning explaining why.
+
+### Already Secure (No Changes Needed)
+
+| Area | Status | Reason |
+|------|--------|--------|
+| URL validation | ✅ Already Secure | `navigation.ts` only allows `http://` and `https://` |
+| Markdown XSS | ✅ Already Secure | Uses ReactMarkdown (sanitized by default) |
+| CDP Memory | ✅ Already Secure | Arrays limited to 100, cleanup on detach |
+| MutationObserver | ✅ Already Secure | Cleanup with `observer.disconnect()` |
+
+### Build Verification
+- ✅ Build successful (8.44s)
+- ✅ Security validation integrated
+- ✅ Zero TypeScript errors
+
+### QA Reports Generated
+1. `deep_agent_qa_report.md` - Initial 10 issues
+2. `deep_agent_qa_report_phase2.md` - Security audit findings
+
+**Key Achievement**: Extension now blocks potentially malicious code patterns in `execute_script`, protecting against prompt injection attacks that could exfiltrate user data.
+

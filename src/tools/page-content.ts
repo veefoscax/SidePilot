@@ -7,7 +7,6 @@
  * - get_page_content: Get accessibility tree with refs and filtering options
  */
 
-import { refManager } from '@/lib/context/ref-manager';
 import { SnapshotFilter } from '@/lib/context/snapshot-filter';
 import type { ToolDefinition, ToolContext, ToolResult } from './types';
 
@@ -41,7 +40,7 @@ interface PageContentInput {
 export const pageContentTool: ToolDefinition = {
   name: 'get_page_content',
   description: 'Extract content from web pages: get visible text, HTML structure, or filtered accessibility tree with element references.',
-  
+
   parameters: {
     action: {
       type: 'string',
@@ -92,15 +91,15 @@ export const pageContentTool: ToolDefinition = {
    * Execute page content extraction
    */
   async execute(input: PageContentInput, context: ToolContext): Promise<ToolResult> {
-    const { 
-      action = 'get_page_content', 
-      selector, 
-      interactive, 
-      depth, 
-      scope, 
-      compact, 
-      includeRefs = true, 
-      delta, 
+    const {
+      action = 'get_page_content',
+      selector,
+      interactive,
+      depth,
+      scope,
+      compact,
+      includeRefs = true,
+      delta,
       includeSuggestions,
       maxElements
     } = input;
@@ -310,7 +309,7 @@ async function handleGetHtml(tabId: number, selector?: string): Promise<ToolResu
  * Get page content with advanced filtering and ref assignment
  */
 async function handleGetPageContent(
-  tabId: number, 
+  tabId: number,
   options: {
     interactive?: boolean;
     depth?: number;
@@ -355,7 +354,7 @@ async function handleGetPageContent(
 
     // Format the output
     let output = '';
-    
+
     if (snapshot.pageInfo) {
       output += `Page: ${snapshot.pageInfo.title}\n`;
       output += `URL: ${snapshot.pageInfo.url}\n`;
@@ -404,7 +403,7 @@ function generatePageSnapshot(options: any): any {
   try {
     // Build accessibility tree
     const tree = buildAccessibilityTree(document.body, options);
-    
+
     return {
       type: 'full',
       tree,
@@ -488,7 +487,7 @@ function buildAccessibilityTree(element: Element, options: any, depth: number = 
  */
 function formatElementFromMetadata(metadata: any): string {
   const parts: string[] = [];
-  
+
   if (metadata.role && metadata.role !== 'generic') {
     parts.push(metadata.role);
   } else {
@@ -509,7 +508,7 @@ function formatElementFromMetadata(metadata: any): string {
 /**
  * Generate filtered snapshot with refs (runs in page context)
  */
-function generateFilteredSnapshot(options: any): any {
+function _generateFilteredSnapshot(options: any): any {
   try {
     // Import RefManager functionality into page context
     // This is a simplified version that works in the browser
@@ -517,8 +516,8 @@ function generateFilteredSnapshot(options: any): any {
     (window as any).__refManager = refManager;
 
     // Assign refs to elements based on filter options
-    const assignments = refManager.assignRefs(document.body, options);
-    
+    const _assignments = refManager.assignRefs(document.body, options);
+
     // Generate accessibility tree with refs
     const elements: any[] = [];
     const visited = new Set<Element>();
@@ -531,7 +530,7 @@ function generateFilteredSnapshot(options: any): any {
 
       const ref = refManager.getRef(element);
       const isInteractive = isElementInteractive(element);
-      
+
       // Apply filters
       if (options.interactive && !isInteractive) {
         // Skip non-interactive elements if interactive filter is on
@@ -563,10 +562,10 @@ function generateFilteredSnapshot(options: any): any {
     }
 
     // Start traversal from scope or body
-    const startElement = options.scope ? 
-      document.querySelector(options.scope) || document.body : 
+    const startElement = options.scope ?
+      document.querySelector(options.scope) || document.body :
       document.body;
-    
+
     traverseElement(startElement);
 
     // Format output
@@ -635,7 +634,7 @@ function createPageRefManager() {
 
   function shouldAssignRef(element: Element, options: any): boolean {
     const isInteractive = isElementInteractive(element);
-    
+
     if (options.compact && isEmptyStructural(element)) {
       return false;
     }
@@ -673,12 +672,12 @@ function isElementInteractive(element: Element): boolean {
 function isEmptyStructural(element: Element): boolean {
   const tagName = element.tagName.toLowerCase();
   const structuralTags = ['div', 'span', 'section', 'article', 'aside', 'header', 'footer', 'main'];
-  
+
   if (!structuralTags.includes(tagName)) return false;
 
   const textContent = element.textContent?.trim() || '';
   const hasInteractiveChildren = element.querySelector('a,button,input,select,textarea');
-  
+
   return textContent.length === 0 && !hasInteractiveChildren;
 }
 
@@ -732,7 +731,7 @@ function getElementName(element: Element): string | undefined {
   if (ariaLabel) return ariaLabel.trim();
 
   const tagName = element.tagName.toLowerCase();
-  
+
   if (tagName === 'input' || tagName === 'select' || tagName === 'textarea') {
     const placeholder = element.getAttribute('placeholder');
     if (placeholder) return placeholder.trim();
@@ -761,7 +760,7 @@ function getElementName(element: Element): string | undefined {
  */
 function formatElement(element: any): string {
   const parts: string[] = [];
-  
+
   if (element.role && element.role !== 'generic') {
     parts.push(element.role);
   } else {
@@ -787,7 +786,7 @@ function formatElement(element: any): string {
 function extractText(selector?: string): { text?: string; error?: string } {
   try {
     let element: Element | null = document.body;
-    
+
     if (selector) {
       element = document.querySelector(selector);
       if (!element) {
@@ -804,7 +803,7 @@ function extractText(selector?: string): { text?: string; error?: string } {
           // Skip script and style elements
           const parent = node.parentElement;
           if (!parent) return NodeFilter.FILTER_REJECT;
-          
+
           const tagName = parent.tagName.toLowerCase();
           if (tagName === 'script' || tagName === 'style') {
             return NodeFilter.FILTER_REJECT;
@@ -827,7 +826,7 @@ function extractText(selector?: string): { text?: string; error?: string } {
 
     const textParts: string[] = [];
     let node: Node | null;
-    
+
     while ((node = walker.nextNode())) {
       const text = node.textContent?.trim();
       if (text) {
@@ -847,7 +846,7 @@ function extractText(selector?: string): { text?: string; error?: string } {
 function extractHtml(selector?: string): { html?: string; error?: string } {
   try {
     let element: Element | null = document.body;
-    
+
     if (selector) {
       element = document.querySelector(selector);
       if (!element) {
@@ -865,7 +864,7 @@ function extractHtml(selector?: string): { html?: string; error?: string } {
  * Generate accessibility tree (runs in page context)
  * This function is defined in accessibility-tree.js
  */
-function generateAccessibilityTree(options: any): any {
+function _generateAccessibilityTree(options: any): any {
   // This will be executed in page context where accessibility-tree.js is loaded
   return (window as any).__claudeAccessibilityTree?.generateAccessibilityTree(options);
 }

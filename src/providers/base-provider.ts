@@ -4,13 +4,13 @@
  * Abstract base class for all LLM providers with common functionality.
  */
 
-import { 
-  LLMProvider, 
-  ProviderConfig, 
-  ProviderType, 
-  ChatMessage, 
-  ChatOptions, 
-  LLMResponse, 
+import {
+  LLMProvider,
+  ProviderConfig,
+  ProviderType,
+  ChatMessage,
+  ChatOptions,
+  LLMResponse,
   StreamChunk,
   ProviderError,
   AuthenticationError,
@@ -59,7 +59,7 @@ export abstract class BaseProvider implements LLMProvider {
     if (this.config.baseUrl) {
       return this.config.baseUrl;
     }
-    
+
     const providerConfig = getProviderConfig(this.type);
     return providerConfig?.baseUrl || '';
   }
@@ -119,26 +119,51 @@ export abstract class BaseProvider implements LLMProvider {
   protected buildUrl(endpoint: string): string {
     const baseUrl = this.getBaseUrl();
     const url = new URL(`${baseUrl}${endpoint}`);
-    
+
     const providerConfig = getProviderConfig(this.type);
-    
+
     // Add API key as query parameter for providers that use query auth
     if (providerConfig?.authMethod === 'query' && providerConfig.authParam && this.config.apiKey) {
       url.searchParams.set(providerConfig.authParam, this.config.apiKey);
     }
-    
+
     return url.toString();
   }
 
   /**
-   * Make HTTP request with error handling
+   * Default request timeout in milliseconds
+   */
+  protected readonly REQUEST_TIMEOUT_MS = 30000;
+
+  /**
+   * Maximum retry attempts for rate limit errors
+   */
+  protected readonly MAX_RETRIES = 3;
+
+  /**
+   * Make HTTP request with timeout and error handling
    */
   protected async makeRequest(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<Response> {
+    return this.makeRequestWithRetry(endpoint, options, 0);
+  }
+
+  /**
+   * Make HTTP request with retry logic for rate limits and network errors
+   */
+  private async makeRequestWithRetry(
+    endpoint: string,
+    options: RequestInit,
+    attempt: number
+  ): Promise<Response> {
     const url = this.buildUrl(endpoint);
     const headers = this.getHeaders();
+
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.REQUEST_TIMEOUT_MS);
 
     try {
       const response = await fetch(url, {
@@ -147,24 +172,72 @@ export abstract class BaseProvider implements LLMProvider {
           ...headers,
           ...options.headers,
         },
+        signal: controller.signal,
       });
 
       if (!response.ok) {
+        // Check if this is a retryable error
+        if (response.status === 429 && attempt < this.MAX_RETRIES) {
+          // Rate limit - retry with exponential backoff
+          const delay = this.calculateBackoffDelay(attempt);
+          console.log(`⏳ Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${this.MAX_RETRIES})`);
+          await this.sleep(delay);
+          return this.makeRequestWithRetry(endpoint, options, attempt + 1);
+        }
         await this.handleErrorResponse(response);
       }
 
       return response;
     } catch (error) {
+      // Handle abort (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        if (attempt < this.MAX_RETRIES) {
+          const delay = this.calculateBackoffDelay(attempt);
+          console.log(`⏳ Request timed out, retrying in ${delay}ms (attempt ${attempt + 1}/${this.MAX_RETRIES})`);
+          await this.sleep(delay);
+          return this.makeRequestWithRetry(endpoint, options, attempt + 1);
+        }
+        throw new NetworkError(
+          this.type,
+          `Request timed out after ${this.REQUEST_TIMEOUT_MS}ms (${this.MAX_RETRIES} retries exhausted)`
+        );
+      }
+
       if (error instanceof ProviderError) {
         throw error;
       }
-      
-      // Network or other errors
+
+      // Network errors - retry with backoff
+      if (attempt < this.MAX_RETRIES) {
+        const delay = this.calculateBackoffDelay(attempt);
+        console.log(`⏳ Network error, retrying in ${delay}ms (attempt ${attempt + 1}/${this.MAX_RETRIES})`);
+        await this.sleep(delay);
+        return this.makeRequestWithRetry(endpoint, options, attempt + 1);
+      }
+
       throw new NetworkError(
         this.type,
         `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
+    } finally {
+      clearTimeout(timeout);
     }
+  }
+
+  /**
+   * Calculate exponential backoff delay with jitter
+   */
+  private calculateBackoffDelay(attempt: number): number {
+    const baseDelay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s...
+    const jitter = Math.random() * 1000; // 0-1000ms random jitter
+    return baseDelay + jitter;
+  }
+
+  /**
+   * Promise-based sleep utility
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
@@ -172,7 +245,7 @@ export abstract class BaseProvider implements LLMProvider {
    */
   protected async handleErrorResponse(response: Response): Promise<never> {
     let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-    
+
     try {
       const errorData = await response.json();
       if (errorData.error?.message) {
@@ -213,7 +286,7 @@ export abstract class BaseProvider implements LLMProvider {
       together: 'Get your API key from https://api.together.xyz/settings/api-keys',
       perplexity: 'Get your API key from https://www.perplexity.ai/settings/api'
     };
-    
+
     const guidance = authGuides[this.type] || 'Please check your API key and try again.';
     return `${originalMessage}\n\n${guidance}`;
   }
@@ -226,21 +299,21 @@ export abstract class BaseProvider implements LLMProvider {
       // Use the same configuration as actual chat requests
       const testResult = await this.performConnectionTest();
       this.connectionState.markSuccess();
-      return { 
-        success: true, 
+      return {
+        success: true,
         models: testResult.models,
         timestamp: new Date()
       };
     } catch (error) {
-      const providerError = error instanceof ProviderError ? error : 
+      const providerError = error instanceof ProviderError ? error :
         new ProviderError(
           error instanceof Error ? error.message : 'Unknown error',
           this.type
         );
-      
+
       this.connectionState.markFailure(providerError);
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: providerError,
         timestamp: new Date()
       };
@@ -261,11 +334,11 @@ export abstract class BaseProvider implements LLMProvider {
         [{ role: 'user', content: 'test' }],
         { maxTokens: 1 }
       );
-      
+
       if (response.content.length >= 0) {
         return { models: this.getDefaultModels() };
       }
-      
+
       throw error;
     }
   }
@@ -298,7 +371,7 @@ export abstract class BaseProvider implements LLMProvider {
     try {
       const response = await this.makeRequest('/models');
       const data = await response.json();
-      
+
       if (data.data && Array.isArray(data.data)) {
         return data.data.map((model: any) => ({
           id: model.id,
@@ -310,7 +383,7 @@ export abstract class BaseProvider implements LLMProvider {
     } catch (error) {
       // If /models endpoint doesn't exist, fall back to defaults
     }
-    
+
     return this.getDefaultModels();
   }
 

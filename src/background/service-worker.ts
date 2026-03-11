@@ -13,36 +13,36 @@ initializeMessageListener();
 registerHandler('THEME_CHANGED', async (payload) => {
   // Handle both undefined payload and missing theme property
   const theme = payload?.theme || 'dark';
-  
+
   console.log(`🎨 Theme changed to: ${theme}`);
-  
+
   // Store theme preference
   await chrome.storage.local.set({
     chromeTheme: theme,
     themeLastUpdated: Date.now()
   });
-  
+
   // Update icons based on theme
   await updateIconsForTheme(theme);
-  
+
   return { success: true };
 });
 
 registerHandler('CHROME_THEME_CHANGED', async (payload) => {
   // Handle both undefined payload and missing theme property
   const theme = payload?.theme || 'dark';
-  
+
   console.log(`🎨 Chrome theme changed to: ${theme}`);
-  
+
   // Store Chrome theme change
   await chrome.storage.local.set({
     chromeTheme: theme,
     themeLastUpdated: Date.now()
   });
-  
+
   // Update icons based on theme
   await updateIconsForTheme(theme);
-  
+
   return { success: true };
 });
 
@@ -53,26 +53,26 @@ async function updateIconsForTheme(theme: 'light' | 'dark') {
     // For light themes, use dark icons
     // For dark themes, use light icons
     const iconSuffix = theme === 'light' ? '-light' : '-dark';
-    
+
     await chrome.action.setIcon({
       path: {
         16: `icons/icon16${iconSuffix}.png`,
-        48: `icons/icon48${iconSuffix}.png`, 
+        48: `icons/icon48${iconSuffix}.png`,
         128: `icons/icon128${iconSuffix}.png`
       }
     });
-    
+
     console.log(`✅ Icons updated for ${theme} theme`);
-    
+
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.log(`⚠️ Could not update icons for ${theme} theme:`, errorMessage);
-    
+
     // Fallback to default icons
     await chrome.action.setIcon({
       path: {
         16: 'icons/icon16.png',
-        48: 'icons/icon48.png', 
+        48: 'icons/icon48.png',
         128: 'icons/icon128.png'
       }
     });
@@ -83,26 +83,26 @@ async function updateIconsForTheme(theme: 'light' | 'dark') {
 async function detectAndApplyTheme() {
   try {
     console.log('🎨 Setting up Chrome theme detection...');
-    
+
     // Detect initial theme by analyzing Chrome's UI
     // We'll use a more sophisticated approach
     const initialTheme = await detectChromeThemeInServiceWorker();
-    
+
     // Store theme detection capability for side panel
     await chrome.storage.local.set({
       themeDetectionEnabled: true,
       chromeTheme: initialTheme,
       themeLastUpdated: Date.now()
     });
-    
+
     // Set initial icons based on detected theme
     await updateIconsForTheme(initialTheme);
-    
+
     console.log(`✅ Chrome theme detected: ${initialTheme}`);
-    
+
     // Set up periodic theme checking
     setupPeriodicThemeCheck();
-    
+
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.log('⚠️ Theme setup error:', errorMessage);
@@ -114,18 +114,18 @@ async function detectChromeThemeInServiceWorker(): Promise<'light' | 'dark'> {
   try {
     // Check system preference first as a baseline
     // Since we can't access matchMedia in service worker, we'll use a heuristic
-    
+
     // Check if we have stored theme from side panel
     const stored = await chrome.storage.local.get(['chromeTheme', 'systemTheme']);
     if (stored.chromeTheme) {
       console.log(`🎨 Using stored theme: ${stored.chromeTheme}`);
       return stored.chromeTheme;
     }
-    
+
     // Default to dark theme (most common for developers)
     console.log('🎨 No stored theme, defaulting to dark');
     return 'dark';
-    
+
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.log('⚠️ Service worker theme detection failed:', errorMessage);
@@ -133,22 +133,30 @@ async function detectChromeThemeInServiceWorker(): Promise<'light' | 'dark'> {
   }
 }
 
-// Set up periodic theme checking
+// Set up periodic theme checking using chrome.alarms (survives service worker death)
 function setupPeriodicThemeCheck() {
-  // Check theme every 60 seconds
-  setInterval(async () => {
+  // Create alarm for periodic theme checks (1 minute interval)
+  chrome.alarms.create('themeCheck', { periodInMinutes: 1 });
+  console.log('⏰ Theme check alarm created');
+}
+
+// Handle alarm events
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === 'themeCheck') {
     try {
       const currentTheme = await detectChromeThemeInServiceWorker();
       const stored = await chrome.storage.local.get('chromeTheme');
-      
+
       if (stored.chromeTheme !== currentTheme) {
         console.log(`🎨 Theme change detected: ${stored.chromeTheme} → ${currentTheme}`);
-        
+
         await chrome.storage.local.set({
           chromeTheme: currentTheme,
           themeLastUpdated: Date.now()
         });
-        
+
+        await updateIconsForTheme(currentTheme);
+
         // Notify all extension contexts of theme change
         chrome.runtime.sendMessage({
           type: 'CHROME_THEME_CHANGED',
@@ -160,17 +168,17 @@ function setupPeriodicThemeCheck() {
     } catch (error) {
       // Ignore periodic check errors
     }
-  }, 60000);
-}
+  }
+});
 
 // Extension installation handler
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('📦 SidePilot installed:', details.reason);
-  
+
   if (details.reason === 'install') {
     // Set up side panel on installation
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-    
+
     // Update icon for current theme
     detectAndApplyTheme();
   }
@@ -179,7 +187,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 // Action click handler (extension icon)
 chrome.action.onClicked.addListener(async (tab) => {
   console.log('🎯 Extension icon clicked, opening side panel');
-  
+
   if (tab.id) {
     await chrome.sidePanel.open({ tabId: tab.id });
   }

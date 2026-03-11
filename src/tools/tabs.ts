@@ -13,10 +13,10 @@ import type { ToolDefinition, ToolContext, ToolResult } from './types';
 /**
  * All supported tab management actions
  */
-type TabAction = 
-  | 'create_tab' 
-  | 'close_tab' 
-  | 'switch_tab' 
+type TabAction =
+  | 'create_tab'
+  | 'close_tab'
+  | 'switch_tab'
   | 'list_tabs';
 
 /**
@@ -49,9 +49,9 @@ function isValidUrl(urlString: string): boolean {
   try {
     const url = new URL(urlString);
     // Allow http, https, and chrome extension URLs
-    return url.protocol === 'http:' || 
-           url.protocol === 'https:' || 
-           url.protocol === 'chrome-extension:';
+    return url.protocol === 'http:' ||
+      url.protocol === 'https:' ||
+      url.protocol === 'chrome-extension:';
   } catch {
     return false;
   }
@@ -65,7 +65,7 @@ function isValidUrl(urlString: string): boolean {
 export const tabsTool: ToolDefinition = {
   name: 'tab_management',
   description: 'Manage browser tabs: create new tabs, close tabs, switch between tabs, or list all open tabs with their metadata.',
-  
+
   parameters: {
     action: {
       type: 'string',
@@ -86,7 +86,7 @@ export const tabsTool: ToolDefinition = {
   /**
    * Execute tab management action
    */
-  async execute(input: TabInput, context: ToolContext): Promise<ToolResult> {
+  async execute(input: TabInput, _context: ToolContext): Promise<ToolResult> {
     const { action, url, tab_id } = input;
 
     try {
@@ -185,8 +185,8 @@ async function handleCreateTab(url?: string): Promise<ToolResult> {
   try {
     // Validate URL if provided
     if (url && !isValidUrl(url)) {
-      return { 
-        error: 'Invalid URL format. URL must start with http:// or https://' 
+      return {
+        error: 'Invalid URL format. URL must start with http:// or https://'
       };
     }
 
@@ -200,7 +200,7 @@ async function handleCreateTab(url?: string): Promise<ToolResult> {
       return { error: 'Failed to create tab: no tab ID returned' };
     }
 
-    const message = url 
+    const message = url
       ? `Created new tab (ID: ${tab.id}) and navigated to ${url}`
       : `Created new tab (ID: ${tab.id})`;
 
@@ -226,7 +226,7 @@ async function handleCloseTab(tabId: number): Promise<ToolResult> {
   try {
     // Verify tab exists before closing
     const tab = await chrome.tabs.get(tabId);
-    
+
     if (!tab) {
       return { error: `Tab with ID ${tabId} not found` };
     }
@@ -259,7 +259,7 @@ async function handleSwitchTab(tabId: number): Promise<ToolResult> {
   try {
     // Get tab to verify it exists and get its window
     const tab = await chrome.tabs.get(tabId);
-    
+
     if (!tab) {
       return { error: `Tab with ID ${tabId} not found` };
     }
@@ -341,7 +341,7 @@ function formatTabsList(tabs: TabMetadata[]): string {
   // Format each window's tabs
   for (const [windowId, windowTabs] of tabsByWindow) {
     lines.push(`\nWindow ${windowId}:`);
-    
+
     for (const tab of windowTabs) {
       const activeMarker = tab.active ? '* ' : '  ';
       const groupMarker = tab.groupId !== undefined ? ` [Group ${tab.groupId}]` : '';
