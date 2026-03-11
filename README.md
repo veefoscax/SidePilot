@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue.svg" alt="TypeScript"/>
   <img src="https://img.shields.io/badge/React-18-61dafb.svg" alt="React"/>
   <img src="https://img.shields.io/badge/Manifest-V3-orange.svg" alt="Manifest V3"/>
-  <img src="https://img.shields.io/badge/Dynamous-Hackathon_2026-purple.svg" alt="Hackathon"/>
+  <img src="https://img.shields.io/badge/Open_Source-MIT-brightgreen.svg" alt="Open Source"/>
 </p>
 
 <p align="center">
@@ -227,4 +227,3 @@ MIT License — see [LICENSE](LICENSE) for details.
 - **[browser-use](https://github.com/browser-use/browser-use)** — Browser automation patterns
 - **[Cline](https://github.com/cline/cline)** — Multi-provider architecture
 - **[Kiro](https://kiro.dev)** — Spec-driven development
-- Built for the **Dynamous Kiro Hackathon 2026**
