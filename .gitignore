@@ -4,6 +4,9 @@
 node_modules/
 .pnpm-store/
 
+# External projects (referenced, not embedded)
+assets/openclaw-main/
+
 # Build output
 dist/
 build/

@@ -1,13 +1,25 @@
-# SidePilot
+<p align="center">
+  <img src="assets/Sidepilot.png" alt="SidePilot Logo" width="200"/>
+</p>
 
-> 🚀 Your AI Co-Pilot in the Browser
+<h1 align="center">SidePilot</h1>
 
-**SidePilot** is a Chrome extension that brings AI-powered browser automation to any LLM provider—not just Claude.
+<p align="center">
+  <strong>🚀 Your AI Co-Pilot in the Browser</strong>
+</p>
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Platform](https://img.shields.io/badge/platform-Chrome-green.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)
-![Hackathon](https://img.shields.io/badge/Dynamous-Hackathon_2026-purple.svg)
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"/>
+  <img src="https://img.shields.io/badge/platform-Chrome-green.svg" alt="Platform"/>
+  <img src="https://img.shields.io/badge/TypeScript-5.0-blue.svg" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/React-18-61dafb.svg" alt="React"/>
+  <img src="https://img.shields.io/badge/Manifest-V3-orange.svg" alt="Manifest V3"/>
+  <img src="https://img.shields.io/badge/Dynamous-Hackathon_2026-purple.svg" alt="Hackathon"/>
+</p>
+
+<p align="center">
+  <em>A Chrome extension that brings AI-powered browser automation to any LLM provider—not just Claude.</em>
+</p>
 
 ---
 
@@ -20,7 +32,7 @@ Use **7+ LLM providers** with a single extension:
 - **Google** (Gemini Pro, Gemini Flash)
 - **Ollama** (Local LLMs - Llama, Mistral, etc.)
 - **LM Studio** (Local models)
-- **zAI** (Grok-2)
+- **xAI** (Grok-2)
 - More via OpenAI-compatible API
 
 ### 🖱️ Browser Automation Tools
@@ -32,7 +44,7 @@ Use **7+ LLM providers** with a single extension:
 - **Extract** - Get page content
 
 ### 🎯 Element Pointer
-Point at elements visually - AI receives exact refs:
+Point at elements visually — AI receives exact refs:
 1. Click 🎯 button
 2. Hover to highlight elements
 3. Click to select
@@ -53,6 +65,10 @@ Visual indicators show what each model supports:
 ### 🎨 Themes
 - Light, Dark, and System modes
 
+### 🔗 MCP Integration
+- Connect to Model Context Protocol servers
+- Extend capabilities with external tools
+
 ---
 
 ## 🛠️ Tech Stack
@@ -66,6 +82,7 @@ Visual indicators show what each model supports:
 | Tailwind CSS | Styling |
 | Zustand | State management |
 | Manifest V3 | Extension API |
+| Playwright | E2E Testing |
 
 ---
 
@@ -132,14 +149,15 @@ SidePilot/
 ├── .kiro/
 │   ├── steering/       # Project context
 │   └── specs/          # Feature specifications (19 specs)
+├── tests/              # E2E and unit tests
 └── dist/               # Built extension
 ```
 
 ---
 
-## 📋 Kiro Specs
+## 📋 Kiro Specs — Full Spec-Driven Development
 
-Built with [Kiro](https://kiro.dev) spec-driven development:
+Built with [Kiro](https://kiro.dev) spec-driven development — **19/19 specs complete**:
 
 | Spec | Feature | Status |
 |------|---------|--------|
@@ -165,21 +183,48 @@ Built with [Kiro](https://kiro.dev) spec-driven development:
 
 ---
 
+## 📅 Development Timeline
+
+| Date | Milestone |
+|------|-----------|
+| **Jan 12, 2026** | 🎬 Project kickoff — initial scaffold with 15 Kiro specs |
+| **Jan 13, 2026** | 🔌 Multi-provider support (OpenAI, Anthropic, Gemini, Ollama, xAI) |
+| **Jan 13, 2026** | 💬 Chat interface with ULTRATHINK redesign |
+| **Jan 14, 2026** | 🛡️ Permission system & CDP wrapper |
+| **Jan 14, 2026** | 🖱️ Browser tools (screenshot, click, type, navigate, scroll) |
+| **Jan 16, 2026** | 🌍 i18n (EN/PT-BR) & General Settings |
+| **Jan 17, 2026** | 🎤 Voice mode integration |
+| **Jan 18, 2026** | ⚡ Context optimization (60-90% token reduction) |
+| **Jan 22, 2026** | 🧪 E2E testing infrastructure with Playwright |
+| **Jan 22, 2026** | 🎯 Element Pointer — visual AI element selection |
+| **Jan 23, 2026** | ✅ S19 verified — all 19 specs complete |
+| **Jan 24, 2026** | 🏆 S05-S15 Excellence Review — all issues fixed |
+| **Mar 11, 2026** | 📦 Published to GitHub as open source |
+
+---
+
+## 🤝 Related Projects
+
+- **[Skill-E](https://github.com/veefoscax/Skill-E)** — Local-first AI Skill Definition generator (Tauri + React)
+- **[OpenClaw](https://github.com/openclaw)** — Open-source gateway infrastructure
+
+---
+
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our contributing guidelines.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
 ## 🙏 Acknowledgments
 
-- **[browser-use](https://github.com/browser-use/browser-use)** - Browser automation patterns
-- **[Cline](https://github.com/cline/cline)** - Multi-provider architecture
-- **[Kiro](https://kiro.dev)** - Spec-driven development
-- Built for the **Dynamous Hackathon**
+- **[browser-use](https://github.com/browser-use/browser-use)** — Browser automation patterns
+- **[Cline](https://github.com/cline/cline)** — Multi-provider architecture
+- **[Kiro](https://kiro.dev)** — Spec-driven development
+- Built for the **Dynamous Kiro Hackathon 2026**
