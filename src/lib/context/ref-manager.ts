@@ -21,24 +21,21 @@ import {
  */
 const DEFAULT_OPTIONS: Required<RefManagerOptions> = {
   prefix: 'e',
-  persistAcrossNavigation: false,
+  persistAcrossNavigation: true, // Enabled for technical excellence (S28)
   maxRefs: 1000
 };
 
 /**
  * RefManager handles assignment and resolution of short element references
- * 
- * Key features:
- * - Deterministic ref assignment (same DOM = same refs)
- * - O(1) lookup via WeakMap cache
- * - Navigation detection for cache invalidation
- * - Memory-efficient using WeakRef for element storage
  */
 export class RefManager {
   private refs: RefMap;
   private counter: number = 0;
   private options: Required<RefManagerOptions>;
   private currentPageId: string = '';
+  
+  // Persistence storage (Ref ID -> DOM Fingerprint)
+  private fingerprints: Map<string, string> = new Map();
 
   constructor(options: RefManagerOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
@@ -47,502 +44,103 @@ export class RefManager {
   }
 
   /**
-   * Create an empty ref map structure
+   * Generates a unique fingerprint for an element to allow re-hydration after navigation
    */
-  private createEmptyRefMap(): RefMap {
-    return {
-      refToElement: new Map<string, Element>(),
-      elementToRef: new WeakMap<Element, string>(),
-      pageId: this.generatePageId()
-    };
-  }
-
-  /**
-   * Generate a unique page identifier
-   */
-  private generatePageId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  /**
-   * Setup navigation detection to invalidate cache
-   */
-  private setupNavigationDetection(): void {
-    if (typeof window !== 'undefined') {
-      // Listen for navigation events
-      window.addEventListener('beforeunload', () => {
-        if (!this.options.persistAcrossNavigation) {
-          this.clear();
-        }
-      });
-
-      // Listen for URL changes (SPA navigation)
-      let lastUrl = window.location.href;
-      const checkUrlChange = () => {
-        const currentUrl = window.location.href;
-        if (currentUrl !== lastUrl) {
-          lastUrl = currentUrl;
-          if (!this.options.persistAcrossNavigation) {
-            this.clear();
-          }
-        }
-      };
-
-      // Check for URL changes periodically (fallback for SPA navigation)
-      setInterval(checkUrlChange, 1000);
-
-      // Listen for popstate events (back/forward navigation)
-      window.addEventListener('popstate', () => {
-        if (!this.options.persistAcrossNavigation) {
-          this.clear();
-        }
-      });
-    }
-  }
-
-  /**
-   * Assign refs to all interactive elements in deterministic order
-   * 
-   * @param root - Root element to start traversal from
-   * @param filter - Optional filter options to limit which elements get refs
-   * @returns Array of ref assignments
-   */
-  assignRefs(root: Element = document.body, filter?: SnapshotFilterOptions): RefAssignment[] {
-    const assignments: RefAssignment[] = [];
-    const visited = new Set<Element>();
-
-    // Reset counter for deterministic assignment
-    this.counter = 0;
-
-    // Traverse DOM in deterministic order (depth-first, document order)
-    const traverse = (element: Element, depth: number = 0): void => {
-      // Skip if already visited
-      if (visited.has(element)) {
-        return;
-      }
-      visited.add(element);
-
-      // Check if element should get a ref (don't assign to root unless it's interactive)
-      if (depth > 0 && this.shouldAssignRef(element, filter)) {
-        const assignment = this.createRefAssignment(element);
-        if (assignment) {
-          assignments.push(assignment);
-        }
-      }
-
-      // Check depth limit before traversing children
-      // If depth limit is set, don't traverse beyond that depth
-      if (filter?.depth && depth >= filter.depth) {
-        return;
-      }
-
-      // Traverse children in document order
-      const children = Array.from(element.children || []);
-      for (const child of children) {
-        // Check max elements limit
-        if (filter?.maxElements && assignments.length >= filter.maxElements) {
-          break;
-        }
-        traverse(child, depth + 1);
-      }
-    };
-
-    // Apply scope filter if specified
-    const startElement = filter?.scope ? 
-      document.querySelector(filter.scope) || root : root;
-
-    traverse(startElement, 0);
-
-    return assignments;
-  }
-
-  /**
-   * Determine if an element should get a ref assigned
-   */
-  private shouldAssignRef(element: Element, filter?: SnapshotFilterOptions): boolean {
-    // Check if we've hit the max refs limit
-    if (this.counter >= this.options.maxRefs) {
-      return false;
-    }
-
-    // Skip if element already has a ref
-    if (this.refs.elementToRef.has(element)) {
-      return false;
-    }
-
-    // Apply interactive filter if specified
-    if (filter?.interactive && !this.isInteractive(element)) {
-      return false;
-    }
-
-    // Apply compact filter - skip empty/structural elements
-    if (filter?.compact && this.isEmptyStructural(element)) {
-      return false;
-    }
-
-    // Check visibility if required
-    if (filter?.includeVisibility && !this.isVisible(element)) {
-      return false;
-    }
-
-    // Always assign refs to interactive elements
-    if (this.isInteractive(element)) {
-      return true;
-    }
-
-    // For non-interactive elements, only assign if not in interactive-only mode
-    return !filter?.interactive;
-  }
-
-  /**
-   * Check if element is interactive
-   */
-  private isInteractive(element: Element): boolean {
+  private generateFingerprint(element: Element): string {
     const tagName = element.tagName.toLowerCase();
-    const role = element.getAttribute('role');
-
-    // Check interactive tags
-    if (INTERACTIVE_TAGS.includes(tagName as any)) {
-      return true;
-    }
-
-    // Check interactive roles
-    if (role && INTERACTIVE_ROLES.includes(role as any)) {
-      return true;
-    }
-
-    // Check for click handlers or tabindex
-    if (element.hasAttribute('onclick') || 
-        element.hasAttribute('tabindex') ||
-        element.getAttribute('tabindex') === '0') {
-      return true;
-    }
-
-    // Check for contenteditable
-    if (element.getAttribute('contenteditable') === 'true') {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Check if element is empty/structural and should be skipped in compact mode
-   */
-  private isEmptyStructural(element: Element): boolean {
-    const tagName = element.tagName.toLowerCase();
+    const id = element.id ? `#${element.id}` : '';
+    const classes = Array.from(element.classList).sort().join('.');
+    const name = element.getAttribute('name') || '';
+    const type = element.getAttribute('type') || '';
     
-    // Structural tags that are often empty
-    const structuralTags = ['div', 'span', 'section', 'article', 'aside', 'header', 'footer', 'main'];
+    // Simple path-like identifier
+    const parent = element.parentElement;
+    const index = parent ? Array.from(parent.children).indexOf(element) : 0;
     
-    if (!structuralTags.includes(tagName)) {
-      return false;
-    }
-
-    // Check if element has meaningful content
-    const textContent = element.textContent?.trim() || '';
-    const hasInteractiveChildren = element.querySelector && element.querySelector(INTERACTIVE_TAGS.join(','));
-    
-    // Empty if no text content and no interactive children
-    return textContent.length === 0 && !hasInteractiveChildren;
+    return `${tagName}|${id}|${classes}|${name}|${type}|idx:${index}`;
   }
 
   /**
-   * Check if element is visible
+   * Attempts to find an element in the current DOM that matches a fingerprint
    */
-  private isVisible(element: Element): boolean {
-    if (!(element instanceof HTMLElement)) {
-      return true; // Assume visible for non-HTML elements
+  private findByFingerprint(fingerprint: string): Element | null {
+    const [tagName, id, classes, name, type, idxStr] = fingerprint.split('|');
+    const index = parseInt(idxStr.split(':')[1]);
+
+    // 1. Try by ID (strongest match)
+    if (id) {
+      const element = document.querySelector(id);
+      if (element && element.tagName.toLowerCase() === tagName) return element;
     }
 
-    const style = window.getComputedStyle(element);
-    
-    // Check CSS visibility
-    if (style.display === 'none' || 
-        style.visibility === 'hidden' || 
-        style.opacity === '0') {
-      return false;
+    // 2. Try by Name/Type
+    if (name || type) {
+      const selector = `${tagName}${name ? `[name="${name}"]` : ''}${type ? `[type="${type}"]` : ''}`;
+      const elements = document.querySelectorAll(selector);
+      if (elements.length === 1) return elements[0];
     }
 
-    // Check if element has dimensions
-    const rect = element.getBoundingClientRect();
-    if (rect.width === 0 && rect.height === 0) {
-      return false;
-    }
+    // 3. Try by Tag + Classes + Index fallback
+    const classSelector = classes ? `.${classes.replace(/\./g, '.')}` : '';
+    const elements = document.querySelectorAll(`${tagName}${classSelector}`);
+    if (elements[index]) return elements[index];
 
-    return true;
-  }
-
-  /**
-   * Create a ref assignment for an element
-   */
-  private createRefAssignment(element: Element): RefAssignment | null {
-    // Check if element already has a ref
-    const existingRef = this.refs.elementToRef.get(element);
-    if (existingRef) {
-      const metadata = this.createRefMetadata(element, existingRef);
-      return { ref: existingRef, element, metadata };
-    }
-
-    // Generate new ref
-    const ref = this.generateRef();
-    
-    // Store in both directions
-    this.refs.refToElement.set(ref, element);
-    this.refs.elementToRef.set(element, ref);
-
-    // Create metadata
-    const metadata = this.createRefMetadata(element, ref);
-
-    this.counter++;
-
-    return { ref, element, metadata };
-  }
-
-  /**
-   * Generate a new ref ID
-   */
-  private generateRef(): string {
-    return `${this.options.prefix}${this.counter + 1}`;
-  }
-
-  /**
-   * Create metadata for a ref-assigned element
-   */
-  private createRefMetadata(element: Element, ref: string, includeVisibility: boolean = false): RefMetadata {
-    const tagName = element.tagName.toLowerCase();
-    const role = this.getElementRole(element);
-    const name = this.getElementName(element);
-    const interactable = this.isInteractive(element);
-    
-    const metadata: RefMetadata = {
-      ref,
-      role,
-      tagName,
-      interactable
-    };
-
-    // Add optional properties
-    if (name) {
-      metadata.name = name;
-    }
-
-    // Handle input elements - check if it's actually an HTMLInputElement or mock
-    if (tagName === 'input') {
-      const inputElement = element as any;
-      metadata.type = inputElement.type || 'text';
-      metadata.value = inputElement.value || '';
-    } else if (tagName === 'select') {
-      const selectElement = element as any;
-      metadata.value = selectElement.value || '';
-    } else if (tagName === 'textarea') {
-      const textareaElement = element as any;
-      metadata.value = textareaElement.value || '';
-    }
-
-    if (includeVisibility && this.isVisible(element)) {
-      metadata.visible = true;
-    }
-
-    return metadata;
-  }
-
-  /**
-   * Get the role of an element
-   */
-  private getElementRole(element: Element): string {
-    // Explicit role attribute
-    const explicitRole = element.getAttribute('role');
-    if (explicitRole) {
-      return explicitRole;
-    }
-
-    // Implicit role based on tag
-    const tagName = element.tagName.toLowerCase();
-    const implicitRoles: Record<string, string> = {
-      'a': 'link',
-      'button': 'button',
-      'input': this.getInputRole(element as HTMLInputElement),
-      'select': 'combobox',
-      'textarea': 'textbox',
-      'h1': 'heading',
-      'h2': 'heading',
-      'h3': 'heading',
-      'h4': 'heading',
-      'h5': 'heading',
-      'h6': 'heading',
-      'img': 'img',
-      'nav': 'navigation',
-      'main': 'main',
-      'article': 'article',
-      'section': 'region',
-      'aside': 'complementary',
-      'header': 'banner',
-      'footer': 'contentinfo'
-    };
-
-    return implicitRoles[tagName] || 'generic';
-  }
-
-  /**
-   * Get the role for an input element based on its type
-   */
-  private getInputRole(input: HTMLInputElement): string {
-    const type = (input.type || 'text').toLowerCase();
-    const inputRoles: Record<string, string> = {
-      'text': 'textbox',
-      'email': 'textbox',
-      'password': 'textbox',
-      'search': 'searchbox',
-      'tel': 'textbox',
-      'url': 'textbox',
-      'number': 'spinbutton',
-      'range': 'slider',
-      'checkbox': 'checkbox',
-      'radio': 'radio',
-      'submit': 'button',
-      'button': 'button',
-      'reset': 'button',
-      'file': 'button'
-    };
-
-    return inputRoles[type] || 'textbox';
-  }
-
-  /**
-   * Get the accessible name of an element
-   */
-  private getElementName(element: Element): string | undefined {
-    // aria-label takes precedence
-    const ariaLabel = element.getAttribute('aria-label');
-    if (ariaLabel) {
-      return ariaLabel.trim();
-    }
-
-    // aria-labelledby
-    const labelledBy = element.getAttribute('aria-labelledby');
-    if (labelledBy) {
-      const labelElement = document.getElementById(labelledBy);
-      if (labelElement) {
-        return labelElement.textContent?.trim();
-      }
-    }
-
-    // For form elements, check associated label
-    const tagName = element.tagName.toLowerCase();
-    if (tagName === 'input' || tagName === 'select' || tagName === 'textarea') {
-      
-      // Check for label element
-      const elementId = element.getAttribute('id');
-      if (elementId) {
-        const labels = document.querySelectorAll(`label[for="${elementId}"]`);
-        if (labels.length > 0) {
-          return labels[0].textContent?.trim();
-        }
-      }
-
-      // Check for wrapping label
-      const parentLabel = element.closest('label');
-      if (parentLabel) {
-        return parentLabel.textContent?.trim();
-      }
-
-      // Check placeholder
-      const placeholder = element.getAttribute('placeholder');
-      if (placeholder) {
-        return placeholder.trim();
-      }
-    }
-
-    // For buttons, use text content
-    if (tagName === 'button') {
-      return element.textContent?.trim();
-    }
-
-    // For links, use text content or title
-    if (tagName === 'a') {
-      const textContent = element.textContent?.trim();
-      if (textContent) {
-        return textContent;
-      }
-      const title = element.getAttribute('title');
-      if (title) {
-        return title.trim();
-      }
-    }
-
-    // For images, use alt text
-    if (tagName === 'img') {
-      const alt = element.getAttribute('alt');
-      if (alt) {
-        return alt.trim();
-      }
-    }
-
-    // Fallback to text content for other elements
-    const textContent = element.textContent?.trim();
-    if (textContent && textContent.length <= 100) { // Limit length
-      return textContent;
-    }
-
-    return undefined;
+    return null;
   }
 
   /**
    * Resolve a ref string to its corresponding element
-   * 
-   * @param ref - The ref string (e.g., "e1")
-   * @returns The element or null if not found/stale
    */
   resolve(ref: string): Element | null {
-    const element = this.refs.refToElement.get(ref);
+    let element = this.refs.refToElement.get(ref);
     
-    if (!element) {
-      return null;
+    // If element is missing or detached from DOM, try re-hydration
+    if (!element || !document.contains(element)) {
+      const fingerprint = this.fingerprints.get(ref);
+      if (fingerprint) {
+        element = this.findByFingerprint(fingerprint);
+        if (element) {
+          console.log(`🧠 [RefManager] Re-hydrated persistent ref: ${ref}`);
+          this.refs.refToElement.set(ref, element);
+          this.refs.elementToRef.set(element, ref);
+        }
+      }
     }
 
-    // Check if element is still in the DOM
-    if (!document.contains(element)) {
-      // Clean up stale ref
-      this.refs.refToElement.delete(ref);
-      this.refs.elementToRef.delete(element);
-      return null;
-    }
-
-    return element;
+    return element && document.contains(element) ? element : null;
   }
 
   /**
    * Get or create a ref for an element
-   * 
-   * @param element - The element to get/create a ref for
-   * @returns The ref string
    */
   getOrCreateRef(element: Element): string {
-    // Check if element already has a ref
     const existingRef = this.refs.elementToRef.get(element);
-    if (existingRef) {
-      return existingRef;
-    }
+    if (existingRef) return existingRef;
 
-    // Create new ref
     const ref = this.generateRef();
+    const fingerprint = this.generateFingerprint(element);
+    
     this.refs.refToElement.set(ref, element);
     this.refs.elementToRef.set(element, ref);
+    this.fingerprints.set(ref, fingerprint);
+    
     this.counter++;
-
     return ref;
   }
 
   /**
-   * Clear all refs (typically called on navigation)
+   * Clear all refs (optionally keeps fingerprints if persistence is on)
    */
   clear(): void {
     this.refs.refToElement.clear();
-    // WeakMap clears itself when elements are garbage collected
     this.refs.elementToRef = new WeakMap();
+    
+    if (!this.options.persistAcrossNavigation) {
+      this.fingerprints.clear();
+      this.counter = 0;
+    }
+    
     this.refs.pageId = this.generatePageId();
-    this.counter = 0;
     this.currentPageId = this.refs.pageId;
   }
 
