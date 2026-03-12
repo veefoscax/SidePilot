@@ -17,7 +17,10 @@ type TabAction =
   | 'create_tab'
   | 'close_tab'
   | 'switch_tab'
-  | 'list_tabs';
+  | 'list_tabs'
+  | 'group_tabs'
+  | 'ungroup_tabs'
+  | 'list_groups';
 
 /**
  * Input parameters for tab management actions
@@ -26,6 +29,10 @@ interface TabInput {
   action: TabAction;
   url?: string;
   tab_id?: number;
+  tab_ids?: number[];
+  group_id?: number;
+  group_title?: string;
+  group_color?: chrome.tabGroups.Color;
 }
 
 /**
@@ -40,6 +47,17 @@ interface TabMetadata {
   windowId: number;
   groupId?: number;
   favIconUrl?: string;
+}
+
+/**
+ * Tab Group metadata
+ */
+interface GroupMetadata {
+  id: number;
+  title?: string;
+  color: string;
+  collapsed: boolean;
+  windowId: number;
 }
 
 /**
@@ -64,22 +82,40 @@ function isValidUrl(urlString: string): boolean {
  */
 export const tabsTool: ToolDefinition = {
   name: 'tab_management',
-  description: 'Manage browser tabs: create new tabs, close tabs, switch between tabs, or list all open tabs with their metadata.',
+  description: 'Manage browser tabs and groups. Create, close, switch tabs, or organize them into named color-coded groups.',
 
   parameters: {
     action: {
       type: 'string',
       description: 'The tab management action to perform',
       required: true,
-      enum: ['create_tab', 'close_tab', 'switch_tab', 'list_tabs']
+      enum: ['create_tab', 'close_tab', 'switch_tab', 'list_tabs', 'group_tabs', 'ungroup_tabs', 'list_groups']
     },
     url: {
       type: 'string',
-      description: 'URL to open in new tab (optional for create_tab action). Must be a valid http:// or https:// URL.'
+      description: 'URL to open in new tab (optional for create_tab action).'
     },
     tab_id: {
       type: 'number',
-      description: 'Tab ID for close_tab or switch_tab actions (required for those actions)'
+      description: 'Single tab ID for close_tab or switch_tab actions.'
+    },
+    tab_ids: {
+      type: 'array',
+      items: { type: 'number' },
+      description: 'List of tab IDs for group_tabs or ungroup_tabs.'
+    },
+    group_id: {
+      type: 'number',
+      description: 'Group ID to add tabs to or modify.'
+    },
+    group_title: {
+      type: 'string',
+      description: 'Title for the tab group.'
+    },
+    group_color: {
+      type: 'string',
+      description: 'Color for the tab group',
+      enum: ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
     }
   },
 
@@ -87,22 +123,24 @@ export const tabsTool: ToolDefinition = {
    * Execute tab management action
    */
   async execute(input: TabInput, _context: ToolContext): Promise<ToolResult> {
-    const { action, url, tab_id } = input;
+    const { action, url, tab_id, tab_ids, group_id, group_title, group_color } = input;
 
     try {
       switch (action) {
         case 'create_tab':
           return await handleCreateTab(url);
-
         case 'close_tab':
           return await handleCloseTab(tab_id!);
-
         case 'switch_tab':
           return await handleSwitchTab(tab_id!);
-
         case 'list_tabs':
           return await handleListTabs();
-
+        case 'group_tabs':
+          return await handleGroupTabs(tab_ids!, group_id, group_title, group_color);
+        case 'ungroup_tabs':
+          return await handleUngroupTabs(tab_ids!);
+        case 'list_groups':
+          return await handleListGroups();
         default:
           return { error: `Unknown action: ${action}` };
       }
@@ -119,22 +157,40 @@ export const tabsTool: ToolDefinition = {
   toAnthropicSchema() {
     return {
       name: 'tab_management',
-      description: 'Manage browser tabs: create new tabs, close tabs, switch between tabs, or list all open tabs with their metadata.',
+      description: 'Manage browser tabs and groups. Create, close, switch tabs, or organize them into named color-coded groups.',
       input_schema: {
         type: 'object' as const,
         properties: {
           action: {
             type: 'string',
-            enum: ['create_tab', 'close_tab', 'switch_tab', 'list_tabs'],
+            enum: ['create_tab', 'close_tab', 'switch_tab', 'list_tabs', 'group_tabs', 'ungroup_tabs', 'list_groups'],
             description: 'The tab management action to perform'
           },
           url: {
             type: 'string',
-            description: 'URL to open in new tab (optional for create_tab action). Must be a valid http:// or https:// URL.'
+            description: 'URL to open in new tab (optional for create_tab action).'
           },
           tab_id: {
             type: 'number',
-            description: 'Tab ID for close_tab or switch_tab actions (required for those actions)'
+            description: 'Single tab ID for close_tab or switch_tab actions.'
+          },
+          tab_ids: {
+            type: 'array',
+            items: { type: 'number' },
+            description: 'List of tab IDs for grouping operations.'
+          },
+          group_id: {
+            type: 'number',
+            description: 'Group ID to add tabs to.'
+          },
+          group_title: {
+            type: 'string',
+            description: 'Title for the new or existing group.'
+          },
+          group_color: {
+            type: 'string',
+            enum: ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange'],
+            description: 'Color for the group.'
           }
         },
         required: ['action']
@@ -150,22 +206,40 @@ export const tabsTool: ToolDefinition = {
       type: 'function' as const,
       function: {
         name: 'tab_management',
-        description: 'Manage browser tabs: create new tabs, close tabs, switch between tabs, or list all open tabs with their metadata.',
+        description: 'Manage browser tabs and groups. Create, close, switch tabs, or organize them into named color-coded groups.',
         parameters: {
           type: 'object' as const,
           properties: {
             action: {
               type: 'string',
-              enum: ['create_tab', 'close_tab', 'switch_tab', 'list_tabs'],
+              enum: ['create_tab', 'close_tab', 'switch_tab', 'list_tabs', 'group_tabs', 'ungroup_tabs', 'list_groups'],
               description: 'The tab management action to perform'
             },
             url: {
               type: 'string',
-              description: 'URL to open in new tab (optional for create_tab action). Must be a valid http:// or https:// URL.'
+              description: 'URL to open in new tab (optional for create_tab action).'
             },
             tab_id: {
               type: 'number',
-              description: 'Tab ID for close_tab or switch_tab actions (required for those actions)'
+              description: 'Single tab ID for close_tab or switch_tab actions.'
+            },
+            tab_ids: {
+              type: 'array',
+              items: { type: 'number' },
+              description: 'List of tab IDs for grouping operations.'
+            },
+            group_id: {
+              type: 'number',
+              description: 'Group ID to add tabs to.'
+            },
+            group_title: {
+              type: 'string',
+              description: 'Title for the new or existing group.'
+            },
+            group_color: {
+              type: 'string',
+              enum: ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange'],
+              description: 'Color for the group.'
             }
           },
           required: ['action']
@@ -176,6 +250,84 @@ export const tabsTool: ToolDefinition = {
 };
 
 // ===== Action Handlers =====
+
+/**
+ * Handle group_tabs action
+ */
+async function handleGroupTabs(
+  tabIds: number[], 
+  groupId?: number, 
+  title?: string, 
+  color?: chrome.tabGroups.Color
+): Promise<ToolResult> {
+  if (!tabIds || tabIds.length === 0) {
+    return { error: 'tab_ids parameter is required for group_tabs action' };
+  }
+
+  try {
+    const group = await chrome.tabs.group({
+      tabIds,
+      groupId: groupId || undefined
+    });
+
+    if (title || color) {
+      await chrome.tabGroups.update(group, {
+        title: title || undefined,
+        color: color || undefined
+      });
+    }
+
+    return {
+      output: `Grouped ${tabIds.length} tabs into group ${group}${title ? ` ("${title}")` : ''}`
+    };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Failed to group tabs' };
+  }
+}
+
+/**
+ * Handle ungroup_tabs action
+ */
+async function handleUngroupTabs(tabIds: number[]): Promise<ToolResult> {
+  if (!tabIds || tabIds.length === 0) {
+    return { error: 'tab_ids parameter is required for ungroup_tabs action' };
+  }
+
+  try {
+    await chrome.tabs.ungroup(tabIds);
+    return { output: `Ungrouped ${tabIds.length} tabs` };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Failed to ungroup tabs' };
+  }
+}
+
+/**
+ * Handle list_groups action
+ */
+async function handleListGroups(): Promise<ToolResult> {
+  try {
+    const groups = await chrome.tabGroups.query({});
+    if (groups.length === 0) {
+      return { output: 'No tab groups found' };
+    }
+
+    const groupsMetadata: GroupMetadata[] = groups.map(g => ({
+      id: g.id,
+      title: g.title,
+      color: g.color,
+      collapsed: g.collapsed,
+      windowId: g.windowId
+    }));
+
+    const output = groupsMetadata.map(g => 
+      `Group ${g.id}: ${g.title || 'Untitled'} (Color: ${g.color}, Collapsed: ${g.collapsed})`
+    ).join('\n');
+
+    return { output: `Found ${groups.length} group(s):\n${output}` };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Failed to list groups' };
+  }
+}
 
 /**
  * Handle create_tab action
