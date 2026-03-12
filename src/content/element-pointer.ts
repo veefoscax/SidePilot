@@ -41,7 +41,52 @@ class ElementPointer {
     this.injectOverlay();
     this.attachEventListeners();
     
+    // Hydrate existing selections from refManager (S27/S28)
+    const existingRefs = refManager.getRefMap();
+    if (Object.keys(existingRefs).length > 0) {
+      console.log(`🧠 [ElementPointer] Hydrating ${Object.keys(existingRefs).length} persistent refs...`);
+      for (const [refStr, meta] of Object.entries(existingRefs)) {
+        const el = refManager.resolve(refStr);
+        if (el && !this.selectionMap.has(el)) {
+          this.hydrateElement(el, refStr);
+        }
+      }
+    }
+    
     console.log('🎯 Element pointer activated (Multi-select mode)');
+  }
+
+  /**
+   * Hydrate a single element visually without regenerating its ref
+   */
+  private hydrateElement(element: Element, ref: string): void {
+    const box = document.createElement('div');
+    box.className = 'sp-selected sp-animating';
+    
+    const badge = document.createElement('div');
+    badge.className = 'sp-ref-badge';
+    badge.textContent = `@${ref}`;
+    box.appendChild(badge);
+
+    const rect = element.getBoundingClientRect();
+    box.style.cssText = `
+      position: absolute;
+      border: 3px solid #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      pointer-events: none;
+      border-radius: 6px;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+      left: ${rect.left + window.scrollX}px;
+      top: ${rect.top + window.scrollY}px;
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      z-index: 2147483646;
+    `;
+
+    this.overlay?.appendChild(box);
+    this.selectionMap.set(element, box);
+    this.elementRefs.set(element, ref);
+    this.updateUI();
   }
 
   /**
