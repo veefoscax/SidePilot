@@ -86,17 +86,40 @@ class ElementPointer {
       pointer-events: none;
     `;
 
+    // Inject styles for animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spPulse {
+        0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        50% { transform: scale(1.02); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+      @keyframes spFadeUp {
+        from { opacity: 0; transform: translate(-50%, 10px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+      }
+      #sp-comment-container.sp-visible {
+        animation: spFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .sp-selected.sp-animating {
+        animation: spPulse 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+    `;
+    this.overlay.appendChild(style);
+
     // Create highlight box (follows mouse)
     this.highlightBox = document.createElement('div');
     this.highlightBox.className = 'sp-highlight';
     this.highlightBox.style.cssText = `
       position: absolute;
       border: 2px solid #3b82f6;
-      background: rgba(59, 130, 246, 0.1);
+      background: rgba(59, 130, 246, 0.15);
+      backdrop-filter: blur(1px);
       pointer-events: none;
       display: none;
-      transition: all 0.1s ease;
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+      border-radius: 4px;
     `;
 
     // Create selected element marker
@@ -108,64 +131,69 @@ class ElementPointer {
       background: rgba(16, 185, 129, 0.15);
       pointer-events: none;
       display: none;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+      border-radius: 6px;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
     `;
 
     // Create comment input container
     const commentContainer = document.createElement('div');
     commentContainer.style.cssText = `
       position: fixed;
-      bottom: 20px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(229, 231, 235, 0.8);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       display: none;
       pointer-events: auto;
       z-index: 2147483647;
-      min-width: 300px;
+      min-width: 320px;
+      font-family: system-ui, -apple-system, sans-serif;
     `;
 
     // Create comment input
     this.commentInput = document.createElement('input');
     this.commentInput.className = 'sp-comment';
     this.commentInput.type = 'text';
-    this.commentInput.placeholder = 'Add comment (optional)...';
+    this.commentInput.placeholder = 'Add instructions for this element...';
     this.commentInput.style.cssText = `
       width: 100%;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border: 1px solid #d1d5db;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
       outline: none;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
     `;
+    this.commentInput.onfocus = () => { this.commentInput!.style.borderColor = '#3b82f6'; };
+    this.commentInput.onblur = () => { this.commentInput!.style.borderColor = '#d1d5db'; };
 
     // Create done button
     this.doneButton = document.createElement('button');
     this.doneButton.className = 'sp-done';
-    this.doneButton.textContent = 'Done';
+    this.doneButton.textContent = 'Confirm Selection';
     this.doneButton.style.cssText = `
       width: 100%;
-      padding: 8px 16px;
+      padding: 10px 16px;
       background: #3b82f6;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
     `;
-    this.doneButton.onmouseover = () => {
-      this.doneButton!.style.background = '#2563eb';
-    };
-    this.doneButton.onmouseout = () => {
-      this.doneButton!.style.background = '#3b82f6';
-    };
+    this.doneButton.onmouseover = () => { this.doneButton!.style.background = '#2563eb'; };
+    this.doneButton.onmouseout = () => { this.doneButton!.style.background = '#3b82f6'; };
+    this.doneButton.onmousedown = () => { this.doneButton!.style.transform = 'scale(0.98)'; };
+    this.doneButton.onmouseup = () => { this.doneButton!.style.transform = 'scale(1)'; };
 
     // Assemble comment container
     commentContainer.appendChild(this.commentInput);
@@ -318,12 +346,20 @@ class ElementPointer {
       this.selectedBox.style.top = `${rect.top + window.scrollY}px`;
       this.selectedBox.style.width = `${rect.width}px`;
       this.selectedBox.style.height = `${rect.height}px`;
+
+      // Trigger pulse animation
+      this.selectedBox.classList.remove('sp-animating');
+      void this.selectedBox.offsetWidth; // Trigger reflow
+      this.selectedBox.classList.add('sp-animating');
     }
 
     // Show comment input
     const commentContainer = document.getElementById('sp-comment-container');
     if (commentContainer) {
       commentContainer.style.display = 'block';
+      commentContainer.classList.remove('sp-visible');
+      void commentContainer.offsetWidth; // Trigger reflow
+      commentContainer.classList.add('sp-visible');
     }
 
     // Focus comment input
@@ -394,12 +430,14 @@ class ElementPointer {
     // Hide selected box
     if (this.selectedBox) {
       this.selectedBox.style.display = 'none';
+      this.selectedBox.classList.remove('sp-animating');
     }
 
     // Hide comment container
     const commentContainer = document.getElementById('sp-comment-container');
     if (commentContainer) {
       commentContainer.style.display = 'none';
+      commentContainer.classList.remove('sp-visible');
     }
 
     // Clear comment input
