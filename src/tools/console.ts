@@ -15,6 +15,7 @@ import type { ToolDefinition, ToolContext, ToolResult } from './types';
  */
 type ConsoleAction = 
   | 'get_logs' 
+  | 'get_errors'
   | 'clear_logs';
 
 /**
@@ -101,14 +102,14 @@ function addMessage(tabId: number, message: ConsoleMessage): void {
  */
 export const consoleTool: ToolDefinition = {
   name: 'console_logs',
-  description: 'View recent console messages from the page. Use this to inspect console.log, warnings, errors, and debug output.',
+  description: 'View recent console messages from the page. Use "get_errors" to quickly find JavaScript errors and exceptions.',
   
   parameters: {
     action: {
       type: 'string',
       description: 'The console action to perform',
       required: true,
-      enum: ['get_logs', 'clear_logs']
+      enum: ['get_logs', 'get_errors', 'clear_logs']
     },
     level: {
       type: 'string',
@@ -136,6 +137,9 @@ export const consoleTool: ToolDefinition = {
         case 'get_logs':
           return await handleGetLogs(tabId, level, limit);
 
+        case 'get_errors':
+          return await handleGetErrors(tabId, limit);
+
         case 'clear_logs':
           return await handleClearLogs(tabId);
 
@@ -155,13 +159,13 @@ export const consoleTool: ToolDefinition = {
   toAnthropicSchema() {
     return {
       name: 'console_logs',
-      description: 'View recent console messages from the page. Use this to inspect console.log, warnings, errors, and debug output.',
+      description: 'View recent console messages from the page. Use "get_errors" to quickly find JavaScript errors and exceptions.',
       input_schema: {
         type: 'object' as const,
         properties: {
           action: {
             type: 'string',
-            enum: ['get_logs', 'clear_logs'],
+            enum: ['get_logs', 'get_errors', 'clear_logs'],
             description: 'The console action to perform'
           },
           level: {
@@ -187,13 +191,13 @@ export const consoleTool: ToolDefinition = {
       type: 'function' as const,
       function: {
         name: 'console_logs',
-        description: 'View recent console messages from the page. Use this to inspect console.log, warnings, errors, and debug output.',
+        description: 'View recent console messages from the page. Use "get_errors" to quickly find JavaScript errors and exceptions.',
         parameters: {
           type: 'object' as const,
           properties: {
             action: {
               type: 'string',
-              enum: ['get_logs', 'clear_logs'],
+              enum: ['get_logs', 'get_errors', 'clear_logs'],
               description: 'The console action to perform'
             },
             level: {
@@ -262,6 +266,36 @@ async function handleGetLogs(
   
   return {
     output: `Recent console messages (${limitedMessages.length}):\n${output}`
+  };
+}
+
+/**
+ * Handle get_errors action - returns only errors and exceptions
+ */
+async function handleGetErrors(tabId: number, limit: number): Promise<ToolResult> {
+  const messages = consoleMessages.get(tabId) || [];
+  const errors = messages.filter(msg => 
+    msg.level === 'error' || msg.level === 'exception'
+  ).slice(-limit);
+
+  if (errors.length === 0) {
+    return {
+      output: 'No console errors or exceptions found.'
+    };
+  }
+
+  const output = errors.map(msg => {
+    const timestamp = formatTimestamp(msg.timestamp);
+    const location = msg.url && msg.lineNumber ? ` (${msg.url}:${msg.lineNumber})` : '';
+    let entry = `[${timestamp}] [${msg.level.toUpperCase()}] ${msg.text}${location}`;
+    if (msg.stackTrace) {
+      entry += `\n  Stack trace:\n${msg.stackTrace.split('\n').map(line => `    ${line}`).join('\n')}`;
+    }
+    return entry;
+  }).join('\n');
+
+  return {
+    output: `Found ${errors.length} console errors:\n${output}`
   };
 }
 

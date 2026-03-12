@@ -18,6 +18,7 @@ import type { ToolDefinition, ToolContext, ToolResult } from './types';
  */
 type NetworkAction = 
   | 'get_requests' 
+  | 'get_errors'
   | 'clear_requests';
 
 /**
@@ -59,6 +60,7 @@ interface NetworkRequest {
   responseHeaders?: Headers;
   mimeType?: string;
   contentLength?: number;
+  errorBody?: string;
 }
 
 /**
@@ -177,6 +179,9 @@ export const networkTool: ToolDefinition = {
             limit: Math.min(limit, MAX_REQUESTS)
           });
 
+        case 'get_errors':
+          return await handleGetErrors(tabId, limit);
+
         case 'clear_requests':
           return await handleClearRequests(tabId);
 
@@ -196,26 +201,26 @@ export const networkTool: ToolDefinition = {
   toAnthropicSchema() {
     return {
       name: 'network_requests',
-      description: 'View recent network requests made by the page. Use this to inspect API calls, resource loading, and network activity. Supports filtering by URL pattern, HTTP method, and status code.',
+      description: 'View recent network requests made by the page. Use "get_errors" to specifically find failing API calls with response bodies.',
       input_schema: {
         type: 'object' as const,
         properties: {
           action: {
             type: 'string',
-            enum: ['get_requests', 'clear_requests'],
+            enum: ['get_requests', 'get_errors', 'clear_requests'],
             description: 'The network action to perform'
           },
           url_filter: {
             type: 'string',
-            description: 'Filter requests by URL substring (e.g., "api" to match all API calls)'
+            description: 'Filter requests by URL substring'
           },
           method_filter: {
             type: 'string',
-            description: 'Filter requests by HTTP method (GET, POST, PUT, DELETE, etc.)'
+            description: 'Filter requests by HTTP method'
           },
           status_filter: {
             type: 'number',
-            description: 'Filter requests by status code (e.g., 200, 404, 500)'
+            description: 'Filter requests by status code'
           },
           type_filter: {
             type: 'string',
@@ -224,7 +229,7 @@ export const networkTool: ToolDefinition = {
           },
           limit: {
             type: 'number',
-            description: 'Maximum number of requests to return (default: 20, max: 100)'
+            description: 'Maximum number of requests to return (default: 20)'
           }
         },
         required: ['action']
@@ -240,26 +245,26 @@ export const networkTool: ToolDefinition = {
       type: 'function' as const,
       function: {
         name: 'network_requests',
-        description: 'View recent network requests made by the page. Use this to inspect API calls, resource loading, and network activity. Supports filtering by URL pattern, HTTP method, and status code.',
+        description: 'View recent network requests made by the page. Use "get_errors" to specifically find failing API calls with response bodies.',
         parameters: {
           type: 'object' as const,
           properties: {
             action: {
               type: 'string',
-              enum: ['get_requests', 'clear_requests'],
+              enum: ['get_requests', 'get_errors', 'clear_requests'],
               description: 'The network action to perform'
             },
             url_filter: {
               type: 'string',
-              description: 'Filter requests by URL substring (e.g., "api" to match all API calls)'
+              description: 'Filter requests by URL substring'
             },
             method_filter: {
               type: 'string',
-              description: 'Filter requests by HTTP method (GET, POST, PUT, DELETE, etc.)'
+              description: 'Filter requests by HTTP method'
             },
             status_filter: {
               type: 'number',
-              description: 'Filter requests by status code (e.g., 200, 404, 500)'
+              description: 'Filter requests by status code'
             },
             type_filter: {
               type: 'string',
@@ -268,7 +273,7 @@ export const networkTool: ToolDefinition = {
             },
             limit: {
               type: 'number',
-              description: 'Maximum number of requests to return (default: 20, max: 100)'
+              description: 'Maximum number of requests to return (default: 20)'
             }
           },
           required: ['action']
@@ -305,6 +310,62 @@ interface NetworkRequestOutput {
   contentLength: number | null;
   requestHeaders: Headers | null;
   responseHeaders: Headers | null;
+  errorBody?: string | null;
+}
+
+/**
+ * Handle get_errors action - returns only failing requests with bodies
+ */
+async function handleGetErrors(tabId: number, limit: number): Promise<ToolResult> {
+  const requests = networkRequests.get(tabId) || [];
+  const failingRequests = requests.filter(req => req.status && req.status >= 400).slice(-limit);
+
+  if (failingRequests.length === 0) {
+    return {
+      output: JSON.stringify({
+        count: 0,
+        message: 'No failing network requests (4xx/5xx) found.'
+      }, null, 2)
+    };
+  }
+
+  // Try to capture bodies for failing requests
+  const outputRequests: NetworkRequestOutput[] = await Promise.all(
+    failingRequests.map(async (req) => {
+      let errorBody = null;
+      try {
+        const response = await cdpWrapper.executeCDPCommand(tabId, 'Network.getResponseBody', {
+          requestId: req.requestId
+        });
+        errorBody = response.body;
+      } catch (e) {
+        // Body might have been evicted or not available
+        errorBody = "(Body not available)";
+      }
+
+      return {
+        url: req.url,
+        method: req.method,
+        status: req.status ?? null,
+        statusText: req.statusText ?? null,
+        type: req.type,
+        timestamp: req.timestamp,
+        mimeType: req.mimeType ?? null,
+        contentLength: req.contentLength ?? null,
+        requestHeaders: req.requestHeaders ?? null,
+        responseHeaders: req.responseHeaders ?? null,
+        errorBody
+      };
+    })
+  );
+
+  return {
+    output: JSON.stringify({
+      count: outputRequests.length,
+      message: 'Failing requests detected. Inspect "errorBody" for API error details.',
+      requests: outputRequests
+    }, null, 2)
+  };
 }
 
 /**
