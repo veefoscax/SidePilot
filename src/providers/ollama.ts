@@ -20,17 +20,29 @@ import {
 import { getModelsByProvider } from './models-registry';
 
 interface OllamaMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
+  images?: string[];
+  tool_calls?: Array<{
+    id: string;
+    type: 'function';
+    function: {
+      name: string;
+      arguments: string;
+    };
+  }>;
 }
 
 interface OllamaRequest {
   model: string;
   messages: OllamaMessage[];
   stream?: boolean;
+  tools?: any[]; // OpenAI-compatible tool definition
   options?: {
     temperature?: number;
     num_predict?: number;
+    top_p?: number;
+    seed?: number;
   };
 }
 
@@ -40,6 +52,14 @@ interface OllamaResponse {
   message: {
     role: 'assistant';
     content: string;
+    tool_calls?: Array<{
+      id: string;
+      type: 'function';
+      function: {
+        name: string;
+        arguments: string;
+      };
+    }>;
   };
   done: boolean;
   total_duration?: number;
@@ -159,7 +179,7 @@ export class OllamaProvider extends BaseProvider {
         provider: 'ollama' as const,
         capabilities: {
           supportsVision: this.supportsVision(model.name),
-          supportsTools: false, // Most local models don't support tools yet
+          supportsTools: this.supportsTools(model.name),
           supportsStreaming: true,
           supportsReasoning: this.supportsReasoning(model.name),
           supportsPromptCache: false,
@@ -208,7 +228,7 @@ export class OllamaProvider extends BaseProvider {
   }
 
   private buildRequest(messages: ChatMessage[], options: ChatOptions): OllamaRequest {
-    const { model = 'qwen3:1.7b', maxTokens, temperature, systemPrompt } = options;
+    const { model = 'qwen3:1.7b', maxTokens, temperature, systemPrompt, tools } = options;
 
     // Convert messages to Ollama format
     const ollamaMessages: OllamaMessage[] = [];
@@ -229,10 +249,29 @@ export class OllamaProvider extends BaseProvider {
             message.content.find(part => part.type === 'text')?.text || '',
         });
       } else if (message.role === 'user' || message.role === 'assistant') {
-        ollamaMessages.push({
+        const ollamaMsg: OllamaMessage = {
           role: message.role,
           content: typeof message.content === 'string' ? message.content :
             message.content.find(part => part.type === 'text')?.text || '',
+        };
+
+        // Add tool calls from assistant message if present
+        if (message.role === 'assistant' && message.tool_calls) {
+          ollamaMsg.tool_calls = message.tool_calls.map(tc => ({
+            id: tc.id,
+            type: 'function',
+            function: {
+              name: tc.function.name,
+              arguments: tc.function.arguments
+            }
+          }));
+        }
+
+        ollamaMessages.push(ollamaMsg);
+      } else if (message.role === 'tool') {
+        ollamaMessages.push({
+          role: 'tool',
+          content: typeof message.content === 'string' ? message.content : '',
         });
       }
     }
@@ -241,6 +280,11 @@ export class OllamaProvider extends BaseProvider {
       model,
       messages: ollamaMessages,
     };
+
+    // Add tools if provider supports them
+    if (tools && tools.length > 0) {
+      request.tools = tools;
+    }
 
     if (maxTokens || temperature !== undefined) {
       request.options = {};
@@ -256,18 +300,45 @@ export class OllamaProvider extends BaseProvider {
   }
 
   private parseResponse(data: OllamaResponse): LLMResponse {
-    return {
+    const response: LLMResponse = {
       content: data.message.content,
       usage: {
         inputTokens: data.prompt_eval_count || 0,
         outputTokens: data.eval_count || 0,
       },
-      stopReason: 'end_turn',
+      stopReason: data.message.tool_calls ? 'tool_use' : 'end_turn',
       model: data.model,
     };
+
+    if (data.message.tool_calls) {
+      response.tool_calls = data.message.tool_calls.map(tc => ({
+        id: tc.id,
+        type: 'function',
+        function: {
+          name: tc.function.name,
+          arguments: tc.function.arguments,
+        },
+      }));
+    }
+
+    return response;
   }
 
   private parseStreamChunk(data: OllamaResponse): StreamChunk | null {
+    if (data.message?.tool_calls) {
+      return {
+        type: 'tool_call',
+        tool_calls: data.message.tool_calls.map(tc => ({
+          id: tc.id,
+          type: 'function',
+          function: {
+            name: tc.function.name,
+            arguments: tc.function.arguments,
+          },
+        })),
+      };
+    }
+
     if (data.message?.content) {
       return {
         type: 'text',
@@ -300,6 +371,16 @@ export class OllamaProvider extends BaseProvider {
     // Check if model supports vision (multimodal models)
     const visionModels = ['llava', 'bakllava', 'moondream'];
     return visionModels.some(vm => modelName.toLowerCase().includes(vm));
+  }
+
+  private supportsTools(modelName: string): boolean {
+    // Check if model supports tool calling (Ollama 0.3+)
+    const toolModels = [
+      'llama3.1', 'llama3.2', 'llama3.3',
+      'mistral-nemo', 'mistral-large',
+      'command-r', 'qwen2.5', 'firefunction'
+    ];
+    return toolModels.some(tm => modelName.toLowerCase().includes(tm));
   }
 
   private supportsReasoning(modelName: string): boolean {
