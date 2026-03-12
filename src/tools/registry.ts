@@ -304,6 +304,36 @@ class ToolRegistry {
     try {
       const result = await tool.execute(input, context);
 
+      // Smart Retry Mechanism (S28): Enhance error messages with diagnostic context
+      if (result.error && name !== 'console_logs' && name !== 'network_requests') {
+        try {
+          const consoleTool = this.getTool('console_logs');
+          const networkTool = this.getTool('network_requests');
+          
+          let diagnosticContext = '';
+          
+          if (consoleTool) {
+            const consoleResult = await consoleTool.execute({ action: 'get_errors', limit: 5 }, context);
+            if (!consoleResult.error && consoleResult.output && !consoleResult.output.includes('No console errors')) {
+              diagnosticContext += `\n\n--- Auto-Diagnostic: Recent Console Errors ---\n${consoleResult.output}`;
+            }
+          }
+          
+          if (networkTool) {
+            const networkResult = await networkTool.execute({ action: 'get_errors', limit: 3 }, context);
+            if (!networkResult.error && networkResult.output && !networkResult.output.includes('No failing network requests')) {
+              diagnosticContext += `\n\n--- Auto-Diagnostic: Recent Failing Network Requests ---\n${networkResult.output}`;
+            }
+          }
+
+          if (diagnosticContext) {
+            result.error += `\n\nNote: The action failed. Here is some diagnostic context from the page that might explain why:${diagnosticContext}`;
+          }
+        } catch (diagError) {
+          console.warn('Failed to fetch diagnostic context:', diagError);
+        }
+      }
+
       // If workflow recording is active, capture this step
       try {
         const workflowStore = useWorkflowStore.getState();
