@@ -54,11 +54,11 @@ export interface DeactivateMessage {
 }
 
 /**
- * Message sent when element is pointed
+ * Message sent when elements are pointed
  */
 export interface ElementPointedMessage {
   type: ElementPointerMessageType.ELEMENT_POINTED;
-  data: PointedElement;
+  data: PointedElement | PointedElement[];
 }
 
 /**
@@ -83,6 +83,7 @@ export type ElementPointerMessage =
 export interface ElementPointerStatus {
   active: boolean;
   selectedElement: PointedElement | null;
+  selectedElements: PointedElement[];
 }
 
 /**

@@ -3,6 +3,7 @@
  * 
  * Provides element pointing functionality for S19.
  * Allows users to hover and click elements to get refs for AI agent interaction.
+ * Enhanced with Multi-Element Selection (S27).
  */
 
 import { refManager } from '../lib/context';
@@ -21,11 +22,12 @@ class ElementPointer {
   private active: boolean = false;
   private overlay: HTMLDivElement | null = null;
   private highlightBox: HTMLDivElement | null = null;
-  private selectedBox: HTMLDivElement | null = null;
   private commentInput: HTMLInputElement | null = null;
   private doneButton: HTMLButtonElement | null = null;
-  private selectedElement: Element | null = null;
-  private selectedRef: string | null = null;
+  
+  // Multi-selection state
+  private selectionMap: Map<Element, HTMLDivElement> = new Map();
+  private elementRefs: Map<Element, string> = new Map();
 
   /**
    * Activate element pointer mode
@@ -39,7 +41,7 @@ class ElementPointer {
     this.injectOverlay();
     this.attachEventListeners();
     
-    console.log('🎯 Element pointer activated');
+    console.log('🎯 Element pointer activated (Multi-select mode)');
   }
 
   /**
@@ -53,8 +55,8 @@ class ElementPointer {
     this.active = false;
     this.removeOverlay();
     this.detachEventListeners();
-    this.selectedElement = null;
-    this.selectedRef = null;
+    this.selectionMap.clear();
+    this.elementRefs.clear();
 
     console.log('🎯 Element pointer deactivated');
   }
@@ -63,9 +65,11 @@ class ElementPointer {
    * Get current status
    */
   getStatus(): ElementPointerStatus {
+    const selectedElements = Array.from(this.selectionMap.keys()).map(el => this.getElementData(el));
     return {
       active: this.active,
-      selectedElement: this.getSelectedElementData()
+      selectedElement: selectedElements[0] || null,
+      selectedElements
     };
   }
 
@@ -73,7 +77,6 @@ class ElementPointer {
    * Inject overlay UI
    */
   private injectOverlay(): void {
-    // Create overlay container
     this.overlay = document.createElement('div');
     this.overlay.id = 'sp-pointer-overlay';
     this.overlay.style.cssText = `
@@ -104,10 +107,22 @@ class ElementPointer {
       .sp-selected.sp-animating {
         animation: spPulse 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
+      .sp-ref-badge {
+        position: absolute;
+        top: -24px;
+        left: 0;
+        background: #10b981;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: bold;
+        pointer-events: none;
+        white-space: nowrap;
+      }
     `;
     this.overlay.appendChild(style);
 
-    // Create highlight box (follows mouse)
     this.highlightBox = document.createElement('div');
     this.highlightBox.className = 'sp-highlight';
     this.highlightBox.style.cssText = `
@@ -117,25 +132,11 @@ class ElementPointer {
       backdrop-filter: blur(1px);
       pointer-events: none;
       display: none;
-      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
       border-radius: 4px;
     `;
 
-    // Create selected element marker
-    this.selectedBox = document.createElement('div');
-    this.selectedBox.className = 'sp-selected';
-    this.selectedBox.style.cssText = `
-      position: absolute;
-      border: 3px solid #10b981;
-      background: rgba(16, 185, 129, 0.15);
-      pointer-events: none;
-      display: none;
-      border-radius: 6px;
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-    `;
-
-    // Create comment input container
     const commentContainer = document.createElement('div');
     commentContainer.style.cssText = `
       position: fixed;
@@ -151,15 +152,14 @@ class ElementPointer {
       display: none;
       pointer-events: auto;
       z-index: 2147483647;
-      min-width: 320px;
+      min-width: 340px;
       font-family: system-ui, -apple-system, sans-serif;
     `;
 
-    // Create comment input
     this.commentInput = document.createElement('input');
     this.commentInput.className = 'sp-comment';
     this.commentInput.type = 'text';
-    this.commentInput.placeholder = 'Add instructions for this element...';
+    this.commentInput.placeholder = 'Add instructions for selected elements...';
     this.commentInput.style.cssText = `
       width: 100%;
       padding: 10px 14px;
@@ -169,15 +169,11 @@ class ElementPointer {
       outline: none;
       margin-bottom: 12px;
       box-sizing: border-box;
-      transition: border-color 0.2s;
     `;
-    this.commentInput.onfocus = () => { this.commentInput!.style.borderColor = '#3b82f6'; };
-    this.commentInput.onblur = () => { this.commentInput!.style.borderColor = '#d1d5db'; };
 
-    // Create done button
     this.doneButton = document.createElement('button');
     this.doneButton.className = 'sp-done';
-    this.doneButton.textContent = 'Confirm Selection';
+    this.doneButton.textContent = 'Confirm Selection (0)';
     this.doneButton.style.cssText = `
       width: 100%;
       padding: 10px 16px;
@@ -188,99 +184,51 @@ class ElementPointer {
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
     `;
-    this.doneButton.onmouseover = () => { this.doneButton!.style.background = '#2563eb'; };
-    this.doneButton.onmouseout = () => { this.doneButton!.style.background = '#3b82f6'; };
-    this.doneButton.onmousedown = () => { this.doneButton!.style.transform = 'scale(0.98)'; };
-    this.doneButton.onmouseup = () => { this.doneButton!.style.transform = 'scale(1)'; };
 
-    // Assemble comment container
     commentContainer.appendChild(this.commentInput);
     commentContainer.appendChild(this.doneButton);
     commentContainer.id = 'sp-comment-container';
 
-    // Assemble overlay
     this.overlay.appendChild(this.highlightBox);
-    this.overlay.appendChild(this.selectedBox);
     this.overlay.appendChild(commentContainer);
-
     document.body.appendChild(this.overlay);
   }
 
-  /**
-   * Remove overlay UI
-   */
   private removeOverlay(): void {
     if (this.overlay) {
       this.overlay.remove();
       this.overlay = null;
       this.highlightBox = null;
-      this.selectedBox = null;
-      this.commentInput = null;
-      this.doneButton = null;
     }
   }
 
-  /**
-   * Attach event listeners
-   */
   private attachEventListeners(): void {
     document.addEventListener('mousemove', this.handleMouseMove);
     document.addEventListener('click', this.handleClick, true);
     document.addEventListener('keydown', this.handleKeyDown);
-
-    if (this.doneButton) {
-      this.doneButton.addEventListener('click', this.handleDone);
-    }
-
-    if (this.commentInput) {
-      this.commentInput.addEventListener('keydown', this.handleCommentKeyDown);
-    }
+    window.addEventListener('scroll', this.syncMarkers);
+    window.addEventListener('resize', this.syncMarkers);
   }
 
-  /**
-   * Detach event listeners
-   */
   private detachEventListeners(): void {
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('click', this.handleClick, true);
     document.removeEventListener('keydown', this.handleKeyDown);
-
-    if (this.doneButton) {
-      this.doneButton.removeEventListener('click', this.handleDone);
-    }
-
-    if (this.commentInput) {
-      this.commentInput.removeEventListener('keydown', this.handleCommentKeyDown);
-    }
+    window.removeEventListener('scroll', this.syncMarkers);
+    window.removeEventListener('resize', this.syncMarkers);
   }
 
-  /**
-   * Handle mouse move - highlight element under cursor
-   */
   private handleMouseMove = (event: MouseEvent): void => {
-    if (!this.active || !this.highlightBox || this.selectedElement) {
-      return;
-    }
+    if (!this.active || !this.highlightBox) return;
 
     const element = document.elementFromPoint(event.clientX, event.clientY);
-    
-    if (!element || element === document.body || element === document.documentElement) {
+    if (!element || element === document.body || element === document.documentElement || element.closest('#sp-pointer-overlay')) {
       this.highlightBox.style.display = 'none';
       return;
     }
 
-    // Skip overlay elements
-    if (element.closest('#sp-pointer-overlay')) {
-      this.highlightBox.style.display = 'none';
-      return;
-    }
-
-    // Get element bounds
     const rect = element.getBoundingClientRect();
-    
-    // Position highlight box
     this.highlightBox.style.display = 'block';
     this.highlightBox.style.left = `${rect.left + window.scrollX}px`;
     this.highlightBox.style.top = `${rect.top + window.scrollY}px`;
@@ -288,216 +236,143 @@ class ElementPointer {
     this.highlightBox.style.height = `${rect.height}px`;
   };
 
-  /**
-   * Handle click - select element
-   */
   private handleClick = (event: MouseEvent): void => {
-    if (!this.active) {
-      return;
-    }
+    if (!this.active) return;
 
-    // If already selected, ignore clicks outside comment container
-    if (this.selectedElement) {
-      const target = event.target as Element;
-      if (!target.closest('#sp-comment-container')) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      return;
-    }
+    const target = event.target as Element;
+    if (target.closest('#sp-comment-container')) return;
 
     event.preventDefault();
     event.stopPropagation();
 
     const element = document.elementFromPoint(event.clientX, event.clientY);
-    
-    if (!element || element === document.body || element === document.documentElement) {
-      return;
-    }
+    if (!element || element === document.body || element === document.documentElement || element.closest('#sp-pointer-overlay')) return;
 
-    // Skip overlay elements
-    if (element.closest('#sp-pointer-overlay')) {
-      return;
+    if (this.selectionMap.has(element)) {
+      this.removeElement(element);
+    } else {
+      this.addElement(element);
     }
-
-    // Select element
-    this.selectElement(element);
   };
 
-  /**
-   * Select an element
-   */
-  private selectElement(element: Element): void {
-    this.selectedElement = element;
+  private addElement(element: Element): void {
+    const ref = refManager.getOrCreateRef(element);
+    const box = document.createElement('div');
+    box.className = 'sp-selected sp-animating';
+    
+    const badge = document.createElement('div');
+    badge.className = 'sp-ref-badge';
+    badge.textContent = `@${ref}`;
+    box.appendChild(badge);
 
-    // Assign ref using S18 refManager
-    this.selectedRef = refManager.getOrCreateRef(element);
+    const rect = element.getBoundingClientRect();
+    box.style.cssText = `
+      position: absolute;
+      border: 3px solid #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      pointer-events: none;
+      border-radius: 6px;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+      left: ${rect.left + window.scrollX}px;
+      top: ${rect.top + window.scrollY}px;
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      z-index: 2147483646;
+    `;
 
-    // Hide highlight box
-    if (this.highlightBox) {
-      this.highlightBox.style.display = 'none';
-    }
-
-    // Show selected box
-    if (this.selectedBox) {
-      const rect = element.getBoundingClientRect();
-      this.selectedBox.style.display = 'block';
-      this.selectedBox.style.left = `${rect.left + window.scrollX}px`;
-      this.selectedBox.style.top = `${rect.top + window.scrollY}px`;
-      this.selectedBox.style.width = `${rect.width}px`;
-      this.selectedBox.style.height = `${rect.height}px`;
-
-      // Trigger pulse animation
-      this.selectedBox.classList.remove('sp-animating');
-      void this.selectedBox.offsetWidth; // Trigger reflow
-      this.selectedBox.classList.add('sp-animating');
-    }
-
-    // Show comment input
-    const commentContainer = document.getElementById('sp-comment-container');
-    if (commentContainer) {
-      commentContainer.style.display = 'block';
-      commentContainer.classList.remove('sp-visible');
-      void commentContainer.offsetWidth; // Trigger reflow
-      commentContainer.classList.add('sp-visible');
-    }
-
-    // Focus comment input
-    if (this.commentInput) {
-      this.commentInput.focus();
-    }
-
-    console.log('🎯 Element selected:', this.selectedRef, element);
+    this.overlay?.appendChild(box);
+    this.selectionMap.set(element, box);
+    this.elementRefs.set(element, ref);
+    this.updateUI();
   }
 
-  /**
-   * Handle keydown - Escape to cancel
-   */
-  private handleKeyDown = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape') {
-      if (this.selectedElement) {
-        // Cancel selection
-        this.cancelSelection();
-      } else {
-        // Deactivate pointer
-        this.deactivate();
+  private removeElement(element: Element): void {
+    const box = this.selectionMap.get(element);
+    box?.remove();
+    this.selectionMap.delete(element);
+    this.elementRefs.delete(element);
+    this.updateUI();
+  }
+
+  private updateUI(): void {
+    const container = document.getElementById('sp-comment-container');
+    if (container) {
+      container.style.display = this.selectionMap.size > 0 ? 'block' : 'none';
+      if (this.selectionMap.size > 0 && !container.classList.contains('sp-visible')) {
+        container.classList.add('sp-visible');
       }
     }
+    if (this.doneButton) {
+      this.doneButton.textContent = `Confirm Selection (${this.selectionMap.size})`;
+    }
+  }
+
+  private syncMarkers = (): void => {
+    this.selectionMap.forEach((box, element) => {
+      const rect = element.getBoundingClientRect();
+      box.style.left = `${rect.left + window.scrollX}px`;
+      box.style.top = `${rect.top + window.scrollY}px`;
+      box.style.width = `${rect.width}px`;
+      box.style.height = `${rect.height}px`;
+    });
   };
 
-  /**
-   * Handle comment input keydown - Enter to submit
-   */
-  private handleCommentKeyDown = (event: KeyboardEvent): void => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.handleDone();
+  private handleKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape') {
+      this.selectionMap.size > 0 ? this.clearSelection() : this.deactivate();
     }
   };
 
-  /**
-   * Handle done button click
-   */
+  private clearSelection(): void {
+    this.selectionMap.forEach(box => box.remove());
+    this.selectionMap.clear();
+    this.elementRefs.clear();
+    this.updateUI();
+  }
+
   private handleDone = (): void => {
-    if (!this.selectedElement || !this.selectedRef) {
-      return;
-    }
-
     const comment = this.commentInput?.value.trim() || undefined;
-    const pointedElement = this.getSelectedElementData(comment);
+    const pointedElements = Array.from(this.selectionMap.keys()).map(el => this.getElementData(el, comment));
 
-    if (pointedElement) {
-      // Send message to sidepanel
+    if (pointedElements.length > 0) {
       chrome.runtime.sendMessage({
         type: ElementPointerMessageType.ELEMENT_POINTED,
-        data: pointedElement
+        data: pointedElements
       });
-
-      console.log('🎯 Element pointed:', pointedElement);
     }
-
-    // Deactivate
     this.deactivate();
   };
 
-  /**
-   * Cancel current selection
-   */
-  private cancelSelection(): void {
-    this.selectedElement = null;
-    this.selectedRef = null;
-
-    // Hide selected box
-    if (this.selectedBox) {
-      this.selectedBox.style.display = 'none';
-      this.selectedBox.classList.remove('sp-animating');
-    }
-
-    // Hide comment container
-    const commentContainer = document.getElementById('sp-comment-container');
-    if (commentContainer) {
-      commentContainer.style.display = 'none';
-      commentContainer.classList.remove('sp-visible');
-    }
-
-    // Clear comment input
-    if (this.commentInput) {
-      this.commentInput.value = '';
-    }
-  }
-
-  /**
-   * Get selected element data
-   */
-  private getSelectedElementData(comment?: string): PointedElement | null {
-    if (!this.selectedElement || !this.selectedRef) {
-      return null;
-    }
-
-    const rect = this.selectedElement.getBoundingClientRect();
-    const text = getElementText(this.selectedElement);
-    const tagName = this.selectedElement.tagName.toLowerCase();
-    const role = this.selectedElement.getAttribute('role') || undefined;
-
+  private getElementData(element: Element, comment?: string): PointedElement {
+    const rect = element.getBoundingClientRect();
+    const ref = this.elementRefs.get(element) || 'unknown';
     return {
-      ref: `@${this.selectedRef}`,
+      ref: `@${ref}`,
       x: Math.round(rect.left + rect.width / 2),
       y: Math.round(rect.top + rect.height / 2),
       width: Math.round(rect.width),
       height: Math.round(rect.height),
-      text,
+      text: getElementText(element),
       comment,
-      tagName,
-      role
+      tagName: element.tagName.toLowerCase(),
+      role: element.getAttribute('role') || undefined
     };
+  }
+
+  private attachHandlers(): void {
+    if (this.doneButton) this.doneButton.onclick = this.handleDone;
+    if (this.commentInput) {
+      this.commentInput.onkeydown = (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); this.handleDone(); }
+      };
+    }
   }
 }
 
-// Create global instance
 const elementPointer = new ElementPointer();
-
-// Listen for messages from sidepanel
 chrome.runtime.onMessage.addListener((message: ElementPointerMessage, sender, sendResponse) => {
-  switch (message.type) {
-    case ElementPointerMessageType.ACTIVATE:
-      elementPointer.activate();
-      sendResponse({ success: true });
-      break;
-
-    case ElementPointerMessageType.DEACTIVATE:
-      elementPointer.deactivate();
-      sendResponse({ success: true });
-      break;
-
-    case ElementPointerMessageType.STATUS:
-      sendResponse(elementPointer.getStatus());
-      break;
-
-    default:
-      sendResponse({ error: 'Unknown message type' });
-  }
-
-  return true; // Keep message channel open for async response
+  if (message.type === ElementPointerMessageType.ACTIVATE) elementPointer.activate();
+  else if (message.type === ElementPointerMessageType.DEACTIVATE) elementPointer.deactivate();
+  else if (message.type === ElementPointerMessageType.STATUS) sendResponse(elementPointer.getStatus());
+  return true;
 });
-
-console.log('🎯 Element pointer content script loaded');
