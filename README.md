@@ -226,4 +226,3 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 - **[browser-use](https://github.com/browser-use/browser-use)** — Browser automation patterns
 - **[Cline](https://github.com/cline/cline)** — Multi-provider architecture
-- **[Kiro](https://kiro.dev)** — Spec-driven development
