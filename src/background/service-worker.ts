@@ -193,4 +193,36 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
+// Command listener for keyboard shortcuts
+chrome.commands.onCommand.addListener(async (command) => {
+  console.log(`⌨️ Command received: ${command}`);
+
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    if (command === 'toggle-sidepanel') {
+      if (tab?.id) {
+        await chrome.sidePanel.open({ tabId: tab.id });
+        console.log('✅ Side panel opened via shortcut');
+      }
+    } else if (command === 'activate-pointer') {
+      if (tab?.id) {
+        // Check if tab URL is accessible
+        if (tab.url?.startsWith('chrome://') || tab.url?.startsWith('chrome-extension://')) {
+          console.warn('⚠️ Cannot activate pointer on internal page');
+          return;
+        }
+
+        // Send message to content script to activate pointer
+        await chrome.tabs.sendMessage(tab.id, {
+          type: 'ELEMENT_POINTER_ACTIVATE'
+        });
+        console.log('✅ Element pointer activated via shortcut');
+      }
+    }
+  } catch (error) {
+    console.error(`❌ Failed to execute command ${command}:`, error);
+  }
+});
+
 console.log('✅ SidePilot service worker ready!');

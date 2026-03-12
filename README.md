@@ -2,7 +2,16 @@
   <img src="assets/Sidepilot.png" alt="SidePilot Logo" width="200"/>
 </p>
 
-<h1 align="center">SidePilot</h1>
+<h1 align="center\">SidePilot</h1>
+
+<p align="center\">
+  <a href="https://github.com/veefoscax/SidePilot/actions/workflows/ci.yml">
+    <img src="https://github.com/veefoscax/SidePilot/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
+  </a>
+  <a href="../BACKLOG.md">
+    <img src="https://img.shields.io/badge/Backlog-Unified-blueviolet" alt="Unified Backlog" />
+  </a>
+</p>
 
 <p align="center">
   <strong>🚀 Your AI Co-Pilot in the Browser</strong>
